@@ -18,31 +18,35 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import dothattask_fe.composeapp.generated.resources.Res
 import dothattask_fe.composeapp.generated.resources.compose_multiplatform
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import kotlinx.coroutines.launch
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
+        val httpClient = createHttpClient()
+        val taskApi = remember { TaskApi(httpClient) }
+        val tasks = remember { mutableStateOf(emptyList<Task>()) }
+        val scope = rememberCoroutineScope()
+
         Column(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
                 .safeContentPadding()
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+            Button(onClick = {
+                scope.launch {
+                    tasks.value = taskApi.getAllTasks()
                 }
+            }) {
+                Text("Fetch Tasks")
+            }
+            for (task in tasks.value) {
+                Text(task.name)
             }
         }
     }
