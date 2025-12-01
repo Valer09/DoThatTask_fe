@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe
 
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
