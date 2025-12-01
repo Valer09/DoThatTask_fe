@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.SideMenu
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -28,46 +31,22 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Preview
+
 fun App() {
     var isLogged by remember { mutableStateOf(false) }
 
-    if (!isLogged)
-    {
-        LoginPage (onLoginSuccess =
-            { AppState.currentScreen = Screen.Main; isLogged = AuthState.isLoggedIn }
-        )
-    }
-    else
-    {
-        Column()
-        {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(TaskUIHelper.getMarinerBlue())   // Blu "material-ish"
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = "Benvenuto, ${AuthState.username}",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 16.dp)
-                )
+    if (!isLogged) {
+        LoginPage(onLoginSuccess = {
+            AppState.currentScreen = Screen.Main
+            isLogged = AuthState.isLoggedIn
+        })
+    } else {
 
-                Button(
-                    onClick = { AuthState.clear(); isLogged = false},
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF1976D2)
-                    )
-                ) {
-                    Text("Logout")
-                }
+
+            // Menu laterale e contenuto principale
+            Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(), verticalAlignment = Alignment.Top) {
+                SideMenu({AuthState.clear(); isLogged = false})
+
             }
-            MainPage()
         }
-    }
-
 }

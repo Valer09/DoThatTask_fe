@@ -19,10 +19,12 @@ kotlinxSerializationJson = "1.9.0"
 
 ktor = "3.3.2"
 
+materialIconsExtended = "1.7.8"
 toast = "0.3.8"
 
 
 [libraries]
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
 cmptoast = { module = "network.chaintech:cmptoast" }
 dokar3-sonner = { module = "io.github.dokar3:sonner" }
