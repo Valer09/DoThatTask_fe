@@ -27,7 +27,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 
 
 @Composable
-fun TaskCard(
+fun UserListDropdown(
     task: Task,
     onDelete: (Task) -> Unit,
     onUpdate: (Task) -> Unit,

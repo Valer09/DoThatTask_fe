@@ -40,6 +40,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -58,13 +59,10 @@ fun UpdateTaskDialog(
     var description by remember { mutableStateOf(task.description) }
     var category by remember { mutableStateOf(task.category) }
     var taskStatus by remember { mutableStateOf(task.status) }
-    val userList = listOf("alice", "bob", "carlo")
-    var assignedUser by remember { mutableStateOf(userList.first()) }
-    var userExpanded by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }
-
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
+    var selectedUser by remember { mutableStateOf<User?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -165,40 +163,7 @@ fun UpdateTaskDialog(
 
                     Spacer(Modifier.height(10.dp))
 
-                    ExposedDropdownMenuBox(
-                        expanded = userExpanded,
-                        onExpandedChange = { userExpanded = !userExpanded },
-                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-                    ) {
-                        TextField(
-                            value = assignedUser,
-                            onValueChange = {},
-                            label = { Text("Assign to") },
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = userExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                                .pointerHoverIcon(PointerIcon.Hand, true)
-
-                        )
-                        ExposedDropdownMenu(
-                            expanded = userExpanded,
-                            onDismissRequest = { userExpanded = false },
-                            modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-                        ) {
-                            userList.forEach { user ->
-                                DropdownMenuItem(
-                                    text = { Text(user) },
-                                    onClick = {
-                                        assignedUser = user
-                                        userExpanded = false
-                                    },
-                                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-                                )
-                            }
-                        }
-                    }
+                    UserListDropdown("Assignee", task.ownership_username, {selectedUser = it}, {selectedUser = it})
 
                     Spacer(Modifier.height(16.dp))
                     Row(
@@ -212,7 +177,7 @@ fun UpdateTaskDialog(
                             onClick = {onDismiss()}
                         )
                         {
-                            Text("Cancel")
+                            Text("Close")
                         }
 
                         OutlinedButton(
@@ -220,7 +185,7 @@ fun UpdateTaskDialog(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGreen()),
                             onClick = {
                                 val newTask = Task(
-                                    task.name,
+                                    name,
                                     description,
                                     try {
                                         TaskCategory.valueOf(category.name)
@@ -228,10 +193,10 @@ fun UpdateTaskDialog(
                                         TaskCategory.Social
                                     },
                                     TaskStatus.valueOf(taskStatus.name),
-                                    task.ownership_username
+                                    selectedUser?.username.toString()
                                 )
                                 scope.launch {
-                                    when (val result = taskApi.updateTask(newTask)) {
+                                    when (val result = taskApi.updateTask(task, newTask)) {
                                         is ApiResult.Success -> {
                                             toastIsError = false
                                             toastMessage = "Completed"

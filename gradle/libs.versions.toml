@@ -19,9 +19,13 @@ kotlinxSerializationJson = "1.9.0"
 
 ktor = "3.3.2"
 
+toast = "0.3.8"
+
 
 [libraries]
 androidx-material3 = { module = "androidx.compose.material3:material3" }
+cmptoast = { module = "network.chaintech:cmptoast" }
+dokar3-sonner = { module = "io.github.dokar3:sonner" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -45,6 +49,9 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-wasm = { module = "io.ktor:ktor-client-js-wasm-js", version.ref = "ktor"}
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+
+sonner = { module = "io.github.dokar3:sonner", version.ref = "toast" }
 
 
 
