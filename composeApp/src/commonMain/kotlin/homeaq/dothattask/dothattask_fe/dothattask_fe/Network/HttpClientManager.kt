@@ -5,6 +5,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
+import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
@@ -19,8 +20,12 @@ fun createHttpClient() = HttpClient {
     }
     defaultRequest {
         AuthState.token?.let { token -> header("Authorization", "Basic $token") }
-        host = "192.168.2.199"
-        port = 10000
+        url{
+            protocol = URLProtocol.HTTPS
+            host = "raspi.tail0458e4.ts.net"
+            port = 443
+        }
+
     }
 }
 

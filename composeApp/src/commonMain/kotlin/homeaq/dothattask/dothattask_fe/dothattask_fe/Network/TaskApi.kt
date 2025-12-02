@@ -18,7 +18,7 @@ class TaskApi(private val httpClient: HttpClient) {
     suspend fun removeTask(task: Task): ApiResult<String> {
         return try
         {
-            val response = httpClient.delete("tasks/${task.name}")
+            val response = httpClient.delete("api/tasks/${task.name}")
 
             if (response.status.value in 200..299) ApiResult.Success("Task deleted successfully")
             else return ApiResult.Error(response.call.response.status.toString())
@@ -40,7 +40,7 @@ class TaskApi(private val httpClient: HttpClient) {
                 task.status,
                 task.ownership_username
             )
-            val response = httpClient.post("/tasks")
+            val response = httpClient.post("/api/tasks")
             {
                 contentType(ContentType.Application.Json)
                 url{
@@ -70,7 +70,7 @@ class TaskApi(private val httpClient: HttpClient) {
                 newTask.status,
                 newTask.ownership_username
             )
-            val response = httpClient.post("/tasks")
+            val response = httpClient.post("/api/tasks")
             {
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
@@ -89,7 +89,7 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.get("/tasks/assignedTask")
+            val response = httpClient.get("/api/tasks/assignedTask")
 
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
@@ -107,7 +107,7 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.post("/tasks/pickTask")
+            val response = httpClient.post("/api/tasks/pickTask")
             {
                 contentType(ContentType.Application.Json)
             }
@@ -129,7 +129,7 @@ class TaskApi(private val httpClient: HttpClient) {
         return try
         {
             if(assignedTask == null || assignedTask.name.isEmpty()) return ApiResult.Error("No task assigned. Error on the client")
-            val response = httpClient.post("tasks/completeTask") {
+            val response = httpClient.post("api/tasks/completeTask") {
                 url{
                     parameters.append("task_name", assignedTask.name)
                 }
@@ -149,7 +149,7 @@ class TaskApi(private val httpClient: HttpClient) {
     suspend fun getAllTasksDb(): ApiResult<List<Task>> {
         return try
         {
-            val response = httpClient.get("/tasks")
+            val response = httpClient.get("/api/tasks")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }
@@ -163,7 +163,7 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.get("/user/usersLessMe")
+            val response = httpClient.get("/api/user/usersLessMe")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }
@@ -177,7 +177,7 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.get("/tasks/tasksByUser/$username")
+            val response = httpClient.get("/api/tasks/tasksByUser/$username")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }
@@ -191,7 +191,7 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.get("/tasks/completed")
+            val response = httpClient.get("/api/tasks/completed")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }

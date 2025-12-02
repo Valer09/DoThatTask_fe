@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -37,6 +39,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val taskApi = remember { TaskApi(createHttpClient()) }
     val client = createHttpClient()
 
     Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
@@ -71,19 +74,23 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
                     CoroutineScope(Dispatchers.Default).launch {
                         try {
-                            val response = client.get("/tasks")
-                            {
-                                header("Authorization", "Basic "+AuthState.token)
-                            }
-                            if (response.status.value in 200..299)
+                            val response = taskApi.getAllTasksDb()
+
+                            if(response is ApiResult.Success)
                             {
                                 errorMessage = null
                                 AppState.currentScreen = Screen.Home
                                 onLoginSuccess()
                             }
-                            else
+                            else if(response is ApiResult.Error)
                             {
-                                println(response.status.value)
+                                println(response.message)
+                                errorMessage = "Login failed"
+                                AuthState.clear()
+                            }
+                            else if(response is ApiResult.NotFound)
+                            {
+                                println(response.message)
                                 errorMessage = "Login failed"
                                 AuthState.clear()
                             }
