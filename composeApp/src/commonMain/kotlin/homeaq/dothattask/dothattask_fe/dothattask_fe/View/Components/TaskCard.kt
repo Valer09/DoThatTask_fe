@@ -41,10 +41,18 @@ fun UserListDropdown(
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
-                "${task.name}: ${task.description}",
+                task.name,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
+            )
+            Spacer(Modifier.height(7.dp))
+            Text(
+                task.description,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.Black,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(Modifier.height(16.dp))
             Row {

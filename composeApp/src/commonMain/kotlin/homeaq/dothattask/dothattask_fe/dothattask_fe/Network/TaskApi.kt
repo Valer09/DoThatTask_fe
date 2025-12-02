@@ -28,6 +28,36 @@ class TaskApi(private val httpClient: HttpClient) {
             return ApiResult.Error(e.message ?: "Unknown error")
         }
     }
+    suspend fun createTask(task: Task) : ApiResult<Task>
+    {
+        return try
+        {
+            val taskUpdate = TaskUpdate(
+                "",
+                task.name,
+                task.description,
+                task.category,
+                task.status,
+                task.ownership_username
+            )
+            val response = httpClient.post("/tasks")
+            {
+                contentType(ContentType.Application.Json)
+                url{
+                    parameters.append("username",   task.ownership_username)
+                    setBody(taskUpdate)
+                }
+
+            }
+
+            if (response.status.value in 200..299) ApiResult.Success(response.body())
+            else ApiResult.Error(response.call.response.status.toString())
+        }
+        catch (e: Exception)
+        {
+            return ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
 
     suspend fun updateTask(oldTask: Task, newTask: Task): ApiResult<Task> {
         return try
@@ -48,6 +78,67 @@ class TaskApi(private val httpClient: HttpClient) {
 
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
+        }
+        catch (e: Exception)
+        {
+            return ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    suspend fun getAssignedTask() :  ApiResult<Task>
+    {
+        return try
+        {
+            val response = httpClient.get("/tasks/assignedTask")
+
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success(response.body())
+                404 -> ApiResult.NotFound(response.body())
+                else -> ApiResult.Error(response.call.response.status.toString())
+            }
+        }
+        catch (e: Exception)
+        {
+            return ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    suspend fun pickTask() :  ApiResult<Task>
+    {
+        return try
+        {
+            val response = httpClient.post("/tasks/pickTask")
+            {
+                contentType(ContentType.Application.Json)
+            }
+
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success(response.body())
+                404 -> ApiResult.NotFound(response.body())
+                else -> ApiResult.Error(response.call.response.status.toString())
+            }
+        }
+        catch (e: Exception)
+        {
+            return ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    suspend fun completeTask(assignedTask: Task?) : ApiResult<String>
+    {
+        return try
+        {
+            if(assignedTask == null || assignedTask.name.isEmpty()) return ApiResult.Error("No task assigned. Error on the client")
+            val response = httpClient.post("tasks/completeTask") {
+                url{
+                    parameters.append("task_name", assignedTask.name)
+                }
+
+                contentType(ContentType.Application.Json)
+            }
+            if (response.status.value in 200..299) ApiResult.Success("Task completed successfully")
+            else if (response.status.value == 404) ApiResult.NotFound("Task not found")
+            else return ApiResult.Error(response.call.response.status.toString())
         }
         catch (e: Exception)
         {
@@ -95,5 +186,4 @@ class TaskApi(private val httpClient: HttpClient) {
             return ApiResult.Error(e.message ?: "Unknown error")
         }
     }
-
 }

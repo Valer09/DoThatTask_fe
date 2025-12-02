@@ -22,25 +22,24 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -49,9 +48,11 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
 
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateTaskDialog(
+fun CreateTaskDialog(
     task: Task,
     onConfirm: (Task) -> Unit,
     onDismiss: () -> Unit
@@ -96,7 +97,7 @@ fun UpdateTaskDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 )
                 {
-                    Text("Update ${task.name}", fontSize = 20.sp)
+                    Text("Create ${task.name}", fontSize = 20.sp)
                 }
 
                 Column(modifier = Modifier.padding(10.dp)) {
@@ -197,7 +198,7 @@ fun UpdateTaskDialog(
                                     selectedUser?.username.toString()
                                 )
                                 scope.launch {
-                                    when (val result = taskApi.updateTask(task, newTask)) {
+                                    when (val result = taskApi.createTask(newTask)) {
                                         is ApiResult.Success -> {
                                             toastIsError = false
                                             toastMessage = "Completed"
@@ -215,7 +216,7 @@ fun UpdateTaskDialog(
                                 onConfirm(newTask)
                             })
                         {
-                            Text("Update")
+                            Text("Create")
                         }
                     }
                 }
@@ -224,4 +225,3 @@ fun UpdateTaskDialog(
         }
     }
 }
-

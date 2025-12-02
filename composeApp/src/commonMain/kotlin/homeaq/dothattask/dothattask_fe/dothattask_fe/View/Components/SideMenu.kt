@@ -2,9 +2,7 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,24 +15,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.MainPage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskManagementPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SideMenu(onLogout: () -> Unit) {
+fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var isHovered by remember { mutableStateOf(false) }
+    var selectedPage by remember { mutableStateOf<Screen>(Screen.Home) }
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TaskUIHelper.getMarinerBlue())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(top = 35.dp, bottom = 10.dp).padding(horizontal = 15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icona menu
@@ -54,7 +55,7 @@ fun SideMenu(onLogout: () -> Unit) {
                 modifier = Modifier.padding(start = 8.dp)
             )
 
-            Spacer(modifier = Modifier.weight(1f)) // spinge il bottone a destra
+            Spacer(modifier = Modifier.weight(1f))
 
             // Bottone Logout
             Button(
@@ -95,9 +96,9 @@ fun SideMenu(onLogout: () -> Unit) {
                             .clickable { }
                             .pointerHoverIcon(PointerIcon.Hand, true )
 
-                        Row(modifier = modifier) {DrawerItem("Home", {}, Color.Black)}
+                        Row(modifier = modifier) {DrawerItem("Home", { scope.launch { selectedPage = Screen.Home;onPageChange(Screen.Home) }}, Color.Black)}
                         Spacer(Modifier.height(10.dp))
-                        Row(modifier = modifier) {DrawerItem("Tasks", {}, Color.Black)}
+                        Row(modifier = modifier) {DrawerItem("Tasks", {scope.launch { selectedPage = Screen.TaskManagement; onPageChange(Screen.TaskManagement) }}, Color.Black)}
                         Spacer(Modifier.height(10.dp))
                         Row(modifier = modifier) {DrawerItem("Settings", {}, Color.Black)}
                     }
@@ -117,7 +118,8 @@ fun SideMenu(onLogout: () -> Unit) {
                             .fillMaxWidth().padding(10.dp),
                         contentAlignment = Alignment.TopCenter
                     ) {
-                        MainPage()
+                        if(selectedPage == Screen.Home) MainPage()
+                        if(selectedPage == Screen.TaskManagement) TaskManagementPage()
                     }
                 }
             }
@@ -125,6 +127,8 @@ fun SideMenu(onLogout: () -> Unit) {
     }
     }
 }
+
+
 
 @Composable
 fun DrawerItem(label: String, onClick: () -> Unit, color: Color) {

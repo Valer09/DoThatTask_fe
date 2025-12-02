@@ -1,6 +1,5 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,27 +9,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
-import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.parameter
-import io.ktor.util.encodeBase64
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,10 +37,11 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val client = createHttpClient()
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
 
 
-        Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Text("Welcome in DO THAT TASK!", style = MaterialTheme.typography.headlineMedium, color = TaskUIHelper.getMarinerBlue(), fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterHorizontally))
 
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
@@ -80,7 +76,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                             if (response.status.value in 200..299)
                             {
                                 errorMessage = null
-                                AppState.currentScreen = Screen.Main
+                                AppState.currentScreen = Screen.Home
                                 onLoginSuccess()
                             }
                             else

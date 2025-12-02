@@ -6,7 +6,9 @@ import androidx.compose.runtime.setValue
 
 enum class Screen {
     Login,
-    Main
+    Home,
+    TaskManagement,
+
 }
 
 object AppState {
