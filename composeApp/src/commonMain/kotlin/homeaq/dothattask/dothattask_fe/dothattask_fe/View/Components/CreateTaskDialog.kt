@@ -87,7 +87,6 @@ fun CreateTaskDialog(
                 )
             }
 
-
             Card(
                 modifier = Modifier.fillMaxWidth().padding(4.dp),
                 shape = RoundedCornerShape(CornerSize(4.dp))

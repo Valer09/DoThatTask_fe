@@ -9,6 +9,7 @@ enum class Screen {
     Home,
     TaskManagement,
 
+    CompletedTask
 }
 
 object AppState {

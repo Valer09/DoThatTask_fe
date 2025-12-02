@@ -1,17 +1,12 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,6 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
@@ -41,13 +38,12 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailD
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UpdateTaskDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UserListDropdown
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
 import kotlinx.coroutines.launch
 
 @Composable
 fun TaskManagementPage() {
 
-
-    // Crea httpClient e taskApi solo una volta
     val taskApi = remember { TaskApi(createHttpClient()) }
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -58,11 +54,7 @@ fun TaskManagementPage() {
     var taskToCreate by remember { mutableStateOf<Task?>(null) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
-
     var selectedUser by remember { mutableStateOf<User?>(null) }
-
-
-
 
     suspend fun loadTasks() {
         if (selectedUser == null) return
@@ -113,17 +105,8 @@ fun TaskManagementPage() {
         )
     }
 
-    if (currentDetailTask != null) {
-        TaskDetailDialog(
-            currentDetailTask!!,
-            onConfirm = {},
-            onDismiss = { currentDetailTask = null }
-        )
-    }
-
     Column()
     {
-
         Row(
             modifier = Modifier
                 .padding(5.dp)
@@ -136,13 +119,15 @@ fun TaskManagementPage() {
                 Row{Button(
                     onClick = { scope.launch { loadTasks() } },
                     modifier = Modifier.weight(1f)
+                        .pointerHoverIcon(PointerIcon.Hand, true)
                 ) {
                     Text("Get the tasks")
                 }}
                 Spacer(Modifier.padding(vertical = 3.dp))
                 Row{Button(
                     onClick = { scope.launch { createTask() } },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
+                        .pointerHoverIcon(PointerIcon.Hand, true),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = TaskUIHelper.getLightGray(),
                         contentColor = Color.Black
@@ -170,7 +155,6 @@ fun TaskManagementPage() {
                         )
                     }
 
-                    // Mostra loading
                     if (isLoading) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -191,11 +175,11 @@ fun TaskManagementPage() {
                             )
                         }
                     }
-                    // Mostra lista task
+
                     else {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(tasks) { task ->
-                                UserListDropdown(
+                                TaskCard(
                                     task,
                                     onDelete = {
                                         scope.launch {
@@ -219,7 +203,7 @@ fun TaskManagementPage() {
                                         }
                                     },
                                     onUpdate = { currentTaskToUpdate = task },
-                                    onDetails = { currentDetailTask = task },
+                                    onDetails = { currentDetailTask = task }
                                 )
                             }
                         }

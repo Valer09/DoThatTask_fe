@@ -2,24 +2,19 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,22 +27,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UserListDropdown
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 
 
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UpdateTaskDialog
-import io.ktor.client.call.body
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -158,7 +151,7 @@ fun MainPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
-                    .fillMaxHeight()
+                    .weight(0.85f)
                     .background(TaskUIHelper.getLightGray()),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween)
@@ -167,32 +160,54 @@ fun MainPage(
                     .padding(20.dp), horizontalAlignment = Alignment.Start){
                     Row()
                     {
-                        Column {  Text(
-                            text = "Name: ",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyLarge
-                        )}
-                        Column {  Text(
-                            text = "${assignedTask?.name}",
-                            fontWeight = FontWeight.Normal,
-                            style = MaterialTheme.typography.bodyLarge
-                        )}
-                    }
+                        Column(modifier = Modifier.weight(0.6f), horizontalAlignment = Alignment.Start)
+                        {
+                            Row()
+                            {
 
-                    Row()
-                    {
-                        Column {  Text(
-                            text = "Category: ",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyLarge
-                        )}
-                        Column {  Text(
-                            text = "${assignedTask?.name}",
-                            fontWeight = FontWeight.Normal,
-                            style = MaterialTheme.typography.bodyLarge
-                        )}
-                    }
+                                Column {  Text(
+                                    text = "Name: ",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )}
+                                Column {  Text(
+                                    text = "${assignedTask?.name}",
+                                    fontWeight = FontWeight.Normal,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )}
+                            }
 
+                            Row()
+                            {
+                                Column {  Text(
+                                    text = "Category: ",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )}
+                                Column {  Text(
+                                    text = "${assignedTask?.name}",
+                                    fontWeight = FontWeight.Normal,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )}
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(3.dp))
+
+                        Column(modifier = Modifier.weight(0.4f), horizontalAlignment = Alignment.End)
+                        {
+                            Button(
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                onClick = {
+                                    scope.launch { complete() }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getGreen())
+                            ) {
+                                Text("Complete!", color = Color.Black, modifier = Modifier.padding(horizontal = 5.dp),
+                                    fontSize = 14.sp)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(30.dp))
                     Row()
                     {
                         Column {  Text(
@@ -208,60 +223,71 @@ fun MainPage(
                     }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f, )
-                    .padding(20.dp), horizontalAlignment = Alignment.End)
-                {
-                    Button(
-                        onClick = {
-                            scope.launch { complete() }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getGreen())
-                    ) {
-                        Text("Complete", color = Color.White)
-                    }
-                }
             }
         }
         else
         {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .fillMaxHeight()
-                    .background(TaskUIHelper.getLightGray()),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween)
+            Row(modifier = Modifier.weight(0.10f).background(TaskUIHelper.getLightGray()).padding(20.dp))
             {
-                Column(modifier = Modifier.weight(1f)
-                    .padding(20.dp), horizontalAlignment = Alignment.Start)
+                Column(modifier = Modifier.height(150.dp))
                 {
-                    Text(
-                        text = "No task assigned",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
+                    Row(modifier = Modifier.fillMaxWidth().weight(0.2f), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center)
+                    {
+
+                        Text(
+                            text = "No task assigned",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray,
+                            fontSize = 30.sp
+                        )
+
+                    }
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.2f),
+                        verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center
                     )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f, )
-                    .padding(20.dp), horizontalAlignment = Alignment.End)
-                {
-                    Button(
-                        onClick = {
-                            scope.launch { pickTask() }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getMarinerBlue())
-                    ) {
-                        Text("Pick a task", color = Color.White)
+                    {
+                        Button(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).padding(horizontal = 16.dp),
+                            onClick = {
+                                scope.launch { pickTask() }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getMarinerBlue()),
+
+                            ) {
+                            Text("Pick a new task!", color = Color.White,
+                                modifier = Modifier.padding(horizontal = 20.dp).padding(vertical = 10.dp),
+                                fontSize = 20.sp)
+                        }
                     }
                 }
-
-
             }
         }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .weight(0.15f)
+                .background(Color.White),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.Center)
+        {
+
+            Button(
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).padding(horizontal = 18.dp).padding(vertical = 10.dp),
+                onClick = {
+                    scope.launch { AppState.currentScreen =  Screen.CompletedTask }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getGreen())
+            ) {
+                Text("Go to completed tasks", color = Color.Black, fontSize = 17.sp)
+            }
+
+        }
     }
-
-
 
 }
 

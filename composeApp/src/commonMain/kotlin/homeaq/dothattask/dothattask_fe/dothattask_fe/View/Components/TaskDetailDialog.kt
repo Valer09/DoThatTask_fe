@@ -96,7 +96,7 @@ fun TaskDetailDialog(
                 {
 
                     OutlinedButton(
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Default, true),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGray()),
                         onClick = {onDismiss()}
                     )

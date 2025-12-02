@@ -27,11 +27,13 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 
 
 @Composable
-fun UserListDropdown(
+fun TaskCard(
     task: Task,
     onDelete: (Task) -> Unit,
     onUpdate: (Task) -> Unit,
     onDetails: (Task) -> Unit,
+    hideDelete: Boolean = false,
+    hideUpdate: Boolean = false,
 ) {
 
     Card(
@@ -56,26 +58,32 @@ fun UserListDropdown(
             )
             Spacer(Modifier.height(16.dp))
             Row {
-                OutlinedButton(
-                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getRed()),
-                    onClick = { onDelete(task) })
+                if(!hideDelete)
                 {
-                    Text("Delete")
+                    OutlinedButton(
+                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getRed()),
+                        onClick = { onDelete(task) })
+                    {
+                        Text("Delete")
+                    }
+                    Spacer(Modifier.width(16.dp))
                 }
-                Spacer(Modifier.width(16.dp))
-                OutlinedButton(
-                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGreen()),
-                    onClick = { onUpdate(task) }
-                )
+                if(!hideUpdate)
                 {
-                    Text("Update")
+                    OutlinedButton(
+                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGreen()),
+                        onClick = { onUpdate(task) }
+                    )
+                    {
+                        Text("Update")
+                    }
                 }
 
                 Spacer(Modifier.width(16.dp))
                 OutlinedButton(
-                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGray()),
                     onClick = { onDetails(task) }
                 )

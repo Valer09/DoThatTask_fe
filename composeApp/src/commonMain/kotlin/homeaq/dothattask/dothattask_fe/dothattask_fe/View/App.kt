@@ -23,6 +23,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 fun App() {
     var isLogged by remember { mutableStateOf(false) }
+    var selectedPage by remember { mutableStateOf<Screen>(Screen.Home) }
 
     if (!isLogged) {
         LoginPage(onLoginSuccess = {
@@ -35,7 +36,7 @@ fun App() {
             // Menu laterale e contenuto principale
             Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(), verticalAlignment = Alignment.Top)
             {
-                SideMenu({AuthState.clear(); isLogged = false}, {AppState.currentScreen = it})
+                SideMenu({AuthState.clear(); isLogged = false}, {AppState.currentScreen = it; selectedPage = it})
             }
         }
 }

@@ -3,6 +3,7 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,8 +15,10 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.CompletedTaskPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.MainPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskManagementPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
@@ -28,7 +31,15 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var isHovered by remember { mutableStateOf(false) }
-    var selectedPage by remember { mutableStateOf<Screen>(Screen.Home) }
+
+
+
+
+    fun getRowColor(page : Screen) : Color
+    {
+        if(AppState.currentScreen == page) return TaskUIHelper.getLightGray()
+        return TaskUIHelper.getMarinerBlue()
+    }
 
     Column {
         Row(
@@ -57,8 +68,10 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Bottone Logout
+
             Button(
+                modifier = Modifier
+                    .pointerHoverIcon(PointerIcon.Hand, true),
                 onClick = { onLogout() },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = TaskUIHelper.getRed(),
@@ -84,7 +97,7 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(TaskUIHelper.getMarinerBlue()) // blu "material-ish"
+                            .background(TaskUIHelper.getMarinerBlue())
                             .padding( start = 0.dp, top = 10.dp)
                     ) {
 
@@ -96,11 +109,11 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                             .clickable { }
                             .pointerHoverIcon(PointerIcon.Hand, true )
 
-                        Row(modifier = modifier) {DrawerItem("Home", { scope.launch { selectedPage = Screen.Home;onPageChange(Screen.Home) }}, Color.Black)}
+                        Row(modifier = modifier.background(getRowColor(Screen.Home))) {DrawerItem("My Tasks", { scope.launch { AppState.currentScreen = Screen.Home;onPageChange(Screen.Home) }}, Color.Black)}
                         Spacer(Modifier.height(10.dp))
-                        Row(modifier = modifier) {DrawerItem("Tasks", {scope.launch { selectedPage = Screen.TaskManagement; onPageChange(Screen.TaskManagement) }}, Color.Black)}
+                        Row(modifier = modifier.background(getRowColor(Screen.TaskManagement))) {DrawerItem("Tasks Management", {scope.launch { AppState.currentScreen = Screen.TaskManagement; onPageChange(Screen.TaskManagement) }}, Color.Black)}
                         Spacer(Modifier.height(10.dp))
-                        Row(modifier = modifier) {DrawerItem("Settings", {}, Color.Black)}
+                        Row(modifier = modifier.background(getRowColor(Screen.CompletedTask))) {DrawerItem("Completed Tasks", {scope.launch { AppState.currentScreen = Screen.CompletedTask; onPageChange(Screen.CompletedTask) }}, Color.Black)}
                     }
                 }
             }
@@ -118,8 +131,9 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                             .fillMaxWidth().padding(10.dp),
                         contentAlignment = Alignment.TopCenter
                     ) {
-                        if(selectedPage == Screen.Home) MainPage()
-                        if(selectedPage == Screen.TaskManagement) TaskManagementPage()
+                        if(AppState.currentScreen == Screen.Home) MainPage()
+                        if(AppState.currentScreen == Screen.TaskManagement) TaskManagementPage()
+                        if(AppState.currentScreen == Screen.CompletedTask) CompletedTaskPage()
                     }
                 }
             }
@@ -127,8 +141,6 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
     }
     }
 }
-
-
 
 @Composable
 fun DrawerItem(label: String, onClick: () -> Unit, color: Color) {
