@@ -1,6 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -83,10 +86,13 @@ fun CompletedTaskPage() {
         {
             Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 2.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.Top)
+                .padding(horizontal = 2.dp, vertical = 15.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.Center)
             {
-                Text("No tasks completed yet", modifier = Modifier.size(25.dp))
+                Text("No tasks completed yet", style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray,
+                    fontSize = 30.sp)
             }
         }
         if(tasks.isNotEmpty())
