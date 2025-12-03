@@ -6,3 +6,27 @@ docker login
 
 
 docker buildx build --platform linux/arm64 -t dothattask_be:latest --push .
+
+
+
+##### OPTIMIZED DEPLOY WITH CACHE -- TO TEST --- #################
+# Copia solo i file di configurazione prima
+#COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+#COPY gradle ./gradle
+
+# Scarica le dipendenze (questo layer viene cachato)
+#RUN gradle dependencies --no-daemon || true
+
+# Ora copia il resto del codice
+#COPY . .
+
+# Build finale
+#RUN gradle build --no-daemon -x test
+
+#FROM eclipse-temurin:21-jre-alpine
+#WORKDIR /home/gradle/project
+
+#COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
+
+#EXPOSE 8080
+#CMD ["java", "-jar", "app.jar"]
