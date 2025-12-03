@@ -21,7 +21,7 @@ fun createHttpClient() = HttpClient {
     defaultRequest {
         AuthState.token?.let { token -> header("Authorization", "Basic $token") }
         url{
-            protocol = URLProtocol.HTTPS
+            protocol = URLProtocol.HTTP
             host = "192.168.2.199"
             port = 10000
         }
