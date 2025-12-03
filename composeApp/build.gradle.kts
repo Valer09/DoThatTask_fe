@@ -30,6 +30,11 @@ kotlin {
     }
 
     jvm()
+    sourceSets {
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+    }
 
     js {
         browser()
@@ -129,6 +134,17 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "homeaq.dothattask.dothattask_fe.dothattask_fe"
             packageVersion = "1.0.0"
+            includeAllModules = true
+            windows {
+                perUserInstall = true
+                dirChooser = true
+                menuGroup = "DoThatTask"
+                upgradeUuid = "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+            }
+            modules("java.instrument", "java.management", "java.naming", "java.sql", "jdk.unsupported")
+        }
+        buildTypes.release.proguard {
+            isEnabled.set(false)
         }
     }
 }
