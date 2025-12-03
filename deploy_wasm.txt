@@ -1,4 +1,8 @@
 docker build -t dothattask_fe .
 docker buildx create --use
 docker tag dothattask_fe:latest dothattask_fe:latest
+
+docker login
+
+
 docker buildx build --platform linux/arm64 -t dothattask_be:latest --push .
