@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 
 
@@ -34,6 +35,7 @@ fun TaskCard(
     onDetails: (Task) -> Unit,
     hideDelete: Boolean = false,
     hideUpdate: Boolean = false,
+    onUnassign: (Task) -> Unit,
 ) {
 
     Card(
@@ -56,7 +58,7 @@ fun TaskCard(
                 color = Color.Black,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
             Row {
                 if(!hideDelete)
                 {
@@ -67,7 +69,7 @@ fun TaskCard(
                     {
                         Text("Delete")
                     }
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(10.dp))
                 }
                 if(!hideUpdate)
                 {
@@ -80,8 +82,8 @@ fun TaskCard(
                         Text("Update")
                     }
                 }
+                Spacer(Modifier.width(10.dp))
 
-                Spacer(Modifier.width(16.dp))
                 OutlinedButton(
                     modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGray()),
@@ -89,6 +91,19 @@ fun TaskCard(
                 )
                 {
                     Text("Details")
+                }
+
+                if(task.status == TaskStatus.ACTIVE)
+                {
+                    Spacer(Modifier.width(10.dp))
+                    OutlinedButton(
+                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getLightGray()),
+                        onClick = { onUnassign(task) }
+                    )
+                    {
+                        Text("<-X")
+                    }
                 }
             }
         }

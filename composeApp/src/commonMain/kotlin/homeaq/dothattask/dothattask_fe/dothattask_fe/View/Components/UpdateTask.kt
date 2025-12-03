@@ -164,7 +164,7 @@ fun UpdateTaskDialog(
 
                     Spacer(Modifier.height(10.dp))
 
-                    UserListDropdown("Assignee", task.ownership_username, {selectedUser = it}, {selectedUser = it})
+                    UserListDropdown("Assignee", task.ownership_username, {selectedUser = it}, {selectedUser = it},)
 
                     Spacer(Modifier.height(16.dp))
                     Row(

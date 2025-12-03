@@ -5,17 +5,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,12 +33,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -44,7 +50,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessag
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage(
 ) {
@@ -53,6 +59,10 @@ fun MainPage(
 
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
+
+    var category by remember { mutableStateOf(TaskCategory.Social) }
+    var categoryExpanded by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
 
     suspend fun loadAssignedTask() {
@@ -71,15 +81,15 @@ fun MainPage(
         }
     }
 
-    suspend fun pickTask(): Unit  {
+    suspend fun pickTask(category: TaskCategory): Unit  {
         try {
-            val result = taskApi.pickTask()
+            val result = taskApi.pickTask(category)
 
             if (result is ApiResult.Success) loadAssignedTask()
             else if (result is ApiResult.NotFound)
             {
                 toastIsError = false
-                toastMessage = "No assignable task for this user. Please assign tasks to the user"
+                toastMessage = "No assignable task in this category for this user. Please assign tasks to the user"
                 loadAssignedTask()
             }
             else if (result is ApiResult.Error)
@@ -182,12 +192,16 @@ fun MainPage(
                                 )}
 
                                 Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
-                                    Text(
-                                    text = "${assignedTask?.name}",
-                                    fontWeight = FontWeight.Normal,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 17.sp,
-                                )}
+                                    assignedTask?.category?.let {
+                                        Text(
+                                            text = "${assignedTask?.category}",
+                                            fontWeight = FontWeight.Normal,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontSize = 17.sp,
+                                            color = TaskUIHelper.pickColor(it)
+                                        )
+                                    }
+                                }
                             }
                             Row()
                             {
@@ -217,31 +231,77 @@ fun MainPage(
         {
             Row(modifier = Modifier.weight(0.35f).background(TaskUIHelper.getLightGray()).padding(20.dp))
             {
-                Column(modifier = Modifier.height(150.dp))
+                Column(modifier = Modifier.height(300.dp))
                 {
-                    Row(modifier = Modifier.fillMaxWidth().weight(0.2f), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center)
+                    Row(modifier = Modifier.fillMaxWidth().weight(0.3f), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center)
                     {
 
                         Text(
-                            text = "No task assigned",
+                            text = "No task assigned. Pick a task",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.Gray,
-                            fontSize = 30.sp
+                            fontSize = 25.sp
                         )
 
+                    }
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Row(modifier = Modifier.fillMaxWidth().weight(0.4f))
+                    {
+                        ExposedDropdownMenuBox(
+                            expanded = categoryExpanded,
+                            onExpandedChange = { categoryExpanded = !categoryExpanded },
+                            modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+
+                        ) {
+                            TextField(
+
+                                value = category.name,
+                                colors = TextFieldDefaults.colors(focusedTextColor = TaskUIHelper.pickColor(category), unfocusedTextColor = TaskUIHelper.Companion.pickColor(category)),
+                                onValueChange = {},
+                                label = { Text("Category", fontSize = 18.sp) },
+                                textStyle = TextStyle(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp
+                                ),
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                    .pointerHoverIcon(PointerIcon.Hand, true).height(60.dp)
+
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = categoryExpanded,
+                                onDismissRequest = { categoryExpanded = false },
+                                modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            ) {
+                                TaskCategory.entries.forEach { cat ->
+                                    DropdownMenuItem(
+                                        text = { Text(cat.name, fontWeight = FontWeight.Bold, color = TaskUIHelper.pickColor(cat)) },
+                                        onClick = {
+                                            category = cat
+                                            categoryExpanded = false
+                                        },
+                                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true).height(60.dp) ,
+                                    )
+                                }
+                            }
+                        }
                     }
                     Spacer(modifier = Modifier.height(25.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(0.2f),
-                        verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center
+                            .weight(0.3f),
+                        verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center
                     )
                     {
                         Button(
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).padding(horizontal = 16.dp),
                             onClick = {
-                                scope.launch { pickTask() }
+                                scope.launch { pickTask(category) }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getMarinerBlue()),
 

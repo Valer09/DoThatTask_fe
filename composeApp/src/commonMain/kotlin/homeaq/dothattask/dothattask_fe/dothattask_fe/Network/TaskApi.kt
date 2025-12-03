@@ -1,6 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
 
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskUpdate
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import io.ktor.client.HttpClient
@@ -103,17 +104,44 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun pickTask() :  ApiResult<Task>
+    suspend fun pickTask(category: TaskCategory):  ApiResult<Task>
     {
         return try
         {
             val response = httpClient.post("/api/tasks/pickTask")
             {
+                url{
+                    parameters.append("category", category.name)
+                }
                 contentType(ContentType.Application.Json)
             }
 
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
+                404 -> ApiResult.NotFound(response.body())
+                else -> ApiResult.Error(response.call.response.status.toString())
+            }
+        }
+        catch (e: Exception)
+        {
+            return ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    suspend fun unassignTask(task: Task):  ApiResult<Task>
+    {
+        return try
+        {
+            val response = httpClient.post("/api/tasks/unassign")
+            {
+                url{
+                    parameters.append("task_name", task.name)
+                }
+                contentType(ContentType.Application.Json)
+            }
+
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success(task)
                 404 -> ApiResult.NotFound(response.body())
                 else -> ApiResult.Error(response.call.response.status.toString())
             }

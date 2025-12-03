@@ -140,7 +140,8 @@ fun CompletedTaskPage() {
                                 onUpdate = { },
                                 onDetails = { currentDetailTask = task },
                                 hideDelete = true,
-                                hideUpdate = true
+                                hideUpdate = true,
+                                onUnassign = {}
                             )
                         }
                     }

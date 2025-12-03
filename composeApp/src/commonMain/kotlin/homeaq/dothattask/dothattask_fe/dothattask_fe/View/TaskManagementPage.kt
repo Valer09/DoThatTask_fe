@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
@@ -74,6 +75,32 @@ fun TaskManagementPage() {
         }
     }
 
+    suspend fun unAssignTask(task: Task)
+    {
+        if (selectedUser == null) return
+        try {
+            val result = taskApi.unassignTask(task)
+            if (result is ApiResult.Error) {
+                toastIsError = true
+                toastMessage = result.message
+            }
+            else if (result is ApiResult.Success)
+            {
+                toastMessage = result.message
+                toastIsError = false
+            }
+        }
+        catch (e: Exception)
+        {
+            errorMessage = "Error unassigning task: ${e.message}"
+            println("Error: ${e.message}")
+        }
+        finally
+        {
+            isLoading = false
+        }
+    }
+
     fun createTask()
     {
         if (selectedUser == null) return
@@ -114,7 +141,7 @@ fun TaskManagementPage() {
         ) {
             Column()
             {
-                Row{UserListDropdown("Select a user", null, {selectedUser = it}, {selectedUser = it})}
+                Row{UserListDropdown("Select a user", null, {selectedUser = it}, {selectedUser = it}, height = 60.dp, labelSize = 18.sp, fontSizea = 20.sp) }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 Row{Button(
                     onClick = { scope.launch { loadTasks() } },
@@ -203,7 +230,8 @@ fun TaskManagementPage() {
                                         }
                                     },
                                     onUpdate = { currentTaskToUpdate = task },
-                                    onDetails = { currentDetailTask = task }
+                                    onDetails = { currentDetailTask = task },
+                                    onUnassign = { scope.launch { unAssignTask(task); loadTasks() } }
                                 )
                             }
                         }
