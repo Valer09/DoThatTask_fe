@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  dothattast_fe:
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8443:80"
+    restart: always
