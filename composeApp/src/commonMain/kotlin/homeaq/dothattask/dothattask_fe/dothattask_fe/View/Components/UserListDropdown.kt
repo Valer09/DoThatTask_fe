@@ -35,12 +35,13 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 @Composable
 fun UserListDropdown(
     label: String,
+    isLoading: (Boolean) -> Unit,
     selectedUsername: String?,
     onUserSelected: (User) -> Unit,
     onLoad: (User) -> Unit,
     height: Dp = 60.dp,
-    labelSize: TextUnit = 10.sp,
-    fontSizea: TextUnit = 12.sp
+    labelSize: TextUnit = 11.sp,
+    fontSizea: TextUnit = 13.sp
 )
 {
     val taskApi = remember { TaskApi(createHttpClient()) }
@@ -49,6 +50,7 @@ fun UserListDropdown(
     var userDropdownExpanded by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
+    var loaded by remember { mutableStateOf(false) }
 
     suspend fun loadUsers() {
         try {
@@ -66,6 +68,11 @@ fun UserListDropdown(
             toastIsError = true
             toastMessage = "Failed to load users: ${e.message}"
         }
+        finally
+        {
+            isLoading(false)
+            loaded = true
+        }
     }
 
     Row(modifier = Modifier.fillMaxWidth())
@@ -73,6 +80,7 @@ fun UserListDropdown(
 
         LaunchedEffect(Unit)
         {
+            isLoading(true)
             loadUsers()
             selectedUser?.let { onLoad(it) }
         }
@@ -81,9 +89,9 @@ fun UserListDropdown(
             onExpandedChange = { userDropdownExpanded = !userDropdownExpanded },
             modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)) {
             TextField(
-                value = selectedUser?.name ?: "",
+                value = if(!loaded) "Loading. . ." else { selectedUser?.name ?: "" },
                 onValueChange = {},
-                label = {Text("Category", fontSize = labelSize) },
+                label = {Text("User", fontSize = labelSize) },
                 textStyle = TextStyle(
                     fontWeight = FontWeight.Bold,
                     fontSize = fontSizea

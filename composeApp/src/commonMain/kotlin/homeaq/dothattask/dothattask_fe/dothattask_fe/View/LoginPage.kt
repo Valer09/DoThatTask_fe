@@ -28,6 +28,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import kotlinx.coroutines.CoroutineScope
@@ -40,7 +41,10 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val taskApi = remember { TaskApi(createHttpClient()) }
-    val client = createHttpClient()
+
+    var loading by remember { mutableStateOf(false) }
+
+    LoadingOverlay(isLoading = loading)
 
     Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
 
@@ -68,10 +72,9 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
+                loading = true
                 try {
                     AuthState.setCredentials(username, password)
-
-
                     CoroutineScope(Dispatchers.Default).launch {
                         try {
                             val response = taskApi.getAllTasksDb()
@@ -101,8 +104,14 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                             errorMessage = "Login failed: ${e.message}"
                             AuthState.clear()
                         }
+                        finally
+                        {
+                            loading = false
+                        }
                     }
-                } catch (e: Exception) {
+                }
+                catch (e: Exception)
+                {
                     errorMessage = e.message
                 }
             },

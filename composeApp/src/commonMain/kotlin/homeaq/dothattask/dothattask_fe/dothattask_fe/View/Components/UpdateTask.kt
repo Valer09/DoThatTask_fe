@@ -2,12 +2,15 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +40,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
@@ -68,6 +72,8 @@ fun UpdateTaskDialog(
     val scope = rememberCoroutineScope()
 
     val taskApi = remember { TaskApi(createHttpClient()) }
+    var loading by remember { mutableStateOf(false) }
+    var isDropdownLoading by remember { mutableStateOf(true) }
 
     val colors = TextFieldDefaults.colors(
         focusedTextColor = Color.Blue,
@@ -75,153 +81,165 @@ fun UpdateTaskDialog(
         unfocusedContainerColor = TaskUIHelper.Companion.getGray(),
     )
 
-    Dialog(onDismissRequest = {}) {
-        Column()
-        {
-            toastMessage?.let {
-                ToastMessage(
-                    message = it,
-                    isError = toastIsError,
-                    onDismiss = { toastMessage = null }
-                )
-            }
+    Box(modifier = Modifier
+        .fillMaxSize().wrapContentSize(Alignment.Center)){
 
+        LoadingOverlay(isLoading = loading, Color.Transparent)
 
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(4.dp),
-                shape = RoundedCornerShape(CornerSize(4.dp))
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().background(TaskUIHelper.Companion.getMarinerBlue()).padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                )
-                {
-                    Text("Update ${task.name}", fontSize = 20.sp)
+        if(!loading || ! isDropdownLoading) {
+
+        Dialog(onDismissRequest = {}) {
+            Column()
+            {
+                toastMessage?.let {
+                    ToastMessage(
+                        message = it,
+                        isError = toastIsError,
+                        onDismiss = { toastMessage = null }
+                    )
                 }
 
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Spacer(Modifier.height(15.dp))
-                    TextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text("Name") },
-                        colors = colors,
-                        modifier = Modifier
-                            .fillMaxWidth()
+
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                    shape = RoundedCornerShape(CornerSize(4.dp))
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().background(TaskUIHelper.Companion.getMarinerBlue()).padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     )
-                    Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    {
+                        Text("Update ${task.name}", fontSize = 20.sp)
+                    }
 
-                        value = description,
-                        onValueChange = { description = it },
-                        label = { Text("Description") },
-                        colors = colors,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    ExposedDropdownMenuBox(
-                        expanded = categoryExpanded,
-                        onExpandedChange = { categoryExpanded = !categoryExpanded },
-                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-
-                    ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Spacer(Modifier.height(15.dp))
                         TextField(
-                            value = category.name,
-                            colors = TextFieldDefaults.colors(focusedTextColor = TaskUIHelper.Companion.pickColor(category), unfocusedTextColor = TaskUIHelper.Companion.pickColor(category)),
-                            onValueChange = {},
-                            label = { Text("Category") },
-                            textStyle = TextStyle( fontWeight = FontWeight.Bold),
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Name") },
+                            colors = colors,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                                .pointerHoverIcon(PointerIcon.Hand, true)
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        OutlinedTextField(
 
+                            value = description,
+                            onValueChange = { description = it },
+                            label = { Text("Description") },
+                            colors = colors,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp),
                         )
 
-                        ExposedDropdownMenu(
+                        Spacer(Modifier.height(10.dp))
+
+                        ExposedDropdownMenuBox(
                             expanded = categoryExpanded,
-                            onDismissRequest = { categoryExpanded = false },
-                            modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            onExpandedChange = { categoryExpanded = !categoryExpanded },
+                            modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+
                         ) {
-                            TaskCategory.entries.forEach { cat ->
-                                DropdownMenuItem(
-                                    text = { Text(cat.name, fontWeight = FontWeight.Bold, color = TaskUIHelper.Companion.pickColor(cat)) },
-                                    onClick = {
-                                        category = cat
-                                        categoryExpanded = false
-                                    },
-                                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                                )
+                            TextField(
+                                value = category.name,
+                                colors = TextFieldDefaults.colors(focusedTextColor = TaskUIHelper.Companion.pickColor(category), unfocusedTextColor = TaskUIHelper.Companion.pickColor(category)),
+                                onValueChange = {},
+                                label = { Text("Category") },
+                                textStyle = TextStyle( fontWeight = FontWeight.Bold),
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                    .pointerHoverIcon(PointerIcon.Hand, true)
+
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = categoryExpanded,
+                                onDismissRequest = { categoryExpanded = false },
+                                modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            ) {
+                                TaskCategory.entries.forEach { cat ->
+                                    DropdownMenuItem(
+                                        text = { Text(cat.name, fontWeight = FontWeight.Bold, color = TaskUIHelper.Companion.pickColor(cat)) },
+                                        onClick = {
+                                            category = cat
+                                            categoryExpanded = false
+                                        },
+                                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        UserListDropdown("Assignee", {isDropdownLoading = it}, task.ownership_username, {selectedUser = it}, {selectedUser = it},)
+
+                        Spacer(Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween)
+                        {
+
+                            OutlinedButton(
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGray()),
+                                onClick = {onDismiss()}
+                            )
+                            {
+                                Text("Close")
+                            }
+
+                            OutlinedButton(
+                                modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGreen()),
+                                onClick = {
+                                    loading = true
+                                    val newTask = Task(
+                                        name,
+                                        description,
+                                        try {
+                                            TaskCategory.valueOf(category.name)
+                                        } catch (e: IllegalArgumentException) {
+                                            TaskCategory.Social
+                                        },
+                                        TaskStatus.valueOf(taskStatus.name),
+                                        selectedUser?.username.toString()
+                                    )
+                                    scope.launch {
+                                        when (val result = taskApi.updateTask(task, newTask)) {
+                                            is ApiResult.Success -> {
+                                                toastIsError = false
+                                                toastMessage = "Completed"
+                                                onConfirm(result.data)
+                                            }
+                                            is ApiResult.Error -> {
+                                                toastIsError = true
+                                                toastMessage = result.message
+                                            }
+
+                                            else -> {}
+                                        }
+                                        loading = false
+                                    }
+
+                                    onConfirm(newTask)
+                                })
+                            {
+                                Text("Update")
                             }
                         }
                     }
 
-                    Spacer(Modifier.height(10.dp))
-
-                    UserListDropdown("Assignee", task.ownership_username, {selectedUser = it}, {selectedUser = it},)
-
-                    Spacer(Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween)
-                    {
-
-                        OutlinedButton(
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGray()),
-                            onClick = {onDismiss()}
-                        )
-                        {
-                            Text("Close")
-                        }
-
-                        OutlinedButton(
-                            modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.Companion.getGreen()),
-                            onClick = {
-                                val newTask = Task(
-                                    name,
-                                    description,
-                                    try {
-                                        TaskCategory.valueOf(category.name)
-                                    } catch (e: IllegalArgumentException) {
-                                        TaskCategory.Social
-                                    },
-                                    TaskStatus.valueOf(taskStatus.name),
-                                    selectedUser?.username.toString()
-                                )
-                                scope.launch {
-                                    when (val result = taskApi.updateTask(task, newTask)) {
-                                        is ApiResult.Success -> {
-                                            toastIsError = false
-                                            toastMessage = "Completed"
-                                            onConfirm(result.data)
-                                        }
-                                        is ApiResult.Error -> {
-                                            toastIsError = true
-                                            toastMessage = result.message
-                                        }
-
-                                        else -> {}
-                                    }
-                                }
-
-                                onConfirm(newTask)
-                            })
-                        {
-                            Text("Update")
-                        }
-                    }
                 }
-
             }
         }
+        }
     }
+
 }
 

@@ -2,6 +2,7 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 
 
@@ -65,7 +67,10 @@ fun MainPage(
 
     val scope = rememberCoroutineScope()
 
+    var loading by remember { mutableStateOf(false) }
+
     suspend fun loadAssignedTask() {
+        loading =  true
         try {
             val result = taskApi.getAssignedTask()
 
@@ -75,13 +80,19 @@ fun MainPage(
                 toastIsError = true
                 toastMessage = result.message
             }
-        } catch (e: Exception) {
+        }
+        catch (e: Exception)
+        {
             toastIsError = true
             toastMessage = "Failed to load users: ${e.message}"
+        }finally
+        {
+            loading =  false
         }
     }
 
     suspend fun pickTask(category: TaskCategory): Unit  {
+        loading =  true
         try {
             val result = taskApi.pickTask(category)
 
@@ -97,13 +108,20 @@ fun MainPage(
                 toastIsError = true
                 toastMessage = result.message
             }
-        } catch (e: Exception) {
+        }
+        catch (e: Exception)
+        {
             toastIsError = true
             toastMessage = "Failed to pick a task: ${e.message}"
+        }
+        finally
+        {
+            loading =  false
         }
     }
 
     suspend fun complete(): Unit  {
+        loading =  true
         try {
             val result = taskApi.completeTask(assignedTask)
 
@@ -113,9 +131,15 @@ fun MainPage(
                 toastIsError = true
                 toastMessage = result.message
             }
-        } catch (e: Exception) {
+        }
+        catch (e: Exception)
+        {
             toastIsError = true
             toastMessage = "Failed to complete the task: ${e.message}"
+        }
+        finally
+        {
+            loading =  false
         }
     }
 
@@ -123,7 +147,7 @@ fun MainPage(
     {
         loadAssignedTask()
     }
-
+Box{
     Column{
         toastMessage?.let {
             Row (modifier = Modifier
@@ -185,11 +209,11 @@ fun MainPage(
                             {
                                 Column(modifier = Modifier.weight(0.3f).padding(vertical = 8.dp)) {
                                     Text(
-                                    text = "Category: ",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 17.sp,
-                                )}
+                                        text = "Category: ",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 17.sp,
+                                    )}
 
                                 Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
                                     assignedTask?.category?.let {
@@ -207,19 +231,19 @@ fun MainPage(
                             {
                                 Column(modifier = Modifier.weight(0.3f).padding(vertical = 8.dp)) {
                                     Text(
-                                    text = "Description: ",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 17.sp,
-                                )}
+                                        text = "Description: ",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 17.sp,
+                                    )}
 
                                 Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
                                     Text(
-                                    text = assignedTask?.description ?: "N/A",
-                                    fontWeight = FontWeight.Normal,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 17.sp,
-                                )}
+                                        text = assignedTask?.description ?: "N/A",
+                                        fontWeight = FontWeight.Normal,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 17.sp,
+                                    )}
                             }
                         }
                     }
@@ -354,6 +378,10 @@ fun MainPage(
                 }
             }
         }
+    }
+
+    LoadingOverlay(isLoading = loading)
+
     }
 
 }

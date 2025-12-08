@@ -29,6 +29,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
@@ -38,14 +39,14 @@ fun CompletedTaskPage() {
 
     val taskApi = remember { TaskApi(createHttpClient()) }
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var currentDetailTask by remember { mutableStateOf<Task?>(null) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
-
+    var loading by remember { mutableStateOf(false) }
 
     suspend fun loadTasks() {
+        loading = true
         try {
             val result = taskApi.getCompleted()
             if (result is ApiResult.Error)
@@ -63,7 +64,7 @@ fun CompletedTaskPage() {
         }
         finally
         {
-            isLoading = false
+            loading = false
         }
     }
 
@@ -80,75 +81,70 @@ fun CompletedTaskPage() {
         )
     }
 
-    Column()
-    {
-        if(tasks.isEmpty())
+    Box{
+        Column()
         {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 2.dp, vertical = 15.dp),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.Center)
+            if(tasks.isEmpty())
             {
-                Text("No tasks completed yet", style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
-                    fontSize = 30.sp)
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 2.dp, vertical = 15.dp),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.Center)
+                {
+                    Text("No tasks completed yet", style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray,
+                        fontSize = 30.sp)
+                }
             }
-        }
-        if(tasks.isNotEmpty())
-        {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 2.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.Top)
+            if(tasks.isNotEmpty())
             {
-                toastMessage?.let {
-                    ToastMessage(
-                        message = it,
-                        isError = toastIsError,
-                        onDismiss = { toastMessage = null }
-                    )
-                }
-
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                else if (errorMessage != null) {
-                    Box(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = errorMessage!!,
-                            color = MaterialTheme.colorScheme.error
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 2.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.Top)
+                {
+                    toastMessage?.let {
+                        ToastMessage(
+                            message = it,
+                            isError = toastIsError,
+                            onDismiss = { toastMessage = null }
                         )
                     }
-                }
 
-                else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(tasks) { task ->
-                            TaskCard(
-                                task,
-                                onDelete = {},
-                                onUpdate = { },
-                                onDetails = { currentDetailTask = task },
-                                hideDelete = true,
-                                hideUpdate = true,
-                                onUnassign = {}
+                    if (errorMessage != null) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = errorMessage!!,
+                                color = MaterialTheme.colorScheme.error
                             )
                         }
                     }
-                }
 
+                    else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(tasks) { task ->
+                                TaskCard(
+                                    task,
+                                    onDelete = {},
+                                    onUpdate = { },
+                                    onDetails = { currentDetailTask = task },
+                                    hideDelete = true,
+                                    hideUpdate = true,
+                                    onUnassign = {}
+                                )
+                            }
+                        }
+                    }
+
+                }
             }
         }
+        LoadingOverlay(isLoading = loading)
     }
+
 
 }

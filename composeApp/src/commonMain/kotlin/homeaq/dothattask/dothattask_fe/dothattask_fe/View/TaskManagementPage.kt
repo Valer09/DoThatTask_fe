@@ -35,6 +35,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.CreateTaskDialog
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UpdateTaskDialog
@@ -47,7 +48,6 @@ fun TaskManagementPage() {
 
     val taskApi = remember { TaskApi(createHttpClient()) }
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     var currentTaskToUpdate by remember { mutableStateOf<Task?>(null) }
@@ -56,8 +56,13 @@ fun TaskManagementPage() {
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf<User?>(null) }
+    var loading by remember { mutableStateOf(false) }
+
+    var isDropdownLoading by remember { mutableStateOf(true) }
+
 
     suspend fun loadTasks() {
+        loading = true
         if (selectedUser == null) return
         try {
             val result = taskApi.getAllTasksLessMine(selectedUser!!.username)
@@ -70,13 +75,16 @@ fun TaskManagementPage() {
         } catch (e: Exception) {
             errorMessage = "Error loading tasks: ${e.message}"
             println("Error: ${e.message}") // Log per debug
-        } finally {
-            isLoading = false
+        }
+        finally
+        {
+            loading = false
         }
     }
 
     suspend fun unAssignTask(task: Task)
     {
+        loading = true
         if (selectedUser == null) return
         try {
             val result = taskApi.unassignTask(task)
@@ -97,7 +105,7 @@ fun TaskManagementPage() {
         }
         finally
         {
-            isLoading = false
+            loading = false
         }
     }
 
@@ -131,7 +139,7 @@ fun TaskManagementPage() {
             onDismiss = { currentDetailTask = null }
         )
     }
-
+Box{
     Column()
     {
         Row(
@@ -141,7 +149,7 @@ fun TaskManagementPage() {
         ) {
             Column()
             {
-                Row{UserListDropdown("Select a user", null, {selectedUser = it}, {selectedUser = it}, height = 60.dp, labelSize = 18.sp, fontSizea = 20.sp) }
+                Row{UserListDropdown("Select a user", {isDropdownLoading = it},null, {selectedUser = it}, {selectedUser = it}, height = 60.dp, labelSize = 15.sp, fontSizea = 20.sp) }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 Row{Button(
                     onClick = { scope.launch { loadTasks() } },
@@ -168,77 +176,71 @@ fun TaskManagementPage() {
         if(tasks.isNotEmpty())
         {
             Row(modifier = Modifier
-                    .fillMaxWidth()
+                .fillMaxWidth()
                 .padding(horizontal = 2.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.Top)
             {
 
-                
-                    toastMessage?.let {
-                        ToastMessage(
-                            message = it,
-                            isError = toastIsError,
-                            onDismiss = { toastMessage = null }
+
+                toastMessage?.let {
+                    ToastMessage(
+                        message = it,
+                        isError = toastIsError,
+                        onDismiss = { toastMessage = null }
+                    )
+                }
+
+                if (errorMessage != null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        contentAlignment = androidx.compose.ui.Alignment.Center
+                    ) {
+                        Text(
+                            text = errorMessage!!,
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
+                }
 
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                    // Mostra errore
-                    else if (errorMessage != null) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().padding(16.dp),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            Text(
-                                text = errorMessage!!,
-                                color = MaterialTheme.colorScheme.error
+                else {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(tasks) { task ->
+                            TaskCard(
+                                task,
+                                onDelete = {
+                                    scope.launch {
+                                        loading = true
+                                        when (val result = taskApi.removeTask(it)) {
+                                            is ApiResult.Success -> {
+                                                toastIsError = false
+                                                toastMessage = result.message
+                                                loadTasks()
+                                            }
+
+                                            is ApiResult.Error -> {
+                                                toastIsError = true
+                                                toastMessage = result.message
+                                            }
+
+                                            is ApiResult.NotFound -> {
+                                                toastIsError = true
+                                                toastMessage = result.message
+                                            }
+                                        }
+                                    }
+                                },
+                                onUpdate = { currentTaskToUpdate = task },
+                                onDetails = { currentDetailTask = task },
+                                onUnassign = { scope.launch {         loading = true; unAssignTask(task); loadTasks() } }
                             )
                         }
                     }
-
-                    else {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(tasks) { task ->
-                                TaskCard(
-                                    task,
-                                    onDelete = {
-                                        scope.launch {
-                                            when (val result = taskApi.removeTask(it)) {
-                                                is ApiResult.Success -> {
-                                                    toastIsError = false
-                                                    toastMessage = result.message
-                                                    loadTasks()
-                                                }
-
-                                                is ApiResult.Error -> {
-                                                    toastIsError = true
-                                                    toastMessage = result.message
-                                                }
-
-                                                is ApiResult.NotFound -> {
-                                                    toastIsError = true
-                                                    toastMessage = result.message
-                                                }
-                                            }
-                                        }
-                                    },
-                                    onUpdate = { currentTaskToUpdate = task },
-                                    onDetails = { currentDetailTask = task },
-                                    onUnassign = { scope.launch { unAssignTask(task); loadTasks() } }
-                                )
-                            }
-                        }
-                    }
+                }
 
             }
         }
     }
+    LoadingOverlay(isLoading = loading || isDropdownLoading)
+}
 
 }
