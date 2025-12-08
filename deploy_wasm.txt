@@ -5,6 +5,7 @@ docker tag dothattask_fe:latest vale09/dothattask_fe:latest
 docker login
 
 
+docker buildx build --platform linux/arm64 -t vale09/dothattask_be:latest --push .
 
 
 
