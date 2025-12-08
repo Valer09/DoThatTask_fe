@@ -195,7 +195,7 @@ fun MainPage(
                                     assignedTask?.category?.let {
                                         Text(
                                             text = "${assignedTask?.category}",
-                                            fontWeight = FontWeight.Normal,
+                                            fontWeight = FontWeight.Bold,
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontSize = 17.sp,
                                             color = TaskUIHelper.pickColor(it)

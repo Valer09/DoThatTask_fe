@@ -2,10 +2,10 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.Model
 
 import kotlinx.serialization.Serializable
 
-enum class TaskStatus {
-    TODO,
-    ACTIVE,
-    COMPLETED,
+enum class TaskStatus(val code: Int) {
+    TODO(1),
+    ACTIVE(2),
+    COMPLETED(3)
 }
 
 enum class TaskCategory(val code: Int)
