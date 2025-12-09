@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusProperties
@@ -30,6 +31,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     var usernameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    val focusManager = LocalFocusManager.current
 
     fun validateUsername(): Boolean {
         usernameError = when {
@@ -119,11 +122,10 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = passwordError != null,
             supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth().focusRequester(passwordFocusRequester)
-                .focusProperties {
-                    next = loginButtonFocusRequester
-                }.onPreviewKeyEvent { event ->
-                    if (event.key == Key.Tab) {
+            modifier = Modifier.fillMaxWidth()
+                .focusRequester(passwordFocusRequester)
+                .onPreviewKeyEvent { event ->
+                    if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
                         loginButtonFocusRequester.requestFocus()
                         true
                     } else false
