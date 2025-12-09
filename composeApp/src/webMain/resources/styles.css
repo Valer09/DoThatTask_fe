@@ -1,9 +1,80 @@
 html, body {
-    width: 65%;
-    height: 100%;
-    margin: auto;
+    height: 100vh;
+    width: 98vw;
+    margin: 0;
     padding: 0;
-    overflow: hidden;
     background-color: gray;
+    display: flex;
+    justify-content: center;
+}
 
+body {
+    max-width: 65%;
+}
+
+body > * {
+    width: 98%;
+    max-width: 98%;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    display: block;
+}
+
+@media (max-width: 3840px) {
+    body {
+        max-width: 55%;
+    }
+}
+
+/* QHD/2K (2560px) */
+@media (max-width: 2560px) {
+    body {
+        max-width: 60%;
+    }
+}
+
+/* Full HD (1920px) */
+@media (max-width: 1920px) {
+    body {
+        max-width: 65%;
+    }
+}
+
+/* HD+ (1600px) */
+@media (max-width: 1600px) {
+    body {
+        max-width: 70%;
+    }
+}
+
+/* HD (1366px - laptop standard) */
+@media (max-width: 1366px) {
+    body {
+        max-width: 80%;
+    }
+}
+
+/* Tablet landscape (1024px) */
+@media (max-width: 1024px) {
+    body {
+        max-width: 90%;
+    }
+}
+
+/* Tablet portrait / Mobile landscape (768px) */
+@media (max-width: 768px) {
+    body {
+        max-width: 95%;
+    }
+}
+
+/* Mobile portrait (480px) */
+@media (max-width: 480px) {
+    body {
+        max-width: 100%;
+    }
 }

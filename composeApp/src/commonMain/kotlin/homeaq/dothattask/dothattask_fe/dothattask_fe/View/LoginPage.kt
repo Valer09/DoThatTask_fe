@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusOrder
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +54,31 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     val taskApi = remember { TaskApi(createHttpClient()) }
 
     var loading by remember { mutableStateOf(false) }
+    val usernameFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+    val loginButtonFocusRequester = remember { FocusRequester() }
+
+    var usernameError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    fun validateUsername(): Boolean {
+        usernameError = when {
+            username.isBlank() -> "Username cannot be empty"
+            username.length < 3 -> "Username must be at least 3 characters"
+            username.length > 50 -> "Username too long"
+            !username.matches(Regex("^[a-zA-Z0-9_]+$")) -> "Only letters, numbers and underscore allowed"
+            else -> null
+        }
+        return usernameError == null
+    }
+    fun validatePassword(): Boolean {
+        passwordError = when {
+            password.isBlank() -> "Password cannot be empty"
+            //password.length < 8 -> "Password must be at least 8 characters"
+            else -> null
+        }
+        return passwordError == null
+    }
 
     LoadingOverlay(isLoading = loading)
 
@@ -55,67 +91,101 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange =
+                {
+                    username = it
+                    if (usernameError != null) validateUsername()
+                },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth()
+                .focusRequester(usernameFocusRequester).focusRequester(usernameFocusRequester)
+                .focusProperties {
+                    next = passwordFocusRequester
+                },
+            supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+            isError = usernameError != null,
+            singleLine = true
         )
 
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange =
+                {
+                    password = it
+                    if (passwordError != null) validatePassword()
+                },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            isError = passwordError != null,
+            supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+            modifier = Modifier.fillMaxWidth().focusRequester(passwordFocusRequester)
+                .focusProperties {
+                    next = loginButtonFocusRequester
+                }.onPreviewKeyEvent { event ->
+                    if (event.key == Key.Tab) {
+                        loginButtonFocusRequester.requestFocus()
+                        true
+                    } else false
+                }
         )
 
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
-                loading = true
-                try {
-                    AuthState.setCredentials(username, password)
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            val response = taskApi.getAllTasksDb()
+                val isUsernameValid = validateUsername()
+                val isPasswordValid = validatePassword()
+                if(isUsernameValid && isPasswordValid)
+                {
+                    loading = true
+                    try {
+                        AuthState.setCredentials(username, password)
+                        CoroutineScope(Dispatchers.Default).launch {
+                            try {
+                                val response = taskApi.getAllTasksDb()
 
-                            if(response is ApiResult.Success)
-                            {
-                                errorMessage = null
-                                AppState.currentScreen = Screen.Home
-                                onLoginSuccess()
+                                if(response is ApiResult.Success)
+                                {
+                                    errorMessage = null
+                                    AppState.currentScreen = Screen.Home
+                                    onLoginSuccess()
+                                }
+                                else if(response is ApiResult.Error)
+                                {
+                                    println(response.message)
+                                    errorMessage = "Login failed"
+                                    AuthState.clear()
+                                }
+                                else if(response is ApiResult.NotFound)
+                                {
+                                    println(response.message)
+                                    errorMessage = "Login failed"
+                                    AuthState.clear()
+                                }
                             }
-                            else if(response is ApiResult.Error)
+                            catch (e: Exception)
                             {
-                                println(response.message)
-                                errorMessage = "Login failed"
+                                println(e.message)
+                                errorMessage = "Login failed: ${e.message}"
                                 AuthState.clear()
                             }
-                            else if(response is ApiResult.NotFound)
+                            finally
                             {
-                                println(response.message)
-                                errorMessage = "Login failed"
-                                AuthState.clear()
+                                loading = false
                             }
-                        }
-                        catch (e: Exception)
-                        {
-                            println(e.message)
-                            errorMessage = "Login failed: ${e.message}"
-                            AuthState.clear()
-                        }
-                        finally
-                        {
-                            loading = false
                         }
                     }
-                }
-                catch (e: Exception)
-                {
-                    errorMessage = e.message
+                    catch (e: Exception)
+                    {
+                        errorMessage = e.message
+                    }
                 }
             },
-            modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true)
+            modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusRequester(loginButtonFocusRequester)
+                .focusable()
+                .focusProperties {
+                    next = usernameFocusRequester
+                }
         ) {
             Text("Login")
         }
