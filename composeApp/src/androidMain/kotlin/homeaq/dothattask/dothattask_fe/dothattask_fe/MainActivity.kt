@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
             .build()
 
         val request =
-            PeriodicWorkRequestBuilder<DailyNotificationWorker>(15, TimeUnit.MINUTES)
+            PeriodicWorkRequestBuilder<DailyNotificationWorker>(1, TimeUnit.DAYS)
                 .setConstraints(constraints)
                 .build()
 
