@@ -27,5 +27,27 @@ fun createHttpClient() = HttpClient {
         }
 
     }
+
+}
+
+fun createHttpClient(token : String?) = HttpClient {
+    install(ContentNegotiation) {
+        json(Json {
+            encodeDefaults = true
+            isLenient = true
+            coerceInputValues = true
+            ignoreUnknownKeys = true
+        })
+    }
+    defaultRequest {
+        token?.let { token -> header("Authorization", "Basic $token") }
+        url{
+            protocol = URLProtocol.HTTPS
+            host = "raspi.tail0458e4.ts.net"
+            port = 443
+        }
+
+    }
+
 }
 

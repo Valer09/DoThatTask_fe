@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.org.apache.commons.compress.harmony.pack200.PackingUtils.config
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -53,6 +54,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.ktor.client.android)
+            implementation(libs.androidx.work.runtime.ktx.v290)
+            implementation(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -99,21 +102,36 @@ android {
     namespace = "homeaq.dothattask.dothattask_fe.dothattask_fe"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+
     defaultConfig {
         applicationId = "homeaq.dothattask.dothattask_fe.dothattask_fe"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 2
-        versionName = "1.0.1"
+        versionName = "1.0.2"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    signingConfigs {
+        create("release_debug") {   // <<< usa create() invece di "release { ... }"
+            storeFile = file(property("RELEASE_STORE_FILE") as String)
+            storePassword = property("RELEASE_STORE_PASSWORD") as String
+            keyAlias = property("RELEASE_KEY_ALIAS") as String
+            keyPassword = property("RELEASE_KEY_PASSWORD") as String
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release_debug")
+            isDebuggable = true
+            isJniDebuggable = true
+
         }
     }
     compileOptions {
@@ -133,7 +151,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Do That Task"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
             includeAllModules = true
             windows {
                 iconFile.set(File("logo/icon.ico"))

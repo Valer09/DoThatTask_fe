@@ -20,12 +20,17 @@ kotlinxSerializationJson = "1.9.0"
 ktor = "3.3.2"
 
 materialIconsExtended = "1.7.8"
+securityCrypto = "1.1.0"
 toast = "0.3.8"
+workRuntimeKtx = "2.11.0"
+workRuntimeKtxVersion = "2.9.0"
 
 
 [libraries]
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+androidx-work-runtime-ktx-v290 = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtxVersion" }
 cmptoast = { module = "network.chaintech:cmptoast" }
 dokar3-sonner = { module = "io.github.dokar3:sonner" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -54,6 +59,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 
 
 sonner = { module = "io.github.dokar3:sonner", version.ref = "toast" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 
 

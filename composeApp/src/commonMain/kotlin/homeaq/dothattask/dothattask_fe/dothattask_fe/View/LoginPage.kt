@@ -17,21 +17,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.contentType
+
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -39,11 +39,10 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
-import io.ktor.client.request.get
-import io.ktor.client.request.header
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,10 +103,11 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 .focusRequester(usernameFocusRequester).focusRequester(usernameFocusRequester)
                 .focusProperties {
                     next = passwordFocusRequester
-                },
+                }.semantics { contentType = ContentType.Username },
             supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
             isError = usernameError != null,
-            singleLine = true
+            singleLine = true,
+
         )
 
         Spacer(Modifier.height(8.dp))
@@ -129,7 +129,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         loginButtonFocusRequester.requestFocus()
                         true
                     } else false
-                }
+                }.semantics { contentType = ContentType.Password }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -144,7 +144,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         AuthState.setCredentials(username, password)
                         CoroutineScope(Dispatchers.Default).launch {
                             try {
-                                val response = taskApi.getAllTasksDb()
+                                val response = taskApi.checkLogin()
 
                                 if(response is ApiResult.Success)
                                 {

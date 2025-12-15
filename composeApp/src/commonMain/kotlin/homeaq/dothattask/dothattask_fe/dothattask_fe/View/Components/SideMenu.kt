@@ -32,9 +32,6 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var isHovered by remember { mutableStateOf(false) }
 
-
-
-
     fun getRowColor(page : Screen) : Color
     {
         if(AppState.currentScreen == page) return TaskUIHelper.getLightGray()
@@ -98,7 +95,7 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                         modifier = Modifier
                             .fillMaxSize()
                             .background(TaskUIHelper.getMarinerBlue())
-                            .padding( start = 0.dp, top = 10.dp)
+                            .padding( start = 0.dp)
                     ) {
 
                         Text("Menu", fontSize = 20.sp, color = Color.White, modifier = Modifier.padding(start = 10.dp, bottom = 16.dp))
