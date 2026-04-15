@@ -22,3 +22,4 @@ gradle.properties.local
 /composeApp/keystore.jks
 /composeApp/release/composeApp-release.apk
 /composeApp/release/output-metadata.json
+gradle.properties
