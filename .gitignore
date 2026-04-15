@@ -17,7 +17,8 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
-gradle.properties
+# gradle.properties is committed with base config, but exclude local overrides with signing credentials
+gradle.properties.local
 /composeApp/keystore.jks
 /composeApp/release/composeApp-release.apk
 /composeApp/release/output-metadata.json
