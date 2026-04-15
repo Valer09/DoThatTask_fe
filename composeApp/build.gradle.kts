@@ -132,7 +132,9 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release_debug")
+            if(hasProperty("RELEASE_STORE_FILE")) {
+                signingConfig = signingConfigs.getByName("release_debug")
+            }
             isDebuggable = true
             isJniDebuggable = true
 
