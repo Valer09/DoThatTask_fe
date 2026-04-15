@@ -116,6 +116,7 @@ android {
         }
     }
 
+    //this is to sign the Android APK
     signingConfigs {
         create("release_debug") {   // <<< usa create() invece di "release { ... }"
             storeFile = file(property("RELEASE_STORE_FILE") as String)
