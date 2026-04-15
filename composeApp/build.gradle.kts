@@ -118,11 +118,14 @@ android {
 
     //this is to sign the Android APK
     signingConfigs {
-        create("release_debug") {   // <<< usa create() invece di "release { ... }"
-            storeFile = file(property("RELEASE_STORE_FILE") as String)
-            storePassword = property("RELEASE_STORE_PASSWORD") as String
-            keyAlias = property("RELEASE_KEY_ALIAS") as String
-            keyPassword = property("RELEASE_KEY_PASSWORD") as String
+        if(hasProperty("RELEASE_STORE_FILE"))
+        {
+            create("release_debug") {   // <<< usa create() invece di "release { ... }"
+                storeFile = file(property("RELEASE_STORE_FILE") as String)
+                storePassword = property("RELEASE_STORE_PASSWORD") as String
+                keyAlias = property("RELEASE_KEY_ALIAS") as String
+                keyPassword = property("RELEASE_KEY_PASSWORD") as String
+            }
         }
     }
 
