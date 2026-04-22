@@ -22,7 +22,11 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.ChangePasswordPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.CompletedTaskPage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.GroupHomePage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.IncomingInvitesPage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.InviteMemberPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.MainPage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.NoGroupPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskManagementPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
@@ -144,6 +148,27 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                                 }, Color.Black)
                             }
                             Spacer(Modifier.height(10.dp))
+                            Row(modifier = rowMod.background(getRowColor(Screen.GroupHome))) {
+                                DrawerItem("Group", {
+                                    scope.launch {
+                                        val target = if (AuthState.groupId != null) Screen.GroupHome else Screen.NoGroup
+                                        AppState.currentScreen = target
+                                        onPageChange(target)
+                                        drawerState.close()
+                                    }
+                                }, Color.Black)
+                            }
+                            Spacer(Modifier.height(10.dp))
+                            Row(modifier = rowMod.background(getRowColor(Screen.IncomingInvites))) {
+                                DrawerItem("Invites", {
+                                    scope.launch {
+                                        AppState.currentScreen = Screen.IncomingInvites
+                                        onPageChange(Screen.IncomingInvites)
+                                        drawerState.close()
+                                    }
+                                }, Color.Black)
+                            }
+                            Spacer(Modifier.height(10.dp))
                             Row(modifier = rowMod.background(getRowColor(Screen.ChangePassword))) {
                                 DrawerItem("Change password", {
                                     scope.launch {
@@ -171,6 +196,10 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                                     onBack = { AppState.currentScreen = Screen.Home },
                                     onPasswordChanged = { AppState.currentScreen = Screen.Home },
                                 )
+                                Screen.NoGroup -> NoGroupPage()
+                                Screen.GroupHome -> GroupHomePage()
+                                Screen.IncomingInvites -> IncomingInvitesPage()
+                                Screen.InviteMember -> InviteMemberPage()
                                 else -> MainPage()
                             }
                         }

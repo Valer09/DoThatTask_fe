@@ -42,7 +42,8 @@ fun App() {
             }))
             val response = api.checkLogin()
             if (response is ApiResult.Success) {
-                AppState.currentScreen = Screen.Home
+                AppState.currentScreen =
+                    if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
                 true
             } else {
                 AuthState.clear()
@@ -69,13 +70,15 @@ fun App() {
             when (AppState.currentScreen) {
                 Screen.Register -> RegisterPage(
                     onRegisterSuccess = {
-                        AppState.currentScreen = Screen.Home
+                        AppState.currentScreen =
+                            if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
                         isLogged = true
                     },
                 )
                 else -> LoginPage(
                     onLoginSuccess = {
-                        AppState.currentScreen = Screen.Home
+                        AppState.currentScreen =
+                            if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
                         isLogged = true
                     },
                 )

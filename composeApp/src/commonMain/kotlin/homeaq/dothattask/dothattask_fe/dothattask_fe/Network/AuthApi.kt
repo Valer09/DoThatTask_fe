@@ -5,6 +5,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.AuthTokens
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.ChangePasswordRequest
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.LoginRequest
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.LogoutRequest
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.RefreshRequest
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.RegisterRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -77,6 +78,35 @@ class AuthApi(
         // Even if the server is unreachable, drop local state so the user
         // sees a "logged out" UI.
         AuthState.clear()
+        ApiResult.Error(e.message ?: "Network error")
+    }
+
+    /**
+     * Force a refresh of the access token. Useful after a state change on the
+     * server that affects JWT claims (e.g. the user accepted a group invite
+     * and the claim `gid` needs to be updated without waiting for natural
+     * access-token expiry).
+     */
+    suspend fun refresh(): ApiResult<AuthTokens> = try {
+        val refresh = AuthState.refreshToken
+            ?: return ApiResult.Error("No refresh token present")
+        val resp = unauthenticated.post("/api/auth/refresh") {
+            contentType(ContentType.Application.Json)
+            setBody(RefreshRequest(refresh))
+        }
+        when (resp.status.value) {
+            in 200..299 -> {
+                val tokens: AuthTokens = resp.body()
+                applyTokens(tokens)
+                ApiResult.Success(tokens)
+            }
+            401 -> {
+                AuthState.clear()
+                ApiResult.Error("Session expired")
+            }
+            else -> ApiResult.Error("Refresh failed (${resp.status.value})")
+        }
+    } catch (e: Exception) {
         ApiResult.Error(e.message ?: "Network error")
     }
 
