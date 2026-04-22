@@ -15,7 +15,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.SideMenu
@@ -31,49 +30,72 @@ fun App() {
     var isLogged by remember { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(Unit) {
-        val username = AuthProvider.getUsername()
-        val token = AuthProvider.getToken()
-
-        isLogged = if (username != null && token != null) {
-            val taskApi = TaskApi(createHttpClient(token))
-            val response = taskApi.checkLogin()
+        // Pull persisted tokens into memory (if any), then try to validate
+        // the session by hitting /api/user/me with the bearer client. If the
+        // access token is expired, the Auth plugin will transparently call
+        // /api/auth/refresh.
+        AuthState.loadFromStorage()
+        isLogged = if (AuthState.accessToken != null) {
+            val api = TaskApi(createHttpClient(onRefreshFailed = {
+                AuthState.clear()
+                AppState.currentScreen = Screen.Login
+            }))
+            val response = api.checkLogin()
             if (response is ApiResult.Success) {
-                AuthState.username = username
-                AuthState.token = token
+                AppState.currentScreen = Screen.Home
                 true
-            } else false
-        } else false
+            } else {
+                AuthState.clear()
+                AppState.currentScreen = Screen.Login
+                false
+            }
+        } else {
+            AppState.currentScreen = Screen.Login
+            false
+        }
     }
 
     when (isLogged) {
         null -> {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
         }
 
         false -> {
-            LoginPage(
-                onLoginSuccess = {
-                    AppState.currentScreen = Screen.Home
-                    isLogged = true
-                    AuthProvider.saveUsername(AuthState.username.toString())
-                    AuthProvider.saveToken(AuthState.token.toString())
-                }
-            )
+            when (AppState.currentScreen) {
+                Screen.Register -> RegisterPage(
+                    onRegisterSuccess = {
+                        AppState.currentScreen = Screen.Home
+                        isLogged = true
+                    },
+                )
+                else -> LoginPage(
+                    onLoginSuccess = {
+                        AppState.currentScreen = Screen.Home
+                        isLogged = true
+                    },
+                )
+            }
         }
+
         true -> {
-            AppState.currentScreen = Screen.Home
-            Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(), verticalAlignment = Alignment.Top)
-            {
-                SideMenu({AuthState.clear(); isLogged = false; AuthProvider.cleanToken()}, {AppState.currentScreen = it})
+            Row(
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                verticalAlignment = Alignment.Top,
+            ) {
+                SideMenu(
+                    onLogout = {
+                        AuthState.clear()
+                        AppState.currentScreen = Screen.Login
+                        isLogged = false
+                    },
+                    onPageChange = { AppState.currentScreen = it },
+                )
             }
         }
     }
 }
-

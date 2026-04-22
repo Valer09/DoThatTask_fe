@@ -6,10 +6,17 @@ import androidx.compose.runtime.setValue
 
 enum class Screen {
     Login,
+    Register,
+    ChangePassword,
+
+    NoGroup,
+    GroupHome,
+    IncomingInvites,
+    InviteMember,
+
     Home,
     TaskManagement,
-
-    CompletedTask
+    CompletedTask,
 }
 
 object AppState {

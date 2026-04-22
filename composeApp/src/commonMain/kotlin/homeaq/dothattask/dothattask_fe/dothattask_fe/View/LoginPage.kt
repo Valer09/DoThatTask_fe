@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +31,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentType
-
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,9 +39,9 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +52,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val taskApi = remember { TaskApi(createHttpClient()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
 
     var loading by remember { mutableStateOf(false) }
     val usernameFocusRequester = remember { FocusRequester() }
@@ -76,7 +76,6 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     fun validatePassword(): Boolean {
         passwordError = when {
             password.isBlank() -> "Password cannot be empty"
-            //password.length < 8 -> "Password must be at least 8 characters"
             else -> null
         }
         return passwordError == null
@@ -86,38 +85,38 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
 
-
-        Text("Welcome in DO THAT TASK!", style = MaterialTheme.typography.headlineMedium, color = TaskUIHelper.getMarinerBlue(), fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally))
+        Text(
+            "Welcome in DO THAT TASK!",
+            style = MaterialTheme.typography.headlineMedium,
+            color = TaskUIHelper.getMarinerBlue(),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
 
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = username,
-            onValueChange =
-                {
-                    username = it
-                    if (usernameError != null) validateUsername()
-                },
+            onValueChange = {
+                username = it
+                if (usernameError != null) validateUsername()
+            },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth()
-                .focusRequester(usernameFocusRequester).focusRequester(usernameFocusRequester)
-                .focusProperties {
-                    next = passwordFocusRequester
-                }.semantics { contentType = ContentType.Username },
+                .focusRequester(usernameFocusRequester)
+                .focusProperties { next = passwordFocusRequester }
+                .semantics { contentType = ContentType.Username },
             supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
             isError = usernameError != null,
             singleLine = true,
-
         )
 
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
-            onValueChange =
-                {
-                    password = it
-                    if (passwordError != null) validatePassword()
-                },
+            onValueChange = {
+                password = it
+                if (passwordError != null) validatePassword()
+            },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = passwordError != null,
@@ -129,7 +128,8 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         loginButtonFocusRequester.requestFocus()
                         true
                     } else false
-                }.semantics { contentType = ContentType.Password }
+                }
+                .semantics { contentType = ContentType.Password },
         )
 
         Spacer(Modifier.height(16.dp))
@@ -137,57 +137,38 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
             onClick = {
                 val isUsernameValid = validateUsername()
                 val isPasswordValid = validatePassword()
-                if(isUsernameValid && isPasswordValid)
-                {
+                if (isUsernameValid && isPasswordValid) {
                     loading = true
-                    try {
-                        AuthState.setCredentials(username, password)
-                        CoroutineScope(Dispatchers.Default).launch {
-                            try {
-                                val response = taskApi.checkLogin()
-
-                                if(response is ApiResult.Success)
-                                {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        try {
+                            when (val response = authApi.login(username.trim(), password)) {
+                                is ApiResult.Success -> {
                                     errorMessage = null
-                                    AppState.currentScreen = Screen.Home
                                     onLoginSuccess()
                                 }
-                                else if(response is ApiResult.Error)
-                                {
-                                    println(response.message)
-                                    errorMessage = "Login failed"
+                                is ApiResult.Error -> {
+                                    errorMessage = response.message
                                     AuthState.clear()
                                 }
-                                else if(response is ApiResult.NotFound)
-                                {
-                                    println(response.message)
-                                    errorMessage = "Login failed"
+                                is ApiResult.NotFound -> {
+                                    errorMessage = "Login endpoint unavailable"
                                     AuthState.clear()
                                 }
                             }
-                            catch (e: Exception)
-                            {
-                                println(e.message)
-                                errorMessage = "Login failed: ${e.message}"
-                                AuthState.clear()
-                            }
-                            finally
-                            {
-                                loading = false
-                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Login failed: ${e.message}"
+                            AuthState.clear()
+                        } finally {
+                            loading = false
                         }
-                    }
-                    catch (e: Exception)
-                    {
-                        errorMessage = e.message
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusRequester(loginButtonFocusRequester)
+            modifier = Modifier.fillMaxWidth()
+                .pointerHoverIcon(PointerIcon.Hand, true)
+                .focusRequester(loginButtonFocusRequester)
                 .focusable()
-                .focusProperties {
-                    next = usernameFocusRequester
-                }
+                .focusProperties { next = usernameFocusRequester },
         ) {
             Text("Login")
         }
@@ -196,5 +177,15 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(it, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Don't have an account? Register",
+            color = TaskUIHelper.getMarinerBlue(),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .pointerHoverIcon(PointerIcon.Hand, true)
+                .clickable { AppState.currentScreen = Screen.Register },
+        )
     }
 }
