@@ -21,8 +21,14 @@ class TaskApi(private val httpClient: HttpClient) {
         {
             val response = httpClient.delete("api/tasks/${task.name}")
 
-            if (response.status.value in 200..299) ApiResult.Success("Task deleted successfully")
-            else return ApiResult.Error(response.call.response.status.toString())
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success("Task deleted successfully")
+                403 -> ApiResult.Error(
+                    runCatching { response.body<String>() }.getOrNull()?.ifBlank { null }
+                        ?: "Only the task creator can delete it",
+                )
+                else -> ApiResult.Error(response.call.response.status.toString())
+            }
         }
         catch (e: Exception)
         {
@@ -77,8 +83,14 @@ class TaskApi(private val httpClient: HttpClient) {
                 setBody(taskUpdate)
             }
 
-            if (response.status.value in 200..299) ApiResult.Success(response.body())
-            else ApiResult.Error(response.call.response.status.toString())
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success(response.body())
+                403 -> ApiResult.Error(
+                    runCatching { response.body<String>() }.getOrNull()?.ifBlank { null }
+                        ?: "Only the task creator can modify it",
+                )
+                else -> ApiResult.Error(response.call.response.status.toString())
+            }
         }
         catch (e: Exception)
         {
@@ -143,6 +155,10 @@ class TaskApi(private val httpClient: HttpClient) {
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(task)
                 404 -> ApiResult.NotFound(response.body())
+                403 -> ApiResult.Error(
+                    runCatching { response.body<String>() }.getOrNull()?.ifBlank { null }
+                        ?: "Only the task creator can unassign it",
+                )
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
         }
