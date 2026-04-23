@@ -1,0 +1,30 @@
+# Copy this file to gradle.properties and fill in your local values.
+# gradle.properties is git-ignored — never commit it.
+
+#Kotlin
+kotlin.code.style=official
+kotlin.daemon.jvmargs=-Xmx3072M
+#Gradle
+org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+org.gradle.configuration-cache=true
+org.gradle.caching=true
+#Android
+android.nonTransitiveRClass=true
+android.useAndroidX=true
+
+# Local dev server (used with -Penv=dev)
+DEV_URL="192.168.2.x"
+DEV_PORT=10000
+
+# Production server (used with -Penv=prod)
+PROD_PORT=443
+API_BASE_URL="https://your-server.example.com"
+
+APP_VERSION="0.1.0"
+#IS_DEBUG=true
+
+# Android release signing — leave as dummy locally unless you need a signed APK
+RELEASE_STORE_FILE=keystore.jks
+RELEASE_STORE_PASSWORD=dummy
+RELEASE_KEY_ALIAS=release_debug
+RELEASE_KEY_PASSWORD=dummy
