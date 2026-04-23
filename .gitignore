@@ -23,3 +23,4 @@ gradle.properties.local
 /composeApp/release/composeApp-release.apk
 /composeApp/release/output-metadata.json
 grad_poroperties_local_deploy
+gradle.properties
