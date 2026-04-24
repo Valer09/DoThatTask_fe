@@ -91,6 +91,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
         OutlinedTextField(
             value = newPassword,
             onValueChange = { newPassword = it; newError = null; message = null },
+            singleLine = true,
             label = { Text("New password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = newError != null,
@@ -102,6 +103,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it; confirmError = null; message = null },
+            singleLine = true,
             label = { Text("Confirm new password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = confirmError != null,

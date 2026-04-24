@@ -18,9 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
@@ -49,6 +54,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
     var loading by remember { mutableStateOf(false) }
 
     val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val focusManager = LocalFocusManager.current
 
     fun validate(): Boolean {
         nameError = if (name.isBlank()) "Name cannot be empty" else null
@@ -113,6 +119,9 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             isError = passwordError != null,
             supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
             modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            singleLine = true,
         )
 
         Spacer(Modifier.height(8.dp))
@@ -124,6 +133,9 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             isError = confirmError != null,
             supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
             modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            singleLine = true,
         )
 
         Spacer(Modifier.height(16.dp))
