@@ -14,14 +14,15 @@ android.nonTransitiveRClass=true
 android.useAndroidX=true
 
 # API endpoints
+ENV_MODE="dev" #or prod
 DEV_URL="192.168.x.x"
-DEV_PORT=10000
+DEV_PORT=12345
 PROD_PORT=443
 API_BASE_URL="https://your-backend-host"
 APP_VERSION="0.1.0"
 
-# Android release signing — generate your own keystore with keytool
+# Android release signing — leave as dummy locally unless you need a signed APK
 RELEASE_STORE_FILE=keystore.jks
-RELEASE_STORE_PASSWORD=YOUR_STORE_PASSWORD_HERE
+RELEASE_STORE_PASSWORD=dummy
 RELEASE_KEY_ALIAS=release_debug
-RELEASE_KEY_PASSWORD=YOUR_KEY_PASSWORD_HERE
+RELEASE_KEY_PASSWORD=dummy

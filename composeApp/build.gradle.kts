@@ -1,7 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.org.apache.commons.compress.harmony.pack200.PackingUtils.config
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,18 +8,12 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-
     kotlin("plugin.serialization") version "2.1.21"
 }
 
 // ---- Build-time Environment (dev/prod) ------------------------------------
 // Select profile with `-Penv=dev` (default) or `-Penv=prod`. Values are read
 // from root gradle.properties and emitted as a generated commonMain source.
-val envProfile: String = (findProperty("env") as String?) ?: "dev"
-val devHost: String = stripQuotes(findProperty("DEV_URL") as String? ?: "localhost")
-val devPort: String = (findProperty("DEV_PORT") as String? ?: "10000")
-val prodBase: String = stripQuotes(findProperty("API_BASE_URL") as String? ?: "https://example.com")
-val prodPort: String = (findProperty("PROD_PORT") as String? ?: "443")
 
 fun stripQuotes(s: String): String = s.trim().trim('"')
 fun parseBaseUrl(url: String): Pair<String, String> {
@@ -32,6 +25,16 @@ fun parseBaseUrl(url: String): Pair<String, String> {
     }
 }
 
+val envProfile: String =
+    (findProperty("env") as String?)
+        ?: stripQuotes(findProperty("ENV_MODE") as String? ?: "dev")
+
+val devHost: String = stripQuotes(findProperty("DEV_URL") as String? ?: "localhost")
+val devPort: String = (findProperty("DEV_PORT") as String? ?: "10000")
+val prodBase: String = stripQuotes(findProperty("API_BASE_URL") as String? ?: "https://example.com")
+val prodPort: String = (findProperty("PROD_PORT") as String? ?: "443")
+
+
 val envScheme: String = if (envProfile == "prod") parseBaseUrl(prodBase).first else "http"
 val envHost: String = if (envProfile == "prod") parseBaseUrl(prodBase).second else devHost
 val envPort: String = if (envProfile == "prod") prodPort else devPort
@@ -39,6 +42,10 @@ val envPort: String = if (envProfile == "prod") prodPort else devPort
 val generateEnvironment = tasks.register("generateEnvironment") {
     val outDir = layout.buildDirectory.dir("generated/environment/commonMain")
     outputs.dir(outDir)
+    inputs.property("profile", envProfile)
+    inputs.property("scheme",  envScheme)
+    inputs.property("host",    envHost)
+    inputs.property("port",    envPort)
     val capturedScheme = envScheme
     val capturedHost = envHost
     val capturedPort = envPort

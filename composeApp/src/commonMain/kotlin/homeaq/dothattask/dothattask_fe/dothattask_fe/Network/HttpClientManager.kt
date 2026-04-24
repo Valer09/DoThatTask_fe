@@ -20,10 +20,8 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-private fun scheme(): URLProtocol = when (Environment.SCHEME) {
-    "https" -> URLProtocol.HTTPS
-    else -> URLProtocol.HTTP
-}
+private val envProtocol: URLProtocol
+    get() = if (Environment.SCHEME == "https") URLProtocol.HTTPS else URLProtocol.HTTP
 
 private val json = Json {
     encodeDefaults = true
@@ -39,7 +37,7 @@ fun createUnauthenticatedClient() = HttpClient {
     install(ContentNegotiation) { json(json) }
     defaultRequest {
         url {
-            protocol = scheme()
+            protocol = envProtocol
             host = Environment.HOST
             port = Environment.PORT
         }
@@ -94,12 +92,15 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
         }
     }
     defaultRequest {
+        AuthState.token?.let { token -> header("Authorization", "Basic $token") }
         url {
-            protocol = scheme()
+            protocol = envProtocol
             host = Environment.HOST
             port = Environment.PORT
         }
+
     }
+
 }
 
 // Legacy overload kept so call sites that pass a Basic token still compile
@@ -110,7 +111,7 @@ fun createHttpClient(token: String?) = HttpClient {
     defaultRequest {
         token?.let { header("Authorization", "Basic $it") }
         url {
-            protocol = scheme()
+            protocol = envProtocol
             host = Environment.HOST
             port = Environment.PORT
         }
