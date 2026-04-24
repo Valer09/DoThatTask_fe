@@ -1,22 +1,14 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.Model
 
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
-import io.ktor.util.encodeBase64
 
 /**
- * In-memory cache of the authenticated session. Persisted values
- * live in [AuthProvider]; this object is the runtime mirror.
- *
- * Legacy Basic-auth fields (`token`, `password`) are kept while the
- * UI finishes migrating to JWT — remove once no screen calls
- * `setCredentials`.
+ * In-memory cache of the authenticated JWT session.
+ * Persisted values live in [AuthProvider]; this object is the runtime mirror.
  */
 object AuthState {
-    // Legacy HTTP Basic
-    var username: String? = null
-    var token: String? = null
-
     // JWT session
+    var username: String? = null
     var accessToken: String? = null
     var refreshToken: String? = null
     var groupId: Int? = null
@@ -51,11 +43,13 @@ object AuthState {
 
     fun clear() {
         username = null
-        token = null
         accessToken = null
         refreshToken = null
         groupId = null
         displayName = null
         AuthProvider.clearAll()
     }
+
+    val isLoggedIn: Boolean
+        get() = accessToken != null
 }

@@ -10,7 +10,6 @@ import java.util.Properties
  * JNA-backed OS keychains if the desktop target gains real users.
  */
 actual object AuthProvider {
-    private const val KEY_TOKEN = "token"
     private const val KEY_USERNAME = "username"
     private const val KEY_ACCESS = "access_token"
     private const val KEY_REFRESH = "refresh_token"
@@ -33,13 +32,8 @@ actual object AuthProvider {
     }
 
     private fun get(key: String): String? = load().getProperty(key)
-
-    actual fun getToken(): String? = get(KEY_TOKEN)
-    actual fun saveToken(token: String) = put(KEY_TOKEN, token)
     actual fun getUsername(): String? = get(KEY_USERNAME)
     actual fun saveUsername(username: String) = put(KEY_USERNAME, username)
-    actual fun cleanToken() = clearAll()
-
     actual fun getAccessToken(): String? = get(KEY_ACCESS)
     actual fun saveAccessToken(token: String) = put(KEY_ACCESS, token)
     actual fun getRefreshToken(): String? = get(KEY_REFRESH)

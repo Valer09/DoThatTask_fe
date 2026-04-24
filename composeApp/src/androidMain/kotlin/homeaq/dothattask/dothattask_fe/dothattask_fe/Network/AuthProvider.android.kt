@@ -10,11 +10,8 @@ actual object AuthProvider {
         this.context = context
     }
 
-    actual fun getToken(): String? = AuthStorage.getToken(context)
-    actual fun saveToken(token: String) = AuthStorage.saveToken(context, token)
-    actual fun cleanToken() = AuthStorage.clear(context)
-    actual fun saveUsername(username: String) = AuthStorage.saveUsername(context, username)
     actual fun getUsername(): String? = AuthStorage.getUsername(context)
+    actual fun saveUsername(username: String) = AuthStorage.saveUsername(context, username)
 
     actual fun getAccessToken(): String? = AuthStorage.getAccessToken(context)
     actual fun saveAccessToken(token: String) = AuthStorage.saveAccessToken(context, token)

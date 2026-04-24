@@ -11,7 +11,6 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -30,9 +29,8 @@ private val json = Json {
     ignoreUnknownKeys = true
 }
 
-// Client used for auth endpoints (login/register/refresh) - no Authorization
-// header, never intercepted by the Auth plugin. Also used internally by the
-// main client's refresh handler.
+// Client used for auth endpoints (login/register/refresh) — no Authorization
+// header, never intercepted by the Auth plugin.
 fun createUnauthenticatedClient() = HttpClient {
     install(ContentNegotiation) { json(json) }
     defaultRequest {
@@ -80,9 +78,6 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
                     null
                 }
             }
-            // Send the access token proactively on every call except the
-            // auth endpoints (login/register/refresh). The plugin itself
-            // handles refresh reactively when needed.
             sendWithoutRequest { request ->
                 val url = request.url.buildString()
                 !url.contains("/api/auth/login") &&
@@ -92,24 +87,6 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
         }
     }
     defaultRequest {
-        AuthState.token?.let { token -> header("Authorization", "Basic $token") }
-        url {
-            protocol = envProtocol
-            host = Environment.HOST
-            port = Environment.PORT
-        }
-
-    }
-
-}
-
-// Legacy overload kept so call sites that pass a Basic token still compile
-// while we migrate screens. Remove once LoginPage no longer calls it.
-@Deprecated("Use createHttpClient() with AuthState instead", ReplaceWith("createHttpClient()"))
-fun createHttpClient(token: String?) = HttpClient {
-    install(ContentNegotiation) { json(json) }
-    defaultRequest {
-        token?.let { header("Authorization", "Basic $it") }
         url {
             protocol = envProtocol
             host = Environment.HOST
