@@ -14,7 +14,6 @@ import io.ktor.util.encodeBase64
 object AuthState {
     // Legacy HTTP Basic
     var username: String? = null
-    var password: String? = null
     var token: String? = null
 
     // JWT session
@@ -22,12 +21,6 @@ object AuthState {
     var refreshToken: String? = null
     var groupId: Int? = null
     var displayName: String? = null
-
-    fun setCredentials(user: String, pass: String) {
-        username = user
-        password = pass
-        token = "$user:$pass".encodeToByteArray().encodeBase64()
-    }
 
     fun setSession(
         username: String,
@@ -58,7 +51,6 @@ object AuthState {
 
     fun clear() {
         username = null
-        password = null
         token = null
         accessToken = null
         refreshToken = null
@@ -66,7 +58,4 @@ object AuthState {
         displayName = null
         AuthProvider.clearAll()
     }
-
-    val isLoggedIn: Boolean
-        get() = accessToken != null || token != null
 }
