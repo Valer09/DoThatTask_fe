@@ -1,0 +1,27 @@
+# Copy this file to gradle.properties and fill in the values.
+# gradle.properties is excluded from version control (.gitignore).
+# NEVER commit gradle.properties — it contains signing secrets.
+
+#Kotlin
+kotlin.code.style=official
+kotlin.daemon.jvmargs=-Xmx3072M
+#Gradle
+org.gradle.jvmargs=-Xmx4096M -Dfile.encoding=UTF-8
+org.gradle.configuration-cache=true
+org.gradle.caching=true
+#Android
+android.nonTransitiveRClass=true
+android.useAndroidX=true
+
+# API endpoints
+DEV_URL="192.168.x.x"
+DEV_PORT=10000
+PROD_PORT=443
+API_BASE_URL="https://your-backend-host"
+APP_VERSION="0.1.0"
+
+# Android release signing — generate your own keystore with keytool
+RELEASE_STORE_FILE=keystore.jks
+RELEASE_STORE_PASSWORD=YOUR_STORE_PASSWORD_HERE
+RELEASE_KEY_ALIAS=release_debug
+RELEASE_KEY_PASSWORD=YOUR_KEY_PASSWORD_HERE
