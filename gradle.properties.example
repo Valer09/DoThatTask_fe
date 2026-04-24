@@ -1,5 +1,6 @@
-# Copy this file to gradle.properties and fill in your local values.
-# gradle.properties is git-ignored — never commit it.
+# Copy this file to gradle.properties and fill in the values.
+# gradle.properties is excluded from version control (.gitignore).
+# NEVER commit gradle.properties — it contains signing secrets.
 
 #Kotlin
 kotlin.code.style=official
@@ -12,16 +13,13 @@ org.gradle.caching=true
 android.nonTransitiveRClass=true
 android.useAndroidX=true
 
-# Local dev server (used with -Penv=dev)
-DEV_URL="192.168.2.x"
-DEV_PORT=10000
-
-# Production server (used with -Penv=prod)
+# API endpoints
+ENV_MODE="dev" #or prod
+DEV_URL="192.168.x.x"
+DEV_PORT=12345
 PROD_PORT=443
-API_BASE_URL="https://your-server.example.com"
-
+API_BASE_URL="https://your-backend-host"
 APP_VERSION="0.1.0"
-#IS_DEBUG=true
 
 # Android release signing — leave as dummy locally unless you need a signed APK
 RELEASE_STORE_FILE=keystore.jks

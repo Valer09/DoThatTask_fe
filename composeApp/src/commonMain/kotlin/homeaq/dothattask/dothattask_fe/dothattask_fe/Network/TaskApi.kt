@@ -233,8 +233,8 @@ class TaskApi(private val httpClient: HttpClient) {
     {
         return try
         {
-            val response = httpClient.get("/api/tasks/completed")
-            if (response.status.value in 200..299) ApiResult.Success(response.body())
+            val response = httpClient.get("/api/user/me")
+            if (response.status.value in 200..299) ApiResult.Success(emptyList())
             else ApiResult.Error(response.call.response.status.toString())
         }
         catch (e: Exception)
