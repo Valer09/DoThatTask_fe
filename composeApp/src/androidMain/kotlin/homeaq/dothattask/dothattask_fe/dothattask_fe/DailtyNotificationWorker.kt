@@ -29,7 +29,7 @@ class DailyNotificationWorker(
             return Result.success()
         }
 
-        if(AuthProvider.getToken().isNullOrEmpty()) return Result.retry()
+        if(AuthProvider.getAccessToken().isNullOrEmpty()) return Result.retry()
 
         val tasks = TaskApi(createHttpClient()).getAssignedTask()
         when (tasks) {

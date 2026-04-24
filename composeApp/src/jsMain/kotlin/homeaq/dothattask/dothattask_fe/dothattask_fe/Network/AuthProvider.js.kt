@@ -1,4 +1,4 @@
-package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
+﻿package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
 
 import kotlinx.browser.localStorage
 import org.w3c.dom.get
@@ -27,3 +27,4 @@ actual object AuthProvider {
         localStorage.removeItem(KEY_REFRESH)
     }
 }
+
