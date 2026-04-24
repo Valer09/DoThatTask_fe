@@ -17,10 +17,9 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
-# gradle.properties is committed with base config, but exclude local overrides with signing credentials
+# gradle.properties.local holds signing credentials and local URLs — never committed
 gradle.properties.local
 /composeApp/keystore.jks
 /composeApp/release/composeApp-release.apk
 /composeApp/release/output-metadata.json
 grad_poroperties_local_deploy
-gradle.properties
