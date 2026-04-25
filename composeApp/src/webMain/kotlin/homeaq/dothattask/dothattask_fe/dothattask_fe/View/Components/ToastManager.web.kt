@@ -5,5 +5,7 @@ actual class ToastManager {
         message: String,
         toastDurationType: ToastDurationType
     ) {
+        // Web (JS) stub: Could use window.alert or a custom toast library.
+        println("[Toast] $message")
     }
 }

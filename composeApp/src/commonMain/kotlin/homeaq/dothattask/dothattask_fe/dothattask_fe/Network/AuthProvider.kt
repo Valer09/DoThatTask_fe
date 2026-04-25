@@ -1,11 +1,17 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
 
-expect object AuthProvider
-{
-    fun getToken(): String?
+/**
+ * Platform-specific secure (or best-available) storage for the
+ * authenticated session. Each platform persists values in a way
+ * appropriate to its threat model — see the actual declarations.
+ */
+expect object AuthProvider {
     fun getUsername(): String?
-    fun saveToken(token: String)
     fun saveUsername(username: String)
 
-    fun cleanToken()
+    fun getAccessToken(): String?
+    fun saveAccessToken(token: String)
+    fun getRefreshToken(): String?
+    fun saveRefreshToken(token: String)
+    fun clearAll()
 }

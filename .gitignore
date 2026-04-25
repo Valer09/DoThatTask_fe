@@ -17,10 +17,13 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
-# gradle.properties is committed with base config, but exclude local overrides with signing credentials
+# local.properties (riga 7) ospita credenziali signing e override env locali —
+# letto da composeApp/build.gradle.kts via cascata local→env→gradleProps.
+# Il vecchio `gradle.properties.local` è deprecato: tutti i valori in local.properties.
 gradle.properties.local
 /composeApp/keystore.jks
 /composeApp/release/composeApp-release.apk
 /composeApp/release/output-metadata.json
 grad_poroperties_local_deploy
-gradle.properties
+.dockerignore
+GUIDA_DEPLOY_PROD_WASM.md
