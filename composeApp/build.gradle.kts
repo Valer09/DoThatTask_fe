@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,8 +13,19 @@ plugins {
 }
 
 // ---- Build-time Environment (dev/prod) ------------------------------------
-// Select profile with `-Penv=dev` (default) or `-Penv=prod`. Values are read
-// from root gradle.properties and emitted as a generated commonMain source.
+// Select profile with `-Penv=dev` (default) or `-Penv=prod`.
+//
+// Cascade di lettura per ogni chiave (pattern KMP standard):
+//   1. local.properties        → sviluppo locale (gitignored, mai committato)
+//   2. System.getenv(KEY)       → CI/CD (GitHub Actions secrets) e produzione
+//   3. findProperty(KEY)        → gradle.properties (committed, default safe)
+//   4. default hardcoded        → ultimo fallback
+//
+// gradle.properties resta statico e committato con valori safe (es.
+// API_BASE_URL=https://example.com). I segreti (signing keystore, URL prod
+// reali) vivono SOLO in local.properties locale o in env vars iniettate
+// dalla CI/piattaforma di deploy. Il build.gradle.kts non si tocca per cambiare
+// ambiente: basta cambiare la sorgente.
 
 fun stripQuotes(s: String): String = s.trim().trim('"')
 fun parseBaseUrl(url: String): Pair<String, String> {
@@ -25,14 +37,27 @@ fun parseBaseUrl(url: String): Pair<String, String> {
     }
 }
 
+// Carica local.properties se presente (gitignored di default in KMP/Android).
+val localProps: Properties = Properties().also { props ->
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { props.load(it) }
+}
+
+// Cascade helper: local.properties → env var → gradle property → default.
+fun envOrLocal(key: String, default: String? = null): String? =
+    localProps.getProperty(key)
+        ?: System.getenv(key)
+        ?: (findProperty(key) as String?)
+        ?: default
+
 val envProfile: String =
     (findProperty("env") as String?)
-        ?: stripQuotes(findProperty("ENV_MODE") as String? ?: "dev")
+        ?: stripQuotes(envOrLocal("ENV_MODE", "dev")!!)
 
-val devHost: String = stripQuotes(findProperty("DEV_URL") as String? ?: "localhost")
-val devPort: String = (findProperty("DEV_PORT") as String? ?: "10000")
-val prodBase: String = stripQuotes(findProperty("API_BASE_URL") as String? ?: "https://example.com")
-val prodPort: String = (findProperty("PROD_PORT") as String? ?: "443")
+val devHost: String = stripQuotes(envOrLocal("DEV_URL", "localhost")!!)
+val devPort: String = envOrLocal("DEV_PORT", "10000")!!
+val prodBase: String = stripQuotes(envOrLocal("API_BASE_URL", "https://example.com")!!)
+val prodPort: String = envOrLocal("PROD_PORT", "443")!!
 
 
 val envScheme: String = if (envProfile == "prod") parseBaseUrl(prodBase).first else "http"
@@ -181,14 +206,15 @@ android {
     }
 
     //this is to sign the Android APK
+    // Credenziali lette via cascata: local.properties → env vars (CI) → gradle.properties.
     signingConfigs {
-        if(hasProperty("RELEASE_STORE_FILE"))
-        {
+        val storeFilePath = envOrLocal("RELEASE_STORE_FILE")
+        if (storeFilePath != null) {
             create("release_debug") {   // <<< usa create() invece di "release { ... }"
-                storeFile = file(property("RELEASE_STORE_FILE") as String)
-                storePassword = property("RELEASE_STORE_PASSWORD") as String
-                keyAlias = property("RELEASE_KEY_ALIAS") as String
-                keyPassword = property("RELEASE_KEY_PASSWORD") as String
+                storeFile = file(storeFilePath)
+                storePassword = envOrLocal("RELEASE_STORE_PASSWORD") ?: ""
+                keyAlias = envOrLocal("RELEASE_KEY_ALIAS") ?: ""
+                keyPassword = envOrLocal("RELEASE_KEY_PASSWORD") ?: ""
             }
         }
     }
@@ -196,7 +222,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            if(hasProperty("RELEASE_STORE_FILE")) {
+            if (envOrLocal("RELEASE_STORE_FILE") != null) {
                 signingConfig = signingConfigs.getByName("release_debug")
             }
             isDebuggable = true
