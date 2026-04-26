@@ -26,4 +26,4 @@ gradle.properties.local
 /composeApp/release/output-metadata.json
 grad_poroperties_local_deploy
 .dockerignore
-GUIDA_DEPLOY_PROD_WASM.md
+GUIDA_DEPLOY_WASM_LOCAL.md
