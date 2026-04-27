@@ -197,7 +197,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 2
-        versionName = "1.0.2"
+        versionName = "1.1.0"
     }
     packaging {
         resources {
@@ -247,7 +247,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Do That Task"
-            packageVersion = "1.0.2"
+            packageVersion = "1.1.0"
             includeAllModules = true
             windows {
                 iconFile.set(File("logo/icon.ico"))
