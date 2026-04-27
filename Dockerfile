@@ -17,6 +17,7 @@ ENV DEV_PORT=$DEV_PORT
 
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
 COPY gradle ./gradle
+COPY composeApp/build.gradle.kts composeApp/
 RUN gradle dependencies --no-daemon || true
 COPY . .
 RUN gradle :composeApp:wasmJsBrowserDistribution --no-daemon
