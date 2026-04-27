@@ -27,3 +27,5 @@ gradle.properties.local
 grad_poroperties_local_deploy
 .dockerignore
 GUIDA_DEPLOY_WASM_LOCAL.md
+/google-services.json
+/composeApp/release/dothattask.apk

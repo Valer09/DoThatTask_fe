@@ -35,6 +35,7 @@ class AuthApi(
                 ApiResult.Success(tokens)
             }
             401 -> ApiResult.Error("Invalid credentials")
+            405 -> ApiResult.Error("Method not allowed")
             else -> ApiResult.Error("Login failed (${resp.status.value})")
         }
     } catch (e: Exception) {
