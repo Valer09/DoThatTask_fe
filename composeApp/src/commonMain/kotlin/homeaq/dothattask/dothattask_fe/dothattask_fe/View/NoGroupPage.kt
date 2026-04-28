@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
@@ -52,8 +53,9 @@ fun NoGroupPage() {
     LoadingOverlay(isLoading = loading)
 
     Column(modifier = Modifier.padding(top = 40.dp).padding(horizontal = 30.dp)) {
+        val title = if (AuthState.groups.isEmpty()) "You're not in a group yet" else "Create another group"
         Text(
-            "You're not in a group yet",
+            title,
             style = MaterialTheme.typography.headlineMedium,
             color = TaskUIHelper.getMarinerBlue(),
             fontWeight = FontWeight.Bold,
@@ -94,11 +96,16 @@ fun NoGroupPage() {
                         try {
                             when (val resp = groupApi.create(trimmed)) {
                                 is ApiResult.Success -> {
-                                    // New group → refresh JWT so `gid` is
-                                    // populated on subsequent requests.
+                                    val created = resp.data
+                                    AuthState.groups = AuthState.groups + GroupSummary(
+                                        id = created.id,
+                                        name = created.name,
+                                        color = created.color,
+                                    )
+                                    AuthState.activeGroupId = created.id
+                                    // Refresh tokens so the persisted session
+                                    // reflects the new group list.
                                     authApi.refresh()
-                                    AuthState.groupId = resp.data.id
-                                    AuthState.persist()
                                     AppState.currentScreen = Screen.GroupHome
                                 }
                                 is ApiResult.Error -> {

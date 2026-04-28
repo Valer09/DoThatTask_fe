@@ -1,17 +1,21 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -29,22 +33,25 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupInfo
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun GroupHomePage() {
-    var info by remember { mutableStateOf<GroupInfo?>(null) }
+    var groups by remember { mutableStateOf<List<GroupInfo>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -55,10 +62,14 @@ fun GroupHomePage() {
     suspend fun reload() {
         loading = true
         error = null
-        when (val resp = groupApi.myGroup()) {
+        when (val resp = groupApi.myGroups()) {
             is ApiResult.Success -> {
-                info = resp.data
-                if (resp.data == null) AppState.currentScreen = Screen.NoGroup
+                groups = resp.data
+                if (resp.data.isEmpty()) AppState.currentScreen = Screen.NoGroup
+                AuthState.groups = resp.data.map { GroupSummary(it.id, it.name, it.color) }
+                if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
+                    AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
+                }
             }
             is ApiResult.Error -> error = resp.message
             is ApiResult.NotFound -> error = resp.message
@@ -68,7 +79,7 @@ fun GroupHomePage() {
 
     LaunchedEffect(Unit) { reload() }
 
-    if (loading && info == null) {
+    if (loading && groups.isEmpty()) {
         Column(
             Modifier.fillMaxWidth().padding(top = 60.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,84 +87,105 @@ fun GroupHomePage() {
         return
     }
 
-    val group = info ?: run {
-        Text("No group.")
-        return
-    }
-    val isOwner = (AuthState.username ?: "").equals(group.ownerUsername, ignoreCase = true)
-
-    Column(modifier = Modifier.padding(top = 24.dp).padding(horizontal = 24.dp)) {
-        Text(
-            group.name,
-            style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getMarinerBlue(),
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(4.dp))
-        Text("Owner: ${group.ownerUsername}", color = Color.DarkGray)
-
-        Spacer(Modifier.height(20.dp))
-        Text("Members (${group.members.size})", fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-
-        LazyColumn(modifier = Modifier.fillMaxWidth().height(240.dp)) {
-            items(group.members) { m ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(TaskUIHelper.getLightGray())
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(m.name, fontWeight = FontWeight.Bold)
-                        Text("@${m.username}", color = Color.DarkGray)
-                    }
-                    Text(
-                        if (m.username.equals(group.ownerUsername, ignoreCase = true)) "owner" else m.role.name.lowercase(),
-                        color = TaskUIHelper.getMarinerBlue(),
-                    )
-                }
-                Spacer(Modifier.height(6.dp))
-            }
+    Column(modifier = Modifier.padding(top = 24.dp).padding(horizontal = 24.dp).fillMaxSize()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "My groups",
+                style = MaterialTheme.typography.headlineMedium,
+                color = TaskUIHelper.getMarinerBlue(),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            Button(
+                onClick = { AppState.currentScreen = Screen.NoGroup },
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = TaskUIHelper.getMarinerBlue(),
+                    contentColor = Color.White,
+                ),
+            ) { Text("+ Create group") }
         }
 
-        Spacer(Modifier.height(20.dp))
-        Row {
-            if (isOwner) {
-                Button(
-                    onClick = { AppState.currentScreen = Screen.InviteMember },
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getMarinerBlue(),
-                        contentColor = Color.White,
-                    ),
-                ) { Text("Invite member") }
-                Spacer(Modifier.width(12.dp))
-            }
-            OutlinedButton(
-                onClick = { AppState.currentScreen = Screen.IncomingInvites },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) { Text("My invites") }
-            Spacer(Modifier.width(12.dp))
-            OutlinedButton(
-                onClick = {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        when (val resp = groupApi.leave()) {
-                            is ApiResult.Success -> {
-                                // After leaving, refresh to drop gid from the JWT.
-                                authApi.refresh()
-                                AuthState.groupId = null
-                                AuthState.persist()
-                                AppState.currentScreen = Screen.NoGroup
+        Spacer(Modifier.height(16.dp))
+
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            items(groups) { group ->
+                val isOwner = (AuthState.username ?: "").equals(group.ownerUsername, ignoreCase = true)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            GroupBadge(group.name, group.color, fontSize = 14.sp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "owned by @${group.ownerUsername}",
+                                color = Color.DarkGray,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                        Text("Members (${group.members.size})", fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(4.dp))
+                        group.members.forEach { m ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(TaskUIHelper.getLightGray())
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(m.name, fontWeight = FontWeight.Bold)
+                                    Text("@${m.username}", color = Color.DarkGray)
+                                }
+                                Text(
+                                    if (m.username.equals(group.ownerUsername, ignoreCase = true)) "owner"
+                                    else m.role.name.lowercase(),
+                                    color = TaskUIHelper.getMarinerBlue(),
+                                )
                             }
-                            is ApiResult.Error -> message = resp.message
-                            is ApiResult.NotFound -> message = resp.message
+                            Spacer(Modifier.height(4.dp))
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                            if (isOwner) {
+                                Button(
+                                    onClick = {
+                                        AppState.inviteTargetGroupId = group.id
+                                        AppState.currentScreen = Screen.InviteMember
+                                    },
+                                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = TaskUIHelper.getMarinerBlue(),
+                                        contentColor = Color.White,
+                                    ),
+                                ) { Text("Invite member") }
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        when (val resp = groupApi.leave(group.id)) {
+                                            is ApiResult.Success -> {
+                                                authApi.refresh()
+                                                reload()
+                                            }
+                                            is ApiResult.Error -> message = resp.message
+                                            is ApiResult.NotFound -> message = resp.message
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            ) { Text("Leave") }
                         }
                     }
-                },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) { Text("Leave group") }
+                }
+            }
         }
 
         message?.let {

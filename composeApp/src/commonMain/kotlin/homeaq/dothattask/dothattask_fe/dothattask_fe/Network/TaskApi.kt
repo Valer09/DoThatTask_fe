@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -19,7 +20,9 @@ class TaskApi(private val httpClient: HttpClient) {
     suspend fun removeTask(task: Task): ApiResult<String> {
         return try
         {
-            val response = httpClient.delete("api/tasks/${task.name}")
+            val response = httpClient.delete("api/tasks/${task.name}") {
+                header("X-Group-Id", task.groupId.toString())
+            }
 
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success("Task deleted successfully")
@@ -35,7 +38,9 @@ class TaskApi(private val httpClient: HttpClient) {
             return ApiResult.Error(e.message ?: "Unknown error")
         }
     }
-    suspend fun createTask(task: Task) : ApiResult<Task>
+
+    /** Creates a task in [groupId] (which the caller must belong to). */
+    suspend fun createTask(task: Task, groupId: Int) : ApiResult<Task>
     {
         return try
         {
@@ -49,12 +54,9 @@ class TaskApi(private val httpClient: HttpClient) {
             )
             val response = httpClient.post("/api/tasks")
             {
+                header("X-Group-Id", groupId.toString())
                 contentType(ContentType.Application.Json)
-                url{
-                    parameters.append("username",   task.ownership_username)
-                    setBody(taskUpdate)
-                }
-
+                setBody(taskUpdate)
             }
 
             if (response.status.value in 200..299) ApiResult.Success(response.body())
@@ -79,6 +81,7 @@ class TaskApi(private val httpClient: HttpClient) {
             )
             val response = httpClient.post("/api/tasks")
             {
+                header("X-Group-Id", oldTask.groupId.toString())
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
             }
@@ -146,6 +149,7 @@ class TaskApi(private val httpClient: HttpClient) {
         {
             val response = httpClient.post("/api/tasks/unassign")
             {
+                header("X-Group-Id", task.groupId.toString())
                 url{
                     parameters.append("task_name", task.name)
                 }
@@ -174,10 +178,10 @@ class TaskApi(private val httpClient: HttpClient) {
         {
             if(assignedTask == null || assignedTask.name.isEmpty()) return ApiResult.Error("No task assigned. Error on the client")
             val response = httpClient.post("api/tasks/completeTask") {
+                header("X-Group-Id", assignedTask.groupId.toString())
                 url{
                     parameters.append("task_name", assignedTask.name)
                 }
-
                 contentType(ContentType.Application.Json)
             }
             if (response.status.value in 200..299) ApiResult.Success("Task completed successfully")
@@ -190,38 +194,37 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun getAllTasksDb(): ApiResult<List<Task>> {
-        return try
-        {
-            val response = httpClient.get("/api/tasks")
+    /**
+     * Search tasks within a group. Always excludes tasks assigned to the
+     * caller (the "secret task" rule). Pass null/empty to omit a filter.
+     */
+    suspend fun searchTasks(
+        groupId: Int,
+        creator: String? = null,
+        category: TaskCategory? = null,
+        assignee: String? = null,
+    ): ApiResult<List<Task>> {
+        return try {
+            val response = httpClient.get("/api/tasks") {
+                header("X-Group-Id", groupId.toString())
+                url {
+                    creator?.takeIf { it.isNotBlank() }?.let { parameters.append("creator", it) }
+                    category?.let { parameters.append("category", it.name) }
+                    assignee?.takeIf { it.isNotBlank() }?.let { parameters.append("assignee", it) }
+                }
+            }
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            return ApiResult.Error(e.message ?: "Unknown error")
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Unknown error")
         }
     }
 
-    suspend fun getAllUsers(): ApiResult<List<User>>
+    suspend fun getAllUsers(groupId: Int): ApiResult<List<User>>
     {
         return try
         {
-            val response = httpClient.get("/api/user/usersLessMe")
-            if (response.status.value in 200..299) ApiResult.Success(response.body())
-            else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            return ApiResult.Error(e.message ?: "Unknown error")
-        }
-    }
-
-   suspend fun getAllTasksLessMine(username: String) : ApiResult<List<Task>>
-    {
-        return try
-        {
-            val response = httpClient.get("/api/tasks/tasksByUser/$username")
+            val response = httpClient.get("/api/user/groupMembers/$groupId")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }

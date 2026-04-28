@@ -6,6 +6,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -13,9 +14,13 @@ import io.ktor.http.contentType
 
 class InviteApi(private val client: HttpClient) {
 
-    /** `POST /api/invites` — owner-only. 201 Created or 4xx with reason. */
-    suspend fun sendInvite(inviteeUsername: String): ApiResult<Invite> = try {
+    /**
+     * `POST /api/invites` — owner-only. The [groupId] tells the server which
+     * of the inviter's groups the invite is for.
+     */
+    suspend fun sendInvite(groupId: Int, inviteeUsername: String): ApiResult<Invite> = try {
         val resp = client.post("/api/invites") {
+            header("X-Group-Id", groupId.toString())
             contentType(ContentType.Application.Json)
             setBody(SendInviteRequest(inviteeUsername))
         }

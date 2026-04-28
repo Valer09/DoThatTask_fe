@@ -14,7 +14,9 @@ import androidx.compose.ui.Modifier
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.SideMenu
@@ -36,14 +38,26 @@ fun App() {
         // /api/auth/refresh.
         AuthState.loadFromStorage()
         isLogged = if (AuthState.accessToken != null) {
-            val api = TaskApi(createHttpClient(onRefreshFailed = {
+            val client = createHttpClient(onRefreshFailed = {
                 AuthState.clear()
                 AppState.currentScreen = Screen.Login
-            }))
-            val response = api.checkLogin()
+            })
+            val taskApi = TaskApi(client)
+            val response = taskApi.checkLogin()
             if (response is ApiResult.Success) {
+                // Reload the user's groups: tokens persisted to storage don't
+                // include them, and the side menu / pages depend on
+                // AuthState.groups being populated.
+                val groups = when (val gr = GroupApi(client).myGroups()) {
+                    is ApiResult.Success -> gr.data
+                    else -> emptyList()
+                }
+                AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
+                if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
+                    AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
+                }
                 AppState.currentScreen =
-                    if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
+                    if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                 true
             } else {
                 AuthState.clear()
@@ -71,14 +85,14 @@ fun App() {
                 Screen.Register -> RegisterPage(
                     onRegisterSuccess = {
                         AppState.currentScreen =
-                            if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
+                            if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                         isLogged = true
                     },
                 )
                 else -> LoginPage(
                     onLoginSuccess = {
                         AppState.currentScreen =
-                            if (AuthState.groupId != null) Screen.Home else Screen.NoGroup
+                            if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                         isLogged = true
                     },
                 )

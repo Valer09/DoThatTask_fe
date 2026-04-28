@@ -45,6 +45,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 
@@ -191,7 +192,7 @@ Box{
             {
                 Column(modifier = Modifier.padding(20.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally)
                 {
-                    Row(modifier = Modifier.weight(0.2f).fillMaxWidth(), horizontalArrangement = Arrangement.Center)
+                    Row(modifier = Modifier.weight(0.2f).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
                     {
                         Text(
                             text = "${assignedTask?.name}",
@@ -199,6 +200,12 @@ Box{
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 23.sp,
                         )
+                        assignedTask?.let { t ->
+                            if (t.groupName.isNotBlank()) {
+                                Spacer(modifier = Modifier.width(10.dp))
+                                GroupBadge(t.groupName, t.groupColor)
+                            }
+                        }
                     }
                     Spacer(modifier = Modifier.height(15.dp))
                     Row(modifier = Modifier.weight(0.8f).fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top)

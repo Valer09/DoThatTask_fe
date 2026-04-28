@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -44,12 +46,22 @@ fun TaskCard(
         colors = CardDefaults.cardColors(containerColor = TaskUIHelper.pickColor(task.category))
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text(
-                task.name,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    task.name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f),
+                )
+                if (task.groupName.isNotBlank()) {
+                    GroupBadge(task.groupName, task.groupColor)
+                }
+            }
             Spacer(Modifier.height(7.dp))
             Text(
                 task.description,

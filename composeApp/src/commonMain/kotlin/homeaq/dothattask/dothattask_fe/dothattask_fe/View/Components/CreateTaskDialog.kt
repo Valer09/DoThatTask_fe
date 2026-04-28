@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -54,21 +56,33 @@ import kotlinx.coroutines.launch
 
 
 
+/**
+ * Multi-group create dialog. The user picks a group first; the assignee
+ * dropdown is then populated with that group's members. The selected group's
+ * id rides on the create-task request via X-Group-Id (set by [TaskApi]).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskDialog(
-    task: Task,
+    groups: List<GroupSummary>,
+    initialGroupId: Int?,
     onConfirm: (Task) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
-    var name by remember { mutableStateOf(task.name) }
-    var description by remember { mutableStateOf(task.description) }
-    var category by remember { mutableStateOf(task.category) }
-    var taskStatus by remember { mutableStateOf(task.status) }
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf(TaskCategory.Social) }
+    val taskStatus = TaskStatus.TODO
     var categoryExpanded by remember { mutableStateOf(false) }
+    var groupExpanded by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf<User?>(null) }
+
+    val initial = remember(initialGroupId, groups) {
+        groups.firstOrNull { it.id == initialGroupId } ?: groups.firstOrNull()
+    }
+    var selectedGroup by remember { mutableStateOf(initial) }
 
     val scope = rememberCoroutineScope()
 
@@ -76,22 +90,41 @@ fun CreateTaskDialog(
 
     val colors = TextFieldDefaults.colors(
         focusedTextColor = Color.Blue,
-        focusedContainerColor = TaskUIHelper.Companion.getLightGray(),
-        unfocusedContainerColor = TaskUIHelper.Companion.getGray(),
+        focusedContainerColor = TaskUIHelper.getLightGray(),
+        unfocusedContainerColor = TaskUIHelper.getGray(),
     )
 
     var loading by remember { mutableStateOf(false) }
+    var isUsersLoading by remember { mutableStateOf(false) }
+    var members by remember { mutableStateOf<List<User>>(emptyList()) }
 
-    var isDropdownLoading by remember { mutableStateOf(true) }
-
+    // Re-fetch the assignee list whenever the group changes.
+    LaunchedEffect(selectedGroup?.id) {
+        val gid = selectedGroup?.id ?: return@LaunchedEffect
+        isUsersLoading = true
+        members = emptyList()
+        selectedUser = null
+        try {
+            when (val result = taskApi.getAllUsers(gid)) {
+                is ApiResult.Success -> {
+                    members = result.data
+                    selectedUser = members.firstOrNull()
+                }
+                is ApiResult.Error -> {
+                    toastIsError = true
+                    toastMessage = result.message
+                }
+                else -> {}
+            }
+        } finally {
+            isUsersLoading = false
+        }
+    }
 
     Box(modifier = Modifier
         .fillMaxSize().wrapContentSize(Alignment.Center)){
 
             LoadingOverlay(isLoading = loading, Color.Transparent)
-
-        if(!loading || !isDropdownLoading) {
-
 
             Dialog(onDismissRequest = {}) {
                 Column()
@@ -109,16 +142,65 @@ fun CreateTaskDialog(
                         shape = RoundedCornerShape(CornerSize(4.dp))
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().background(TaskUIHelper.Companion.getMarinerBlue())
+                            modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getMarinerBlue())
                                 .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         )
                         {
-                            Text("Create ${task.name}", fontSize = 20.sp)
+                            Text("Create new task", fontSize = 20.sp, color = Color.White)
                         }
 
                         Column(modifier = Modifier.padding(10.dp)) {
                             Spacer(Modifier.height(15.dp))
+                            // Group picker first — feeds the assignee dropdown below.
+                            ExposedDropdownMenuBox(
+                                expanded = groupExpanded,
+                                onExpandedChange = { groupExpanded = !groupExpanded },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            ) {
+                                TextField(
+                                    value = selectedGroup?.name ?: "",
+                                    colors = TextFieldDefaults.colors(
+                                        focusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
+                                        unfocusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
+                                    ),
+                                    onValueChange = {},
+                                    label = { Text("Group", fontSize = 11.sp) },
+                                    textStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    readOnly = true,
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = groupExpanded) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                        .pointerHoverIcon(PointerIcon.Hand, true),
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = groupExpanded,
+                                    onDismissRequest = { groupExpanded = false },
+                                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                ) {
+                                    groups.forEach { g ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    g.name,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = TaskUIHelper.parseHexColor(g.color),
+                                                )
+                                            },
+                                            onClick = {
+                                                selectedGroup = g
+                                                groupExpanded = false
+                                            },
+                                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(Modifier.height(10.dp))
+
                             TextField(
                                 value = name,
                                 onValueChange = { name = it },
@@ -129,7 +211,6 @@ fun CreateTaskDialog(
                             )
                             Spacer(Modifier.height(10.dp))
                             OutlinedTextField(
-
                                 value = description,
                                 onValueChange = { description = it },
                                 label = { Text("Description") },
@@ -144,15 +225,13 @@ fun CreateTaskDialog(
                             ExposedDropdownMenuBox(
                                 expanded = categoryExpanded,
                                 onExpandedChange = { categoryExpanded = !categoryExpanded },
-                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                             ) {
                                 TextField(
                                     value = category.name,
                                     colors = TextFieldDefaults.colors(
-                                        focusedTextColor = TaskUIHelper.Companion.pickColor(
-                                            category
-                                        ), unfocusedTextColor = TaskUIHelper.Companion.pickColor(category)
+                                        focusedTextColor = TaskUIHelper.pickColor(category),
+                                        unfocusedTextColor = TaskUIHelper.pickColor(category),
                                     ),
                                     onValueChange = {},
                                     label = { Text("Category", fontSize = 11.sp) },
@@ -162,8 +241,7 @@ fun CreateTaskDialog(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                                        .pointerHoverIcon(PointerIcon.Hand, true)
-
+                                        .pointerHoverIcon(PointerIcon.Hand, true),
                                 )
 
                                 ExposedDropdownMenu(
@@ -177,7 +255,7 @@ fun CreateTaskDialog(
                                                 Text(
                                                     cat.name,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = TaskUIHelper.Companion.pickColor(cat)
+                                                    color = TaskUIHelper.pickColor(cat),
                                                 )
                                             },
                                             onClick = {
@@ -193,27 +271,27 @@ fun CreateTaskDialog(
                             Spacer(Modifier.height(10.dp))
 
                             UserListDropdown(
-                                "Assignee",
-                                {  isDropdownLoading = it},
-                                task.ownership_username,
-                                { selectedUser = it },
-                                { selectedUser = it },
+                                label = "Assignee",
+                                users = members,
+                                isLoading = isUsersLoading,
+                                selectedUsername = selectedUser?.username,
+                                onUserSelected = { selectedUser = it },
+                                onLoad = { selectedUser = it },
                             )
 
                             Spacer(Modifier.height(16.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
                             )
                             {
-
                                 OutlinedButton(
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = Color.Black,
-                                        containerColor = TaskUIHelper.Companion.getGray()
+                                        containerColor = TaskUIHelper.getGray(),
                                     ),
-                                    onClick = { onDismiss() }
+                                    onClick = { onDismiss() },
                                 )
                                 {
                                     Text("Close")
@@ -223,50 +301,58 @@ fun CreateTaskDialog(
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = Color.Black,
-                                        containerColor = TaskUIHelper.Companion.getGreen()
+                                        containerColor = TaskUIHelper.getGreen(),
                                     ),
                                     onClick = {
+                                        val gid = selectedGroup?.id
+                                        val assignee = selectedUser?.username
+                                        if (gid == null) {
+                                            toastIsError = true
+                                            toastMessage = "Pick a group first"
+                                            return@OutlinedButton
+                                        }
+                                        if (assignee.isNullOrBlank()) {
+                                            toastIsError = true
+                                            toastMessage = "Pick an assignee first"
+                                            return@OutlinedButton
+                                        }
+                                        if (name.isBlank()) {
+                                            toastIsError = true
+                                            toastMessage = "Name cannot be empty"
+                                            return@OutlinedButton
+                                        }
                                         val newTask = Task(
-                                            name,
-                                            description,
-                                            try {
-                                                TaskCategory.valueOf(category.name)
-                                            } catch (e: IllegalArgumentException) {
-                                                TaskCategory.Social
-                                            },
-                                            TaskStatus.valueOf(taskStatus.name),
-                                            selectedUser?.username.toString()
+                                            name = name,
+                                            description = description,
+                                            category = category,
+                                            status = taskStatus,
+                                            ownership_username = assignee,
                                         )
                                         scope.launch {
                                             loading = true
-                                            when (val result = taskApi.createTask(newTask)) {
+                                            when (val result = taskApi.createTask(newTask, gid)) {
                                                 is ApiResult.Success -> {
                                                     toastIsError = false
-                                                    toastMessage = "Completed"
+                                                    toastMessage = "Created"
                                                     onConfirm(result.data)
                                                 }
-
                                                 is ApiResult.Error -> {
                                                     toastIsError = true
                                                     toastMessage = result.message
                                                 }
-
                                                 else -> {}
                                             }
                                             loading = false
                                         }
-                                        onConfirm(newTask)
-                                    })
+                                    },
+                                )
                                 {
                                     Text("Create")
                                 }
                             }
                         }
-
                     }
                 }
             }
-
-        }
     }
 }

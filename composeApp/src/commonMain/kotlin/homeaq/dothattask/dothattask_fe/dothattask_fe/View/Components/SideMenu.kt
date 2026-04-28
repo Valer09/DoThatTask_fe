@@ -129,7 +129,7 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                             }
                             Spacer(Modifier.height(10.dp))
                             Row(modifier = rowMod.background(getRowColor(Screen.TaskManagement))) {
-                                DrawerItem("Tasks Management", {
+                                DrawerItem("Manage Tasks", {
                                     scope.launch {
                                         AppState.currentScreen = Screen.TaskManagement
                                         onPageChange(Screen.TaskManagement)
@@ -149,9 +149,9 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                             }
                             Spacer(Modifier.height(10.dp))
                             Row(modifier = rowMod.background(getRowColor(Screen.GroupHome))) {
-                                DrawerItem("Group", {
+                                DrawerItem("Groups", {
                                     scope.launch {
-                                        val target = if (AuthState.groupId != null) Screen.GroupHome else Screen.NoGroup
+                                        val target = if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
                                         AppState.currentScreen = target
                                         onPageChange(target)
                                         drawerState.close()
