@@ -240,6 +240,9 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation("com.google.firebase:firebase-analytics")
+    // FCM — server-driven push notifications (replaces the old Android-only
+    // DailyNotificationWorker). Requires google-services.json at composeApp/.
+    implementation("com.google.firebase:firebase-messaging")
     debugImplementation(compose.uiTooling)
 }
 

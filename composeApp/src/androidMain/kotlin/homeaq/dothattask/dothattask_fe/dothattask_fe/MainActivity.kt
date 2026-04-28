@@ -1,12 +1,8 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,16 +12,17 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
+import androidx.lifecycle.lifecycleScope
+import com.google.firebase.messaging.FirebaseMessaging
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -33,47 +30,45 @@ class MainActivity : ComponentActivity() {
 
         AuthProvider.init(applicationContext)
 
-        NotificationPrefs.markAppOpened(this)
-        createNotificationChannel(this)
-        checkAndRequestNotificationPermission(this)
+        DoThatTaskFcmService.ensureChannel(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ensurePostNotificationsPermission()
+        } else {
+            registerFcmToken()
+        }
 
         setContent { App() }
     }
 
     private val requestNotificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission())
-        {
-            granted -> if (granted) scheduleDailyWorker(this)
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) registerFcmToken()
         }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun checkAndRequestNotificationPermission(context: Context)
-    {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS  ) == PackageManager.PERMISSION_GRANTED)
-            scheduleDailyWorker(context)
-
+    private fun ensurePostNotificationsPermission() {
+        val granted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) registerFcmToken()
         else requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
-    fun scheduleDailyWorker(context: Context)
-    {
-        val constraints =  Constraints.Builder()
-            .setRequiresBatteryNotLow(true)
-            .build()
-
-        val request =
-            PeriodicWorkRequestBuilder<DailyNotificationWorker>(1, TimeUnit.DAYS)
-                .setConstraints(constraints)
-                .build()
-
-        WorkManager.getInstance(context)
-            .enqueueUniquePeriodicWork(
-                "daily_notification_worker",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                request
-            )
+    /**
+     * Best-effort: fetch the FCM token and ship it to the backend so the
+     * server can target this device. Failures are logged on the server side
+     * (no auth → drop) and re-tried automatically by [DoThatTaskFcmService.onNewToken]
+     * the next time FCM rotates the token.
+     */
+    private fun registerFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) return@addOnCompleteListener
+            val token = task.result ?: return@addOnCompleteListener
+            lifecycleScope.launch {
+                runCatching { NotificationApi(createHttpClient()).registerFcmToken(token) }
+            }
+        }
     }
-
 }
 
 @Preview
@@ -81,47 +76,3 @@ class MainActivity : ComponentActivity() {
 fun AppAndroidPreview() {
     App()
 }
-
-object NotificationPrefs {
-
-    private const val PREFS = "notification_prefs"
-    private const val KEY_SENT_COUNT = "sent_count"
-    private const val KEY_APP_OPENED = "app_opened"
-
-    fun incrementSent(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        prefs.edit { putInt(KEY_SENT_COUNT, getSentCount(context) + 1) }
-    }
-
-    fun getSentCount(context: Context): Int =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getInt(KEY_SENT_COUNT, 0)
-
-    fun markAppOpened(context: Context)
-    {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit{ putBoolean(KEY_APP_OPENED, true)     }
-    }
-
-    fun hasOpenedApp(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getBoolean(KEY_APP_OPENED, false)
-}
-
-fun createNotificationChannel(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(
-            "daily_channel",
-            "Daily reminders",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-    }
-}
-
-
-
-
-
-
