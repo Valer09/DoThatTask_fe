@@ -84,9 +84,8 @@ class AuthApi(
 
     /**
      * Force a refresh of the access token. Useful after a state change on the
-     * server that affects JWT claims (e.g. the user accepted a group invite
-     * and the claim `gid` needs to be updated without waiting for natural
-     * access-token expiry).
+     * server (e.g. a new group joined/created) so [AuthState.groups] is
+     * reloaded without waiting for natural access-token expiry.
      */
     suspend fun refresh(): ApiResult<AuthTokens> = try {
         val refresh = AuthState.refreshToken
@@ -131,7 +130,7 @@ class AuthApi(
             displayName = tokens.user.name,
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,
-            groupId = tokens.user.groupId,
+            groups = tokens.user.groups,
         )
         AuthState.persist()
     }

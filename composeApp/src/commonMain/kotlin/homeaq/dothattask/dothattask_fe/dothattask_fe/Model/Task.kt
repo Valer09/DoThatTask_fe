@@ -26,5 +26,8 @@ data class Task
     val description: String,
     val category: TaskCategory,
     val status: TaskStatus,
-    val ownership_username: String
+    val ownership_username: String,
+    val groupId: Int = 0,
+    val groupName: String = "",
+    val groupColor: String = "",
 )

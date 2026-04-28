@@ -26,72 +26,50 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 
 
+/**
+ * A reusable user-picker dropdown. Callers supply the list of users (so the
+ * same component can be driven by group-aware data — e.g. members of a
+ * specific group during create/update). Pre-selects [selectedUsername] when
+ * present.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListDropdown(
     label: String,
-    isLoading: (Boolean) -> Unit,
+    users: List<User>,
+    isLoading: Boolean,
     selectedUsername: String?,
     onUserSelected: (User) -> Unit,
-    onLoad: (User) -> Unit,
+    onLoad: (User) -> Unit = {},
     height: Dp = 60.dp,
     labelSize: TextUnit = 11.sp,
-    fontSizea: TextUnit = 13.sp
+    fontSizea: TextUnit = 13.sp,
 )
 {
-    val taskApi = remember { TaskApi(createHttpClient()) }
-    var userList by remember { mutableStateOf<List<User>>(emptyList()) }
-    var selectedUser by remember { mutableStateOf<User?>(null) }
+    var selectedUser by remember(selectedUsername, users) {
+        mutableStateOf(
+            selectedUsername?.let { name -> users.firstOrNull { it.username == name } }
+                ?: users.firstOrNull(),
+        )
+    }
     var userDropdownExpanded by remember { mutableStateOf(false) }
-    var toastMessage by remember { mutableStateOf<String?>(null) }
-    var toastIsError by remember { mutableStateOf(false) }
-    var loaded by remember { mutableStateOf(false) }
 
-    suspend fun loadUsers() {
-        try {
-            val usersResult = taskApi.getAllUsers()
-            if (usersResult is ApiResult.Success)
-            {
-                userList = usersResult.data
-                if (userList.isNotEmpty()) selectedUser = selectedUsername?.let { userList.find { it.username == selectedUsername } } ?: userList.firstOrNull()
-
-            } else if (usersResult is ApiResult.Error) {
-                toastIsError = true
-                toastMessage = usersResult.message
-            }
-        } catch (e: Exception) {
-            toastIsError = true
-            toastMessage = "Failed to load users: ${e.message}"
-        }
-        finally
-        {
-            isLoading(false)
-            loaded = true
-        }
+    LaunchedEffect(users, selectedUsername) {
+        selectedUser?.let { onLoad(it) }
     }
 
     Row(modifier = Modifier.fillMaxWidth())
     {
-
-        LaunchedEffect(Unit)
-        {
-            isLoading(true)
-            loadUsers()
-            selectedUser?.let { onLoad(it) }
-        }
         ExposedDropdownMenuBox(
             expanded = userDropdownExpanded,
             onExpandedChange = { userDropdownExpanded = !userDropdownExpanded },
             modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true)) {
             TextField(
-                value = if(!loaded) "Loading. . ." else { selectedUser?.name ?: "" },
+                value = if (isLoading) "Loading. . ." else selectedUser?.name ?: "",
                 onValueChange = {},
-                label = {Text("User", fontSize = labelSize) },
+                label = {Text(label, fontSize = labelSize) },
                 textStyle = TextStyle(
                     fontWeight = FontWeight.Bold,
                     fontSize = fontSizea
@@ -102,7 +80,6 @@ fun UserListDropdown(
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                     .pointerHoverIcon(PointerIcon.Hand, true)
                     .fillMaxWidth().height(height)
-
             )
             val pointerHoverIcon = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
             ExposedDropdownMenu(
@@ -110,7 +87,7 @@ fun UserListDropdown(
                 onDismissRequest = { userDropdownExpanded = false },
                 modifier = pointerHoverIcon.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
             ) {
-                userList.forEach { user ->
+                users.forEach { user ->
                     DropdownMenuItem(
                         text = { Text(user.name, fontSize = fontSizea) },
                         onClick = {
@@ -123,6 +100,5 @@ fun UserListDropdown(
                 }
             }
         }
-
     }
 }

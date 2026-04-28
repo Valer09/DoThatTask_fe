@@ -11,6 +11,7 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -42,11 +43,18 @@ fun createUnauthenticatedClient() = HttpClient {
     }
 }
 
-// The primary client used by authenticated API calls. Uses the Ktor Auth
-// bearer plugin, which transparently calls the refresh endpoint on 401 and
-// retries the original request with the new access token. If the refresh
-// itself fails (refresh token missing/revoked/expired), onRefreshFailed is
-// invoked so the UI can route the user back to Login.
+/**
+ * The primary client used by authenticated API calls. Uses the Ktor Auth
+ * bearer plugin, which transparently calls the refresh endpoint on 401 and
+ * retries the original request with the new access token. If the refresh
+ * itself fails (refresh token missing/revoked/expired), [onRefreshFailed] is
+ * invoked so the UI can route the user back to Login.
+ *
+ * Multi-group: every request automatically carries `X-Group-Id` from
+ * [AuthState.activeGroupId]. Endpoints that operate on a specific group
+ * (tasks, invites, members) read it server-side. Endpoints that don't care
+ * about groups (auth, /me) simply ignore it.
+ */
 fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
     install(ContentNegotiation) { json(json) }
     install(Auth) {
@@ -69,7 +77,11 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
                     }.body()
                     AuthState.accessToken = tokens.accessToken
                     AuthState.refreshToken = tokens.refreshToken
-                    AuthState.groupId = tokens.user.groupId
+                    AuthState.groups = tokens.user.groups
+                    val current = AuthState.activeGroupId
+                    AuthState.activeGroupId =
+                        if (current != null && tokens.user.groups.any { it.id == current }) current
+                        else tokens.user.groups.firstOrNull()?.id
                     AuthState.persist()
                     BearerTokens(tokens.accessToken, tokens.refreshToken)
                 } catch (_: Exception) {
@@ -92,5 +104,6 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
             host = Environment.HOST
             port = Environment.PORT
         }
+        AuthState.activeGroupId?.let { header("X-Group-Id", it.toString()) }
     }
 }

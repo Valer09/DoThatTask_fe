@@ -38,6 +38,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,7 +78,7 @@ fun IncomingInvitesPage() {
             OutlinedButton(
                 onClick = {
                     AppState.currentScreen =
-                        if (AuthState.groupId != null) Screen.GroupHome else Screen.NoGroup
+                        if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
                 },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
             ) { Text("Back") }
@@ -106,8 +107,8 @@ fun IncomingInvitesPage() {
                         .background(TaskUIHelper.getLightGray())
                         .padding(12.dp),
                 ) {
-                    Text(invite.groupName, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(4.dp))
+                    GroupBadge(invite.groupName, invite.groupColor)
+                    Spacer(Modifier.height(6.dp))
                     Text("Invited by @${invite.inviterUsername}", color = Color.DarkGray)
                     Spacer(Modifier.height(10.dp))
                     Row {
@@ -116,12 +117,10 @@ fun IncomingInvitesPage() {
                                 CoroutineScope(Dispatchers.Default).launch {
                                     when (val resp = inviteApi.accept(invite.id)) {
                                         is ApiResult.Success -> {
-                                            // Refresh JWT so the new gid is
-                                            // attached to future requests.
+                                            // Refresh tokens so AuthState.groups reflects
+                                            // the newly accepted membership.
                                             authApi.refresh()
-                                            AuthState.groupId = invite.groupId
-                                            AuthState.persist()
-                                            AppState.currentScreen = Screen.GroupHome
+                                            reload()
                                         }
                                         is ApiResult.Error -> message = resp.message
                                         is ApiResult.NotFound -> message = resp.message

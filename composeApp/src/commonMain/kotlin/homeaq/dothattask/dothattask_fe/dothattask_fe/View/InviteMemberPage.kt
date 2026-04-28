@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,10 +26,12 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,9 @@ fun InviteMemberPage() {
     var message by remember { mutableStateOf<String?>(null) }
     var messageIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
+
+    val targetGroupId = AppState.inviteTargetGroupId ?: AuthState.activeGroupId
+    val targetGroup = AuthState.groups.firstOrNull { it.id == targetGroupId }
 
     val inviteApi = remember { InviteApi(createHttpClient()) }
 
@@ -63,7 +67,14 @@ fun InviteMemberPage() {
             ) { Text("Back") }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
+        if (targetGroup != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Inviting into ", color = Color.DarkGray)
+                GroupBadge(targetGroup.name, targetGroup.color)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
         Text(
             "Enter the exact username of the person you want to invite.",
             color = Color.DarkGray,
@@ -88,10 +99,16 @@ fun InviteMemberPage() {
                     usernameError = "Username cannot be empty"
                     return@Button
                 }
+                val gid = targetGroupId
+                if (gid == null) {
+                    messageIsError = true
+                    message = "No group selected"
+                    return@Button
+                }
                 loading = true
                 CoroutineScope(Dispatchers.Default).launch {
                     try {
-                        when (val resp = inviteApi.sendInvite(trimmed)) {
+                        when (val resp = inviteApi.sendInvite(gid, trimmed)) {
                             is ApiResult.Success -> {
                                 messageIsError = false
                                 message = "Invite sent to @${resp.data.inviteeUsername}"

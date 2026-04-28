@@ -21,4 +21,11 @@ enum class Screen {
 
 object AppState {
     var currentScreen by mutableStateOf(Screen.Login)
+
+    /**
+     * Group the user is about to send an invite for. Set when the user clicks
+     * "Invite member" on a specific group card so [InviteMemberPage] knows
+     * which group the invite belongs to.
+     */
+    var inviteTargetGroupId by mutableStateOf<Int?>(null)
 }
