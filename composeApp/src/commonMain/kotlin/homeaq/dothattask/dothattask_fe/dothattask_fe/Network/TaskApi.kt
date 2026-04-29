@@ -209,7 +209,7 @@ class TaskApi(private val httpClient: HttpClient) {
                 header("X-Group-Id", groupId.toString())
                 url {
                     creator?.takeIf { it.isNotBlank() }?.let { parameters.append("creator", it) }
-                    category?.let { parameters.append("category", it.name) }
+                    category?.takeIf { it.name.isNotBlank() }?.let { parameters.append("category", it.name) }
                     assignee?.takeIf { it.isNotBlank() }?.let { parameters.append("assignee", it) }
                 }
             }

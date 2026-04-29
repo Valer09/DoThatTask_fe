@@ -45,6 +45,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupCategoriesSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -150,6 +151,12 @@ fun GroupHomePage() {
                             }
                             Spacer(Modifier.height(4.dp))
                         }
+
+                        Spacer(Modifier.height(8.dp))
+                        // Per-group categories editor — every member can add or
+                        // unlink (the backend enforces blocking unlink while
+                        // tasks still reference a category).
+                        GroupCategoriesSection(groupId = group.id)
 
                         Spacer(Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {

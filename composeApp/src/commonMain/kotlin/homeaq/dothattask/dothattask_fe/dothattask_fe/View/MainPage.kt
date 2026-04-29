@@ -39,10 +39,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
@@ -58,13 +60,34 @@ import kotlinx.coroutines.launch
 fun MainPage(
 ) {
     val taskApi = remember { TaskApi(createHttpClient()) }
+    val categoryApi = remember { CategoryApi(createHttpClient()) }
     var assignedTask by remember { mutableStateOf<Task?>(null) }
 
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
 
+    // The dropdown is fed from the active group's category list. Defaults
+    // act as a placeholder while the network fetch is in flight or when no
+    // group is active yet.
+    var availableCategories by remember { mutableStateOf(TaskCategory.Defaults) }
     var category by remember { mutableStateOf(TaskCategory.Social) }
     var categoryExpanded by remember { mutableStateOf(false) }
+
+    val activeGroupId = AuthState.activeGroupId
+    LaunchedEffect(activeGroupId) {
+        val gid = activeGroupId ?: return@LaunchedEffect
+        when (val result = categoryApi.list(gid)) {
+            is ApiResult.Success -> {
+                if (result.data.isNotEmpty()) {
+                    availableCategories = result.data
+                    if (availableCategories.none { it.id == category.id }) {
+                        category = availableCategories.first()
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
 
     val scope = rememberCoroutineScope()
 
@@ -308,7 +331,7 @@ Box{
                                 onDismissRequest = { categoryExpanded = false },
                                 modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                             ) {
-                                TaskCategory.entries.forEach { cat ->
+                                availableCategories.forEach { cat ->
                                     DropdownMenuItem(
                                         text = { Text(cat.name, fontWeight = FontWeight.Bold, color = TaskUIHelper.pickColor(cat)) },
                                         onClick = {

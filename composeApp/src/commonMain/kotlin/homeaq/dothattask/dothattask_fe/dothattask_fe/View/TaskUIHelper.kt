@@ -7,11 +7,12 @@ class TaskUIHelper
 {
     companion object
     {
-        fun pickColor(category: TaskCategory) = when (category) {
-            TaskCategory.Social -> Color(0xFF2596BE)
-            TaskCategory.Career -> Color(0xFFE0A940)
-            TaskCategory.Health -> Color(0xFFecb8c3)
-        }
+        /**
+         * Categories carry their own color now (set per-group on the
+         * backend). Defer to that, falling back to the mariner blue used
+         * elsewhere in the UI when the color is missing or malformed.
+         */
+        fun pickColor(category: TaskCategory): Color = parseHexColor(category.color)
 
         fun getGreen(): Color {
             return Color(0xFF7ec97d)
