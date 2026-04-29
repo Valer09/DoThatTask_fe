@@ -248,7 +248,7 @@ Box{
                                 Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
                                     assignedTask?.category?.let {
                                         Text(
-                                            text = "${assignedTask?.category}",
+                                            text = "${assignedTask?.category?.name}",
                                             fontWeight = FontWeight.Bold,
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontSize = 17.sp,
