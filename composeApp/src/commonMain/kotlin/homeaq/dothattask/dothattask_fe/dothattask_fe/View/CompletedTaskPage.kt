@@ -44,9 +44,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOver
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 
 private const val ANY_GROUP_LABEL = "Any"
 
@@ -55,53 +52,35 @@ private const val ANY_GROUP_LABEL = "Any"
 fun CompletedTaskPage() {
 
     val taskApi = remember { TaskApi(createHttpClient()) }
-    var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
+    // Server-side, /api/tasks/completed already aggregates across every
+    // group the user belongs to. We fetch once and filter client-side on
+    // task.groupId — fanning out per group would have returned the same
+    // list N times (the endpoint ignores X-Group-Id).
+    var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var currentDetailTask by remember { mutableStateOf<Task?>(null) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 
-    // null = "Any" → fan out to every group the user belongs to and concat
-    // the results. Otherwise, fetch completed tasks for that group only.
+    // null = "Any" → show every completed task. Otherwise, show only tasks
+    // belonging to that group.
     var selectedFilter by remember { mutableStateOf<GroupSummary?>(null) }
     var groupExpanded by remember { mutableStateOf(false) }
 
     val groups = AuthState.groups
 
-    suspend fun loadTasks() {
-        errorMessage = null
+    LaunchedEffect(Unit) {
         loading = true
+        errorMessage = null
         try {
-            tasks = if (selectedFilter == null) {
-                // Fan out one call per group in parallel; merge the responses.
-                if (groups.isEmpty()) emptyList()
-                else coroutineScope {
-                    groups
-                        .map { g -> async { taskApi.getCompleted(g.id) } }
-                        .awaitAll()
-                        .flatMap { res ->
-                            when (res) {
-                                is ApiResult.Success -> res.data
-                                is ApiResult.Error -> {
-                                    toastIsError = true
-                                    toastMessage = res.message
-                                    emptyList()
-                                }
-                                else -> emptyList()
-                            }
-                        }
+            when (val res = taskApi.getCompleted()) {
+                is ApiResult.Success -> allTasks = res.data
+                is ApiResult.Error -> {
+                    toastIsError = true
+                    toastMessage = res.message
                 }
-            } else {
-                when (val res = taskApi.getCompleted(selectedFilter!!.id)) {
-                    is ApiResult.Success -> res.data
-                    is ApiResult.Error -> {
-                        toastIsError = true
-                        toastMessage = res.message
-                        emptyList()
-                    }
-                    else -> emptyList()
-                }
+                else -> {}
             }
         } catch (e: Exception) {
             errorMessage = "Error loading tasks: ${e.message}"
@@ -110,9 +89,7 @@ fun CompletedTaskPage() {
         }
     }
 
-    LaunchedEffect(selectedFilter) {
-        loadTasks()
-    }
+    val visibleTasks = selectedFilter?.let { f -> allTasks.filter { it.groupId == f.id } } ?: allTasks
 
     if (currentDetailTask != null) {
         TaskDetailDialog(
@@ -125,8 +102,8 @@ fun CompletedTaskPage() {
     Box {
         Column {
             // Group filter — defaults to "Any" so the page shows every
-            // completed task at first open. Switching the dropdown re-runs
-            // loadTasks via the LaunchedEffect, no submit button needed.
+            // completed task at first open. Switching the dropdown filters
+            // the already-loaded list, no extra request needed.
             if (groups.isNotEmpty()) {
                 Row(
                     modifier = Modifier
@@ -205,7 +182,7 @@ fun CompletedTaskPage() {
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            } else if (tasks.isEmpty() && !loading) {
+            } else if (visibleTasks.isEmpty() && !loading) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -221,7 +198,7 @@ fun CompletedTaskPage() {
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(tasks) { task ->
+                    items(visibleTasks) { task ->
                         TaskCard(
                             task,
                             onDelete = {},
