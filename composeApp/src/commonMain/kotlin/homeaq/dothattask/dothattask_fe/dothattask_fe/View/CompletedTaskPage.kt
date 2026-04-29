@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -46,9 +47,13 @@ fun CompletedTaskPage() {
     var loading by remember { mutableStateOf(false) }
 
     suspend fun loadTasks() {
+        val gid = AuthState.activeGroupId ?: run {
+            tasks = emptyList()
+            return
+        }
         loading = true
         try {
-            val result = taskApi.getCompleted()
+            val result = taskApi.getCompleted(gid)
             if (result is ApiResult.Error)
             {
                 toastIsError = true
@@ -68,7 +73,7 @@ fun CompletedTaskPage() {
         }
     }
 
-    LaunchedEffect(Unit)
+    LaunchedEffect(AuthState.activeGroupId)
     {
         loadTasks()
     }

@@ -5,7 +5,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -45,7 +44,7 @@ class GroupApi(private val client: HttpClient) {
     /** `POST /api/groups/leave` — leaves the [groupId] group specifically. */
     suspend fun leave(groupId: Int): ApiResult<String> = try {
         val resp = client.post("/api/groups/leave") {
-            header("X-Group-Id", groupId.toString())
+            withGroup(groupId)
         }
         when (resp.status.value) {
             in 200..299 -> ApiResult.Success(resp.body<String>().ifBlank { "Left group" })
