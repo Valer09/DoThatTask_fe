@@ -253,14 +253,29 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Do That Task"
+            // MUST be bumped on every release. Windows Installer only triggers
+            // a Major Upgrade when the new MSI's version is greater than the
+            // installed one. Use semantic versioning (X.Y.Z); a fourth
+            // component is allowed but Compose forwards this verbatim to
+            // jpackage which forwards it to WiX.
             packageVersion = "1.2.0"
             includeAllModules = true
             windows {
                 iconFile.set(File("logo/icon.ico"))
+                // Per-user install (no admin prompt). The trade-off is that
+                // upgrade detection only matches *previous per-user installs*;
+                // a system-wide install (perUserInstall=false) cannot be
+                // upgraded by this MSI and would have to be removed first.
                 perUserInstall = true
                 dirChooser = true
                 menuGroup = "DoThatTask"
+                // Same UpgradeCode forever — this is what lets a new MSI
+                // detect the previously installed version and run a Major
+                // Upgrade (silently uninstall + install) instead of failing
+                // with "another version is already installed". Never change
+                // this value: doing so breaks every future upgrade.
                 upgradeUuid = "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+                shortcut = true
             }
             modules("java.instrument", "java.management", "java.naming", "java.sql", "jdk.unsupported")
         }

@@ -48,6 +48,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
@@ -71,6 +72,7 @@ fun CreateTaskDialog(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var availableCategories by remember { mutableStateOf(TaskCategory.Defaults) }
     var category by remember { mutableStateOf(TaskCategory.Social) }
     val taskStatus = TaskStatus.TODO
     var categoryExpanded by remember { mutableStateOf(false) }
@@ -87,6 +89,7 @@ fun CreateTaskDialog(
     val scope = rememberCoroutineScope()
 
     val taskApi = remember { TaskApi(createHttpClient()) }
+    val categoryApi = remember { CategoryApi(createHttpClient()) }
 
     val colors = TextFieldDefaults.colors(
         focusedTextColor = Color.Blue,
@@ -98,7 +101,8 @@ fun CreateTaskDialog(
     var isUsersLoading by remember { mutableStateOf(false) }
     var members by remember { mutableStateOf<List<User>>(emptyList()) }
 
-    // Re-fetch the assignee list whenever the group changes.
+    // Re-fetch the assignee list AND the group's category list whenever the
+    // group changes — categories are per-group now (defaults + customs).
     LaunchedEffect(selectedGroup?.id) {
         val gid = selectedGroup?.id ?: return@LaunchedEffect
         isUsersLoading = true
@@ -118,6 +122,16 @@ fun CreateTaskDialog(
             }
         } finally {
             isUsersLoading = false
+        }
+        when (val result = categoryApi.list(gid)) {
+            is ApiResult.Success -> {
+                if (result.data.isNotEmpty()) {
+                    availableCategories = result.data
+                    category = availableCategories.firstOrNull { it.id == category.id }
+                        ?: availableCategories.first()
+                }
+            }
+            else -> {}
         }
     }
 
@@ -249,7 +263,7 @@ fun CreateTaskDialog(
                                     onDismissRequest = { categoryExpanded = false },
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                 ) {
-                                    TaskCategory.entries.forEach { cat ->
+                                    availableCategories.forEach { cat ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

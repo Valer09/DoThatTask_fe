@@ -43,6 +43,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.CreateTaskDialog
@@ -60,12 +61,14 @@ private const val CREATOR_ME_OPTION = "Me"
 @Composable
 fun TaskManagementPage() {
     val taskApi = remember { TaskApi(createHttpClient()) }
+    val categoryApi = remember { CategoryApi(createHttpClient()) }
     val scope = rememberCoroutineScope()
 
     val groups: List<GroupSummary> = AuthState.groups
     var selectedGroup by remember { mutableStateOf<GroupSummary?>(AuthState.activeGroup() ?: groups.firstOrNull()) }
 
     var members by remember { mutableStateOf<List<User>>(emptyList()) }
+    var availableCategories by remember { mutableStateOf<List<TaskCategory>>(TaskCategory.Defaults) }
 
     /** null = "Anyone" / "Any". */
     var creator by remember { mutableStateOf<String?>(null) }
@@ -137,6 +140,10 @@ fun TaskManagementPage() {
             assignee = null
             category = null
             loadMembers(gid)
+            when (val res = categoryApi.list(gid)) {
+                is ApiResult.Success -> availableCategories = res.data
+                else -> availableCategories = TaskCategory.Defaults
+            }
         }
     }
 
@@ -300,7 +307,7 @@ fun TaskManagementPage() {
                         text = { Text("Any") },
                         onClick = { category = null; categoryExpanded = false },
                     )
-                    TaskCategory.entries.forEach { cat ->
+                    availableCategories.forEach { cat ->
                         DropdownMenuItem(
                             text = { Text(cat.name, color = TaskUIHelper.pickColor(cat), fontWeight = FontWeight.Bold) },
                             onClick = { category = cat; categoryExpanded = false },

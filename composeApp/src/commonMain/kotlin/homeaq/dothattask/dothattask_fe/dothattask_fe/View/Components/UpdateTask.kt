@@ -48,6 +48,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
@@ -63,6 +64,7 @@ fun UpdateTaskDialog(
 ) {
     var name by remember { mutableStateOf(task.name) }
     var description by remember { mutableStateOf(task.description) }
+    var availableCategories by remember { mutableStateOf(listOf(task.category) + TaskCategory.Defaults.filter { it.id != task.category.id }) }
     var category by remember { mutableStateOf(task.category) }
     val taskStatus = task.status
     var categoryExpanded by remember { mutableStateOf(false) }
@@ -73,6 +75,7 @@ fun UpdateTaskDialog(
     val scope = rememberCoroutineScope()
 
     val taskApi = remember { TaskApi(createHttpClient()) }
+    val categoryApi = remember { CategoryApi(createHttpClient()) }
     var loading by remember { mutableStateOf(false) }
     var isUsersLoading by remember { mutableStateOf(true) }
     var members by remember { mutableStateOf<List<User>>(emptyList()) }
@@ -94,6 +97,16 @@ fun UpdateTaskDialog(
             }
         } finally {
             isUsersLoading = false
+        }
+        when (val res = categoryApi.list(task.groupId)) {
+            is ApiResult.Success -> {
+                if (res.data.isNotEmpty()) {
+                    availableCategories = res.data
+                    category = availableCategories.firstOrNull { it.id == category.id }
+                        ?: availableCategories.first()
+                }
+            }
+            else -> {}
         }
     }
 
@@ -185,7 +198,7 @@ fun UpdateTaskDialog(
                                 onDismissRequest = { categoryExpanded = false },
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                             ) {
-                                TaskCategory.entries.forEach { cat ->
+                                availableCategories.forEach { cat ->
                                     DropdownMenuItem(
                                         text = {
                                             Text(
