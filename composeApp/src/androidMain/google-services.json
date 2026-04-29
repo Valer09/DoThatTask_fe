@@ -1,0 +1,29 @@
+ {
+  "project_info": {
+    "project_number": "258960112125",
+    "project_id": "dothattask-37ffe",
+    "storage_bucket": "dothattask-37ffe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258960112125:android:fdf6d77194a3ee2bfa0194",
+        "android_client_info": {
+          "package_name": "homeaq.dothattask.dothattask_fe.dothattask_fe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtR7qfQc_YXwJFZLs3q510L90U1U__6ok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
