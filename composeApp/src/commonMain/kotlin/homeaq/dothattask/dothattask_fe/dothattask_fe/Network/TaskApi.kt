@@ -238,14 +238,18 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    /** Lists tasks the caller has completed in [groupId]. */
-    suspend fun getCompleted(groupId: Int): ApiResult<List<Task>>
+    /**
+     * Lists every task the caller has completed, across **all** groups they
+     * belong to. The server aggregates user-side, so no `X-Group-Id` filter
+     * is sent. Pages that need a per-group view filter on `task.groupId`
+     * client-side — cheaper than fanning out one request per group, and the
+     * server endpoint ignores the header anyway.
+     */
+    suspend fun getCompleted(): ApiResult<List<Task>>
     {
         return try
         {
-            val response = httpClient.get("/api/tasks/completed") {
-                withGroup(groupId)
-            }
+            val response = httpClient.get("/api/tasks/completed")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }
