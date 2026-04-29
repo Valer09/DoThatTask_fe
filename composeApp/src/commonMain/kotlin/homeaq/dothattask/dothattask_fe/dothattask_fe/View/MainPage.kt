@@ -66,6 +66,12 @@ fun MainPage(
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
 
+    // Local mirror of AuthState.activeGroupId. Driving everything off this
+    // state makes the page recompose when the user picks a different group
+    // from the dropdown — AuthState is a plain object, not a Compose state.
+    var selectedGroupId by remember { mutableStateOf(AuthState.activeGroupId) }
+    var groupExpanded by remember { mutableStateOf(false) }
+
     // The dropdown is fed from the active group's category list. Defaults
     // act as a placeholder while the network fetch is in flight or when no
     // group is active yet.
@@ -73,9 +79,11 @@ fun MainPage(
     var category by remember { mutableStateOf(TaskCategory.Social) }
     var categoryExpanded by remember { mutableStateOf(false) }
 
-    val activeGroupId = AuthState.activeGroupId
-    LaunchedEffect(activeGroupId) {
-        val gid = activeGroupId ?: return@LaunchedEffect
+    LaunchedEffect(selectedGroupId) {
+        // Propagate the selection so any other page reading the global active
+        // group (e.g. CompletedTaskPage) stays in sync.
+        AuthState.activeGroupId = selectedGroupId
+        val gid = selectedGroupId ?: return@LaunchedEffect
         when (val result = categoryApi.list(gid)) {
             is ApiResult.Success -> {
                 if (result.data.isNotEmpty()) {
@@ -94,9 +102,13 @@ fun MainPage(
     var loading by remember { mutableStateOf(false) }
 
     suspend fun loadAssignedTask() {
+        val gid = selectedGroupId ?: run {
+            assignedTask = null
+            return
+        }
         loading =  true
         try {
-            val result = taskApi.getAssignedTask()
+            val result = taskApi.getAssignedTask(gid)
 
             if (result is ApiResult.Success) assignedTask = result.data
             else if (result is ApiResult.NotFound) assignedTask = null
@@ -116,9 +128,14 @@ fun MainPage(
     }
 
     suspend fun pickTask(category: TaskCategory): Unit  {
+        val gid = selectedGroupId ?: run {
+            toastIsError = true
+            toastMessage = "Pick a group first"
+            return
+        }
         loading =  true
         try {
-            val result = taskApi.pickTask(category)
+            val result = taskApi.pickTask(gid, category)
 
             if (result is ApiResult.Success) loadAssignedTask()
             else if (result is ApiResult.NotFound)
@@ -167,7 +184,7 @@ fun MainPage(
         }
     }
 
-    LaunchedEffect(Unit)
+    LaunchedEffect(selectedGroupId)
     {
         loadAssignedTask()
     }
@@ -202,6 +219,64 @@ Box{
                 )
             }
         }
+
+        // Active-group selector. Drives the rest of the page (assigned task,
+        // pick-task category list, complete) so the user can flip between
+        // their groups without leaving Home.
+        val groups = AuthState.groups
+        val selectedGroup = groups.firstOrNull { it.id == selectedGroupId }
+        if (groups.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = groupExpanded,
+                    onExpandedChange = { groupExpanded = !groupExpanded },
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                ) {
+                    TextField(
+                        value = selectedGroup?.name ?: "",
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
+                            unfocusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
+                        ),
+                        onValueChange = {},
+                        label = { Text("Active Group", fontSize = 11.sp) },
+                        textStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = groupExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                            .pointerHoverIcon(PointerIcon.Hand, true),
+                    )
+                    ExposedDropdownMenu(
+                        expanded = groupExpanded,
+                        onDismissRequest = { groupExpanded = false },
+                    ) {
+                        groups.forEach { g ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        g.name,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TaskUIHelper.parseHexColor(g.color),
+                                    )
+                                },
+                                onClick = {
+                                    selectedGroupId = g.id
+                                    groupExpanded = false
+                                },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(15.dp))
         if (assignedTask != null)
         {

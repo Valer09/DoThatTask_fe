@@ -8,7 +8,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -21,7 +20,7 @@ class TaskApi(private val httpClient: HttpClient) {
         return try
         {
             val response = httpClient.delete("api/tasks/${task.name}") {
-                header("X-Group-Id", task.groupId.toString())
+                withGroup(task.groupId)
             }
 
             when (response.status.value) {
@@ -54,7 +53,7 @@ class TaskApi(private val httpClient: HttpClient) {
             )
             val response = httpClient.post("/api/tasks")
             {
-                header("X-Group-Id", groupId.toString())
+                withGroup(groupId)
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
             }
@@ -81,7 +80,7 @@ class TaskApi(private val httpClient: HttpClient) {
             )
             val response = httpClient.post("/api/tasks")
             {
-                header("X-Group-Id", oldTask.groupId.toString())
+                withGroup(oldTask.groupId)
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
             }
@@ -101,11 +100,14 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun getAssignedTask() :  ApiResult<Task>
+    /** Fetches the task currently assigned to the caller in [groupId]. */
+    suspend fun getAssignedTask(groupId: Int): ApiResult<Task>
     {
         return try
         {
-            val response = httpClient.get("/api/tasks/assignedTask")
+            val response = httpClient.get("/api/tasks/assignedTask") {
+                withGroup(groupId)
+            }
 
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
@@ -119,12 +121,14 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun pickTask(category: TaskCategory):  ApiResult<Task>
+    /** Picks a random task in [groupId] within [category] for the caller. */
+    suspend fun pickTask(groupId: Int, category: TaskCategory): ApiResult<Task>
     {
         return try
         {
             val response = httpClient.post("/api/tasks/pickTask")
             {
+                withGroup(groupId)
                 url{
                     parameters.append("category", category.name)
                 }
@@ -149,7 +153,7 @@ class TaskApi(private val httpClient: HttpClient) {
         {
             val response = httpClient.post("/api/tasks/unassign")
             {
-                header("X-Group-Id", task.groupId.toString())
+                withGroup(task.groupId)
                 url{
                     parameters.append("task_name", task.name)
                 }
@@ -178,7 +182,7 @@ class TaskApi(private val httpClient: HttpClient) {
         {
             if(assignedTask == null || assignedTask.name.isEmpty()) return ApiResult.Error("No task assigned. Error on the client")
             val response = httpClient.post("api/tasks/completeTask") {
-                header("X-Group-Id", assignedTask.groupId.toString())
+                withGroup(assignedTask.groupId)
                 url{
                     parameters.append("task_name", assignedTask.name)
                 }
@@ -206,7 +210,7 @@ class TaskApi(private val httpClient: HttpClient) {
     ): ApiResult<List<Task>> {
         return try {
             val response = httpClient.get("/api/tasks") {
-                header("X-Group-Id", groupId.toString())
+                withGroup(groupId)
                 url {
                     creator?.takeIf { it.isNotBlank() }?.let { parameters.append("creator", it) }
                     category?.takeIf { it.name.isNotBlank() }?.let { parameters.append("category", it.name) }
@@ -234,11 +238,14 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun getCompleted() :  ApiResult<List<Task>>
+    /** Lists tasks the caller has completed in [groupId]. */
+    suspend fun getCompleted(groupId: Int): ApiResult<List<Task>>
     {
         return try
         {
-            val response = httpClient.get("/api/tasks/completed")
+            val response = httpClient.get("/api/tasks/completed") {
+                withGroup(groupId)
+            }
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         }

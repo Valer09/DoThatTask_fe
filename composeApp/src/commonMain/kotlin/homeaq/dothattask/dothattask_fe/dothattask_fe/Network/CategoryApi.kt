@@ -5,7 +5,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -19,7 +18,7 @@ class CategoryApi(private val client: HttpClient) {
 
     /** `GET /api/categories` — categories visible to [groupId]. */
     suspend fun list(groupId: Int): ApiResult<List<TaskCategory>> = try {
-        val resp = client.get("/api/categories") { header("X-Group-Id", groupId.toString()) }
+        val resp = client.get("/api/categories") { withGroup(groupId) }
         if (resp.status.value in 200..299) ApiResult.Success(resp.body())
         else ApiResult.Error("Could not load categories (${resp.status.value})")
     } catch (e: Exception) {
@@ -34,7 +33,7 @@ class CategoryApi(private val client: HttpClient) {
      */
     suspend fun create(groupId: Int, name: String, color: String?): ApiResult<TaskCategory> = try {
         val resp = client.post("/api/categories") {
-            header("X-Group-Id", groupId.toString())
+            withGroup(groupId)
             contentType(ContentType.Application.Json)
             setBody(CreateCategoryRequest(name, color))
         }
@@ -54,7 +53,7 @@ class CategoryApi(private val client: HttpClient) {
      */
     suspend fun unlink(groupId: Int, categoryId: Int): ApiResult<Unit> = try {
         val resp = client.delete("/api/categories/$categoryId") {
-            header("X-Group-Id", groupId.toString())
+            withGroup(groupId)
         }
         when (resp.status.value) {
             in 200..299 -> ApiResult.Success(Unit)

@@ -11,7 +11,6 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -50,10 +49,10 @@ fun createUnauthenticatedClient() = HttpClient {
  * itself fails (refresh token missing/revoked/expired), [onRefreshFailed] is
  * invoked so the UI can route the user back to Login.
  *
- * Multi-group: every request automatically carries `X-Group-Id` from
- * [AuthState.activeGroupId]. Endpoints that operate on a specific group
- * (tasks, invites, members) read it server-side. Endpoints that don't care
- * about groups (auth, /me) simply ignore it.
+ * Multi-group: each group-scoped call attaches its own `X-Group-Id` via
+ * [withGroup]. We deliberately don't set it from a default request — having
+ * two callers (one default, one explicit) would otherwise emit two headers
+ * and the server would reject the concatenated value as not parsable.
  */
 fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
     install(ContentNegotiation) { json(json) }
@@ -104,6 +103,5 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
             host = Environment.HOST
             port = Environment.PORT
         }
-        AuthState.activeGroupId?.let { header("X-Group-Id", it.toString()) }
     }
 }
