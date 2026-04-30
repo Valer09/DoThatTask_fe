@@ -6,7 +6,11 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
 import io.ktor.client.HttpClient
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-fun client(): HttpClient = createHttpClient(onRefreshFailed = { AuthState.onSessionExpired?.invoke() })
+private val sharedClient: HttpClient by lazy {
+    createHttpClient(onRefreshFailed = { AuthState.onSessionExpired?.invoke() })
+}
+
+fun client(): HttpClient = sharedClient
 
 @Preview
 @Composable

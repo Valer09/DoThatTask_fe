@@ -6,6 +6,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.AuthTokens
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.auth.RefreshRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -83,9 +84,12 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
                         else tokens.user.groups.firstOrNull()?.id
                     AuthState.persist()
                     BearerTokens(tokens.accessToken, tokens.refreshToken)
-                } catch (_: Exception) {
+                } catch (_: ResponseException) {
                     AuthState.clear()
                     onRefreshFailed()
+                    null
+                }catch (_: Exception) {
+                    // Network/transport error (no connectivity, timeout, DNS, …).
                     null
                 }
             }

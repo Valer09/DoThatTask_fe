@@ -197,8 +197,8 @@ android {
         applicationId = "homeaq.dothattask.dothattask_fe.dothattask_fe"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2
-        versionName = "1.3.0"
+        versionCode = 3
+        versionName = "1.4.0"
     }
     packaging {
         resources {
@@ -258,7 +258,7 @@ compose.desktop {
             // installed one. Use semantic versioning (X.Y.Z); a fourth
             // component is allowed but Compose forwards this verbatim to
             // jpackage which forwards it to WiX.
-            packageVersion = "1.3.0"
+            packageVersion = "1.4.0"
             includeAllModules = true
             windows {
                 iconFile.set(File("logo/icon.ico"))

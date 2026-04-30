@@ -57,9 +57,16 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                 true
             } else if(response is ApiResult.Unauthorized){
-                AuthState.clear()
-                AppState.currentScreen = Screen.Login
-                false
+                if (AuthState.accessToken == null)
+                {
+                    AppState.currentScreen = Screen.Login
+                    false
+                }
+                else
+                {
+                    AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                    true
+                }
             }
             else{
                 AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup

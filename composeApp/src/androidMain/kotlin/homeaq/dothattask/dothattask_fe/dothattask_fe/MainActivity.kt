@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
         AuthProvider.init(applicationContext)
 
+        AuthState.loadFromStorage()
         DoThatTaskFcmService.ensureChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ensurePostNotificationsPermission()
@@ -58,6 +59,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (AuthState.accessToken == null) return
         lifecycleScope.launch{
             runCatching { registerFcmToken() }
             runCatching { NotificationApi(client()).reactivateNotification() }
@@ -89,6 +91,8 @@ class MainActivity : ComponentActivity() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) return@addOnCompleteListener
             val token = task.result ?: return@addOnCompleteListener
+            //Only ship the token when we have a session — otherwise the call would 401
+            if (AuthState.accessToken == null) return@addOnCompleteListener //
             lifecycleScope.launch {
                 runCatching { NotificationApi(client()).registerFcmToken(token) }
             }
