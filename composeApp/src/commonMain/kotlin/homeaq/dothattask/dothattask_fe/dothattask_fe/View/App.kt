@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
@@ -41,13 +42,9 @@ fun App(onLoginSuccess: () -> Unit = {}) {
 
         AuthState.loadFromStorage()
         isLogged = if (AuthState.accessToken != null) {
-            val client = createHttpClient(onRefreshFailed = {
-                AuthState.clear()
-                AppState.currentScreen = Screen.Login
-            })
-            val response = TaskApi(client).checkLogin()
+            val response = TaskApi(client()).checkLogin()
             if (response is ApiResult.Success) {
-                val groups = when (val gr = GroupApi(client).myGroups()) {
+                val groups = when (val gr = GroupApi(client()).myGroups()) {
                     is ApiResult.Success -> gr.data
                     else -> emptyList()
                 }
