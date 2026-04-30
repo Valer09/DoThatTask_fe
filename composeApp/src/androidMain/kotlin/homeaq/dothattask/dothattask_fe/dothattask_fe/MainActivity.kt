@@ -16,11 +16,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.messaging.FirebaseMessaging
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.launch
 
 
@@ -31,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         handleNotificationIntent(intent)
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -47,8 +51,19 @@ class MainActivity : ComponentActivity() {
 
         handleNotificationIntent(intent)
 
-        setContent { App() }
+        setContent { App( onLoginSuccess = {
+            registerFcmToken()
+        }) }
     }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch{
+            runCatching { registerFcmToken() }
+            runCatching { NotificationApi(client()).reactivateNotification() }
+        }
+    }
+
 
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -75,27 +90,29 @@ class MainActivity : ComponentActivity() {
             if (!task.isSuccessful) return@addOnCompleteListener
             val token = task.result ?: return@addOnCompleteListener
             lifecycleScope.launch {
-                runCatching { NotificationApi(createHttpClient()).registerFcmToken(token) }
+                runCatching { NotificationApi(client()).registerFcmToken(token) }
             }
         }
     }
 
     private fun handleNotificationIntent(intent: Intent?) {
-        val screen = intent?.getStringExtra("screen") ?: return
+        val type = intent?.getStringExtra("type") ?: return
         val targetId = intent.getStringExtra("targetId")
 
-        AppState.currentScreen = when (screen) {
-            //"task_detail" -> if (targetId != null) Screen.TaskDetail(targetId) else Screen.Home
+        when (type) {
+            //"group_invitation" -> if (targetId != null) Screen.TaskDetail(targetId) else Screen.Home
+            "task_reminder" ->
+                {
+                lifecycleScope.launch {
+                    runCatching { NotificationApi(client()).ackReminder() }
+                }
+                    AppState.currentScreen = Screen.Home
+            }
+            "group_invitation" -> AppState.currentScreen = Screen.IncomingInvites
 
-            "task_detail" -> Screen.Home
-
-            else -> Screen.Home
+            else -> AppState.currentScreen = Screen.Home
         }
     }
 }
 
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
-}
+

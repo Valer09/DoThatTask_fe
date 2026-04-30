@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -51,7 +52,7 @@ private const val ANY_GROUP_LABEL = "Any"
 @Composable
 fun CompletedTaskPage() {
 
-    val taskApi = remember { TaskApi(createHttpClient()) }
+    val taskApi = remember { TaskApi(client()) }
     // Server-side, /api/tasks/completed already aggregates across every
     // group the user belongs to. We fetch once and filter client-side on
     // task.groupId — fanning out per group would have returned the same

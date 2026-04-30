@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
@@ -47,8 +48,8 @@ fun NoGroupPage() {
     var messageIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 
-    val groupApi = remember { GroupApi(createHttpClient()) }
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val groupApi = remember { GroupApi(client()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     LoadingOverlay(isLoading = loading)
 
@@ -115,6 +116,11 @@ fun NoGroupPage() {
                                 is ApiResult.NotFound -> {
                                     messageIsError = true
                                     message = "Group endpoint unavailable"
+                                }
+                                is ApiResult.Unauthorized -> {
+                                    messageIsError = true
+                                    message = "Unauthorized"
+                                    AppState.currentScreen = Screen.Login
                                 }
                             }
                         } catch (e: Exception) {

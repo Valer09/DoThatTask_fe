@@ -37,10 +37,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
@@ -60,8 +63,8 @@ private const val CREATOR_ME_OPTION = "Me"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskManagementPage() {
-    val taskApi = remember { TaskApi(createHttpClient()) }
-    val categoryApi = remember { CategoryApi(createHttpClient()) }
+    val taskApi = remember { TaskApi(client()) }
+    val categoryApi = remember { CategoryApi(client()) }
     val scope = rememberCoroutineScope()
 
     val groups: List<GroupSummary> = AuthState.groups
@@ -408,6 +411,11 @@ fun TaskManagementPage() {
                                         is ApiResult.NotFound -> {
                                             toastIsError = true
                                             toastMessage = result.message
+                                        }
+                                        is ApiResult.Unauthorized -> {
+                                            toastIsError = true
+                                            toastMessage = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
                                         }
                                     }
                                 }

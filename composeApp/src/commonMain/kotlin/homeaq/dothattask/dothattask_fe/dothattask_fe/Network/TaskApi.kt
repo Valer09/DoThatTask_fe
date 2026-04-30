@@ -259,17 +259,16 @@ class TaskApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun checkLogin() :  ApiResult<List<Task>>
-    {
-        return try
-        {
+    suspend fun checkLogin(): ApiResult<List<Task>> {
+        return try {
             val response = httpClient.get("/api/user/me")
-            if (response.status.value in 200..299) ApiResult.Success(emptyList())
-            else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            when (response.status.value) {
+                in 200..299 -> ApiResult.Success(emptyList())
+                401 -> ApiResult.Unauthorized()
+                else -> ApiResult.Error(response.status.toString())
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Unknown error")
         }
     }
 }

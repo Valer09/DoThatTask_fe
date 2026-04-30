@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
@@ -38,7 +39,7 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var isHovered by remember { mutableStateOf(false) }
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     fun getRowColor(page: Screen): Color {
         if (AppState.currentScreen == page) return TaskUIHelper.getLightGray()

@@ -27,6 +27,8 @@ object AuthState {
      */
     var activeGroupId: Int? = null
 
+    var onSessionExpired: (() -> Unit)? = null
+
     fun setSession(
         username: String,
         displayName: String,
@@ -44,6 +46,7 @@ object AuthState {
         val current = activeGroupId
         activeGroupId = if (current != null && groups.any { it.id == current }) current
         else groups.firstOrNull()?.id
+
     }
 
     /** Load any previously-persisted session on app start. */

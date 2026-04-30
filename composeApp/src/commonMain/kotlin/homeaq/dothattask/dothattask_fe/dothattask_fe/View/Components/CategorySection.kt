@@ -31,7 +31,11 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -52,7 +56,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun GroupCategoriesSection(groupId: Int) {
-    val api = remember { CategoryApi(createHttpClient()) }
+    val api = remember { CategoryApi(client()) }
     val scope = rememberCoroutineScope()
 
     var categories by remember(groupId) { mutableStateOf<List<TaskCategory>>(emptyList()) }
@@ -99,6 +103,10 @@ fun GroupCategoriesSection(groupId: Int) {
                                 is ApiResult.Success -> reload()
                                 is ApiResult.Error -> error = res.message
                                 is ApiResult.NotFound -> error = res.message
+                                is ApiResult.Unauthorized -> {
+                                    error = "Unauthorized"
+                                    AppState.currentScreen = Screen.Login
+                                }
                             }
                             loading = false
                         }
@@ -153,6 +161,10 @@ fun GroupCategoriesSection(groupId: Int) {
                             }
                             is ApiResult.Error -> error = res.message
                             is ApiResult.NotFound -> error = res.message
+                            is ApiResult.Unauthorized -> {
+                                error = "Unauthorized"
+                                AppState.currentScreen = Screen.Login
+                            }
                         }
                         loading = false
                     }

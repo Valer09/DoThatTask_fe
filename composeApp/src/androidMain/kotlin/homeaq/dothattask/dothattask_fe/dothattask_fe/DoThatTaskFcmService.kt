@@ -11,6 +11,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +39,7 @@ class DoThatTaskFcmService : FirebaseMessagingService() {
         // is logged out the call fails silently and the token is re-sent the
         // next time MainActivity refreshes it after login.
         scope.launch {
-            runCatching { NotificationApi(createHttpClient()).registerFcmToken(token) }
+            runCatching { NotificationApi(client()).registerFcmToken(token) }
         }
     }
 

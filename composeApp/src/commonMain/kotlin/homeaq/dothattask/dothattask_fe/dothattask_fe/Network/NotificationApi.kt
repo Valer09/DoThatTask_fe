@@ -39,4 +39,25 @@ class NotificationApi(private val client: HttpClient) {
     } catch (e: Exception) {
         ApiResult.Error(e.message ?: "Network error")
     }
+
+    suspend fun ackReminder(): ApiResult<Unit> = try {
+        val resp = client.post("/api/notifications/reminder/ack") {
+            contentType(ContentType.Application.Json)
+        }
+        if (resp.status.value in 200..299) ApiResult.Success(Unit)
+        else ApiResult.Error("Ack notification failed: (${resp.status.value})")
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Network error")
+    }
+
+    suspend fun reactivateNotification(): ApiResult<Unit> = try {
+        val resp = client.post("/api/notifications/reactivate") {
+            contentType(ContentType.Application.Json)
+        }
+        if (resp.status.value in 200..299) ApiResult.Success(Unit)
+        else ApiResult.Error("Reactivation notification failed: (${resp.status.value})")
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Network error")
+    }
+
 }

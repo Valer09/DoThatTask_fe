@@ -29,9 +29,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
@@ -53,7 +56,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
 
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
     val focusManager = LocalFocusManager.current
 
     fun validate(): Boolean {
@@ -152,7 +155,12 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                             }
                             is ApiResult.Error -> errorMessage = resp.message
                             is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
+                            is ApiResult.Unauthorized -> {
+                                errorMessage = "Unauthorized"
+                                AppState.currentScreen = Screen.Login
+                            }
                         }
+
                     } catch (e: Exception) {
                         errorMessage = e.message ?: "Registration failed"
                     } finally {

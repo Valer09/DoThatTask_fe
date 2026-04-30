@@ -28,26 +28,25 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 
-fun App() {
+fun App(onLoginSuccess: () -> Unit = {}) {
     var isLogged by remember { mutableStateOf<Boolean?>(null) }
+    val notificationTarget = remember { AppState.currentScreen.takeIf { it != Screen.Login } }
 
     LaunchedEffect(Unit) {
-        // Pull persisted tokens into memory (if any), then try to validate
-        // the session by hitting /api/user/me with the bearer client. If the
-        // access token is expired, the Auth plugin will transparently call
-        // /api/auth/refresh.
+        AuthState.onSessionExpired = {
+            AuthState.clear()
+            AppState.currentScreen = Screen.Login
+            isLogged = false
+        }
+
         AuthState.loadFromStorage()
         isLogged = if (AuthState.accessToken != null) {
             val client = createHttpClient(onRefreshFailed = {
                 AuthState.clear()
                 AppState.currentScreen = Screen.Login
             })
-            val taskApi = TaskApi(client)
-            val response = taskApi.checkLogin()
+            val response = TaskApi(client).checkLogin()
             if (response is ApiResult.Success) {
-                // Reload the user's groups: tokens persisted to storage don't
-                // include them, and the side menu / pages depend on
-                // AuthState.groups being populated.
                 val groups = when (val gr = GroupApi(client).myGroups()) {
                     is ApiResult.Success -> gr.data
                     else -> emptyList()
@@ -56,13 +55,18 @@ fun App() {
                 if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
                     AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
                 }
-                AppState.currentScreen =
-                    if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+
+                AppState.currentScreen = notificationTarget
+                    ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                 true
-            } else {
+            } else if(response is ApiResult.Unauthorized){
                 AuthState.clear()
                 AppState.currentScreen = Screen.Login
                 false
+            }
+            else{
+                AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                true
             }
         } else {
             AppState.currentScreen = Screen.Login
@@ -87,6 +91,7 @@ fun App() {
                         AppState.currentScreen =
                             if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                         isLogged = true
+                        onLoginSuccess()
                     },
                 )
                 else -> LoginPage(
@@ -94,6 +99,7 @@ fun App() {
                         AppState.currentScreen =
                             if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                         isLogged = true
+                        onLoginSuccess()
                     },
                 )
             }

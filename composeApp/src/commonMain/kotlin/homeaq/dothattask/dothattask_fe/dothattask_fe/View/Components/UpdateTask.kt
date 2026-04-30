@@ -46,7 +46,9 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -74,8 +76,8 @@ fun UpdateTaskDialog(
 
     val scope = rememberCoroutineScope()
 
-    val taskApi = remember { TaskApi(createHttpClient()) }
-    val categoryApi = remember { CategoryApi(createHttpClient()) }
+    val taskApi = remember { TaskApi(client()) }
+    val categoryApi = remember { CategoryApi(client()) }
     var loading by remember { mutableStateOf(false) }
     var isUsersLoading by remember { mutableStateOf(true) }
     var members by remember { mutableStateOf<List<User>>(emptyList()) }

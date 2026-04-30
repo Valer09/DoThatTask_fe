@@ -28,7 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -51,7 +53,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
     var messageIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     fun validate(): Boolean {
         oldError = if (oldPassword.isBlank()) "Current password cannot be empty" else null
@@ -142,6 +144,11 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                                 is ApiResult.NotFound -> {
                                     messageIsError = true
                                     message = "Change-password endpoint unavailable"
+                                }
+                                is ApiResult.Unauthorized -> {
+                                    messageIsError = true
+                                    message = "Unauthorized"
+                                    AppState.currentScreen = Screen.Login
                                 }
                             }
                         } catch (e: Exception) {

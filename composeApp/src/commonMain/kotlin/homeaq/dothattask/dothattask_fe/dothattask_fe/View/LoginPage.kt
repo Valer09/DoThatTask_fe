@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -52,7 +53,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     var loading by remember { mutableStateOf(false) }
     val usernameFocusRequester = remember { FocusRequester() }
@@ -153,6 +154,10 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                 is ApiResult.NotFound -> {
                                     errorMessage = "Login endpoint unavailable"
                                     AuthState.clear()
+                                }
+                                is ApiResult.Unauthorized -> {
+                                    errorMessage = "Unauthorized"
+                                    AppState.currentScreen = Screen.Login
                                 }
                             }
                         } catch (e: Exception) {

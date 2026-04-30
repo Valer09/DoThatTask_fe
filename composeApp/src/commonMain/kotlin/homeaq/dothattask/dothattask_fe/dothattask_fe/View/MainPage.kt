@@ -43,6 +43,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -59,8 +60,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainPage(
 ) {
-    val taskApi = remember { TaskApi(createHttpClient()) }
-    val categoryApi = remember { CategoryApi(createHttpClient()) }
+    val taskApi = remember { TaskApi(client()) }
+    val categoryApi = remember { CategoryApi(client()) }
     var assignedTask by remember { mutableStateOf<Task?>(null) }
 
     var toastMessage by remember { mutableStateOf<String?>(null) }

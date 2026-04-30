@@ -2,6 +2,7 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe
 
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import androidx.core.content.edit
 
 object AuthStorage {
@@ -19,7 +20,7 @@ object AuthStorage {
     private fun encryptAndStore(context: Context, plain: String, keyName: String, ivName: String) {
         val key = KeyStoreHelper.getOrCreateKey()
         val (encrypted, iv) = CryptoHelper.encrypt(plain, key)
-        prefs(context).edit {
+        prefs(context).edit(commit = true) {
             putString(keyName, Base64.encodeToString(encrypted, Base64.DEFAULT))
             putString(ivName, Base64.encodeToString(iv, Base64.DEFAULT))
         }
@@ -40,8 +41,8 @@ object AuthStorage {
     fun getUsername(context: Context): String? =
         loadAndDecrypt(context, KEY_USERNAME, KEY_USERNAME_IV)
 
-    fun saveAccessToken(context: Context, token: String) =
-        encryptAndStore(context, token, KEY_ACCESS, KEY_ACCESS_IV)
+    fun saveAccessToken(context: Context, token: String) = encryptAndStore(context, token, KEY_ACCESS, KEY_ACCESS_IV)
+
 
     fun getAccessToken(context: Context): String? =
         loadAndDecrypt(context, KEY_ACCESS, KEY_ACCESS_IV)

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupInfo
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
@@ -57,8 +58,8 @@ fun GroupHomePage() {
     var error by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
 
-    val groupApi = remember { GroupApi(createHttpClient()) }
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val groupApi = remember { GroupApi(client()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     suspend fun reload() {
         loading = true
@@ -74,6 +75,10 @@ fun GroupHomePage() {
             }
             is ApiResult.Error -> error = resp.message
             is ApiResult.NotFound -> error = resp.message
+            is ApiResult.Unauthorized -> {
+                error = "Unauthorized"
+                AppState.currentScreen = Screen.Login
+            }
         }
         loading = false
     }
@@ -184,6 +189,10 @@ fun GroupHomePage() {
                                             }
                                             is ApiResult.Error -> message = resp.message
                                             is ApiResult.NotFound -> message = resp.message
+                                            is ApiResult.Unauthorized -> {
+                                                error = "Unauthorized"
+                                                AppState.currentScreen = Screen.Login
+                                            }
                                         }
                                     }
                                 },

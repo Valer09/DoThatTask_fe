@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.Invite
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
@@ -50,8 +51,8 @@ fun IncomingInvitesPage() {
     var error by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
 
-    val inviteApi = remember { InviteApi(createHttpClient()) }
-    val authApi = remember { AuthApi(createUnauthenticatedClient(), createHttpClient()) }
+    val inviteApi = remember { InviteApi(client()) }
+    val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     suspend fun reload() {
         loading = true
@@ -60,6 +61,10 @@ fun IncomingInvitesPage() {
             is ApiResult.Success -> invites = resp.data
             is ApiResult.Error -> error = resp.message
             is ApiResult.NotFound -> error = resp.message
+            is ApiResult.Unauthorized -> {
+                error = "Unauthorized"
+                AppState.currentScreen = Screen.Login
+            }
         }
         loading = false
     }
@@ -124,6 +129,10 @@ fun IncomingInvitesPage() {
                                         }
                                         is ApiResult.Error -> message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
+                                        is ApiResult.Unauthorized -> {
+                                            error = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
+                                        }
                                     }
                                 }
                             },
@@ -141,6 +150,10 @@ fun IncomingInvitesPage() {
                                         is ApiResult.Success -> reload()
                                         is ApiResult.Error -> message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
+                                        is ApiResult.Unauthorized -> {
+                                            error = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
+                                        }
                                     }
                                 }
                             },

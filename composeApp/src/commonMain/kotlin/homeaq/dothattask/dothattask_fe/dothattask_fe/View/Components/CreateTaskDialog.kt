@@ -42,10 +42,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
@@ -88,8 +90,8 @@ fun CreateTaskDialog(
 
     val scope = rememberCoroutineScope()
 
-    val taskApi = remember { TaskApi(createHttpClient()) }
-    val categoryApi = remember { CategoryApi(createHttpClient()) }
+    val taskApi = remember { TaskApi(client()) }
+    val categoryApi = remember { CategoryApi(client()) }
 
     val colors = TextFieldDefaults.colors(
         focusedTextColor = Color.Blue,

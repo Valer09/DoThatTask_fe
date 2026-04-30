@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -48,7 +49,7 @@ fun InviteMemberPage() {
     val targetGroupId = AppState.inviteTargetGroupId ?: AuthState.activeGroupId
     val targetGroup = AuthState.groups.firstOrNull { it.id == targetGroupId }
 
-    val inviteApi = remember { InviteApi(createHttpClient()) }
+    val inviteApi = remember { InviteApi(client()) }
 
     LoadingOverlay(isLoading = loading)
 
@@ -121,6 +122,10 @@ fun InviteMemberPage() {
                             is ApiResult.Error -> {
                                 messageIsError = true
                                 message = resp.message
+                            }
+                            is ApiResult.Unauthorized -> {
+                                message = "Unauthorized"
+                                AppState.currentScreen = Screen.Login
                             }
                         }
                     } catch (e: Exception) {
