@@ -41,6 +41,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         AuthProvider.init(applicationContext)
+        // Hydrate the in-memory session BEFORE composing the UI so any
+        // background coroutine kicked off by onResume / FCM / setContent sees
+        // the persisted access & refresh tokens. Without this, the very first
+        // authenticated calls fire with AuthState empty, get 401s, attempt a
+        // refresh with a null refresh token, and tear down the session — i.e.
+        // the user is bounced back to Login on app reopen.
+        AuthState.loadFromStorage()
 
         DoThatTaskFcmService.ensureChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -58,6 +65,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Skip authenticated background pings when there is no session — they
+        // would 401, force the Auth plugin to refresh with a null token, and
+        // surface as a spurious onSessionExpired callback while the user is
+        // still on the Login screen.
+        if (AuthState.accessToken == null) return
         lifecycleScope.launch{
             runCatching { registerFcmToken() }
             runCatching { NotificationApi(client()).reactivateNotification() }
@@ -89,6 +101,11 @@ class MainActivity : ComponentActivity() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) return@addOnCompleteListener
             val token = task.result ?: return@addOnCompleteListener
+            // Only ship the token when we have a session — otherwise the call
+            // would 401, the Auth plugin would attempt a refresh with no token,
+            // and the resulting onSessionExpired callback would bounce the user
+            // back to the Login screen.
+            if (AuthState.accessToken == null) return@addOnCompleteListener
             lifecycleScope.launch {
                 runCatching { NotificationApi(client()).registerFcmToken(token) }
             }

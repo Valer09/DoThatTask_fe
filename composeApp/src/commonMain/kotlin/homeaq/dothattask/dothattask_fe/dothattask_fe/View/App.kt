@@ -57,9 +57,25 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                 true
             } else if(response is ApiResult.Unauthorized){
-                AuthState.clear()
-                AppState.currentScreen = Screen.Login
-                false
+                // Two paths reach here:
+                //   1. The refresh handler in HttpClientManager rejected the
+                //      refresh token (real session loss): it has already
+                //      cleared AuthState, so accessToken is null.
+                //   2. The refresh handler returned null because it couldn't
+                //      reach the server (transient network error): tokens are
+                //      still in AuthState; the 401 from the original request
+                //      simply propagated.
+                // Only force a logout in the first case — otherwise we would
+                // bounce a perfectly authenticated user back to Login on every
+                // cold start with flaky connectivity.
+                if (AuthState.accessToken == null) {
+                    AppState.currentScreen = Screen.Login
+                    false
+                } else {
+                    AppState.currentScreen = notificationTarget
+                        ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                    true
+                }
             }
             else{
                 AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
