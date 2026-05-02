@@ -23,6 +23,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.ChangePasswordPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.CompletedTaskPage
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.ErrorPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.GroupHomePage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.IncomingInvitesPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.InviteMemberPage
@@ -201,6 +202,7 @@ fun SideMenu(onLogout: () -> Unit, onPageChange: (Screen) -> Unit) {
                                 Screen.GroupHome -> GroupHomePage()
                                 Screen.IncomingInvites -> IncomingInvitesPage()
                                 Screen.InviteMember -> InviteMemberPage()
+                                Screen.Error -> ErrorPage()
                                 else -> MainPage()
                             }
                         }

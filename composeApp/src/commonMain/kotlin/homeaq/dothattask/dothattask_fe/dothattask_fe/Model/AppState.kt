@@ -17,6 +17,14 @@ enum class Screen {
     Home,
     TaskManagement,
     CompletedTask,
+
+    /**
+     * Generic full-screen fallback for unexpected failures (network down,
+     * server 5xx, parsing errors, …) that aren't an auth problem.
+     * Auth failures keep going through the existing `Screen.Login` path
+     * triggered by [AuthState.onSessionExpired].
+     */
+    Error,
 }
 
 object AppState {
@@ -28,4 +36,21 @@ object AppState {
      * which group the invite belongs to.
      */
     var inviteTargetGroupId by mutableStateOf<Int?>(null)
+
+    /**
+     * Human-readable explanation displayed by `ErrorPage`. Set together with
+     * `currentScreen = Screen.Error` (typically via [routeToError]). Cleared
+     * when the user dismisses the page.
+     */
+    var errorMessage by mutableStateOf<String?>(null)
+
+    /**
+     * Switch to the generic error page. Use for unexpected failures only —
+     * auth failures must stay on the existing login redirect path.
+     */
+    fun routeToError(message: String?) {
+        errorMessage = message
+        currentScreen = Screen.Error
+    }
 }
+

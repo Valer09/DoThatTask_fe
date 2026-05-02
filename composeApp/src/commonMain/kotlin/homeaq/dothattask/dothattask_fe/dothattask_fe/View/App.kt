@@ -44,18 +44,25 @@ fun App(onLoginSuccess: () -> Unit = {}) {
         isLogged = if (AuthState.accessToken != null) {
             val response = TaskApi(client()).checkLogin()
             if (response is ApiResult.Success) {
-                val groups = when (val gr = GroupApi(client()).myGroups()) {
-                    is ApiResult.Success -> gr.data
-                    else -> emptyList()
-                }
-                AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
-                if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
-                    AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
-                }
+                val groupsResult = GroupApi(client()).myGroups()
+                if (groupsResult is ApiResult.Error) {
+                    // Authenticated, but the group list call failed — most
+                    // likely a transport/server issue. Surface it on the
+                    // error page rather than silently dropping the user on
+                    // a "no group" placeholder.
+                    AppState.routeToError(groupsResult.message)
+                    true
+                } else {
+                    val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
+                    AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
+                    if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
+                        AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
+                    }
 
-                AppState.currentScreen = notificationTarget
-                    ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
-                true
+                    AppState.currentScreen = notificationTarget
+                        ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                    true
+                }
             } else if(response is ApiResult.Unauthorized){
                 if (AuthState.accessToken == null)
                 {
@@ -67,6 +74,15 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                     true
                 }
+            }
+            else if (response is ApiResult.Error) {
+                // Network/transport problem (no connection, server down, …).
+                // Don't pretend the user is fully logged in: the Home/NoGroup
+                // screens would just render empty states. Show the dedicated
+                // error page so the user can see what's wrong and retry from
+                // the Home button.
+                AppState.routeToError(response.message)
+                true
             }
             else{
                 AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
