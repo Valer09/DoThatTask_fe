@@ -18,12 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -60,7 +63,8 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
     val focusManager = LocalFocusManager.current
 
     fun validate(): Boolean {
-        nameError = if (name.isBlank()) "Name cannot be empty" else null
+        val trimmedName = name.trim()
+        nameError = if (trimmedName.isBlank()) "Name cannot be empty" else null
         usernameError = when {
             username.isBlank() -> "Username cannot be empty"
             username.length < 3 -> "Username must be at least 3 characters"
@@ -98,18 +102,25 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             label = { Text("Name") },
             isError = nameError != null,
             supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.PersonFullName },
             singleLine = true,
         )
 
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it; usernameError = null },
+            onValueChange = {
+                // Strip whitespace: usernames are single tokens, regex below
+                // rejects spaces. Keeps `valerio99 ` equivalent to `valerio99`.
+                username = it.filter { ch -> !ch.isWhitespace() }
+                usernameError = null
+            },
             label = { Text("Username") },
             isError = usernameError != null,
             supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.NewUsername },
             singleLine = true,
         )
 
@@ -121,7 +132,8 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = passwordError != null,
             supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.NewPassword },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,
@@ -135,7 +147,8 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = confirmError != null,
             supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.NewPassword },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,

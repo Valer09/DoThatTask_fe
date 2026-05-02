@@ -21,9 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -86,7 +89,8 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = oldError != null,
             supportingText = oldError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.Password },
         )
 
         Spacer(Modifier.height(8.dp))
@@ -98,7 +102,8 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = newError != null,
             supportingText = newError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.NewPassword },
         )
 
         Spacer(Modifier.height(8.dp))
@@ -110,7 +115,8 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             isError = confirmError != null,
             supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .semantics { contentType = ContentType.NewPassword },
         )
 
         Spacer(Modifier.height(16.dp))

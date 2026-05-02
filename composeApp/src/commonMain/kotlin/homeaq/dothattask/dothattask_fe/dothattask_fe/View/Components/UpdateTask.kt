@@ -255,10 +255,16 @@ fun UpdateTaskDialog(
                                     containerColor = TaskUIHelper.getGreen(),
                                 ),
                                 onClick = {
+                                    val trimmedName = name.trim()
+                                    if (trimmedName.isEmpty()) {
+                                        toastIsError = true
+                                        toastMessage = "Name cannot be empty"
+                                        return@OutlinedButton
+                                    }
                                     loading = true
                                     val newTask = Task(
-                                        name = name,
-                                        description = description,
+                                        name = trimmedName,
+                                        description = description.trim(),
                                         category = category,
                                         status = TaskStatus.valueOf(taskStatus.name),
                                         ownership_username = selectedUser?.username ?: task.ownership_username,

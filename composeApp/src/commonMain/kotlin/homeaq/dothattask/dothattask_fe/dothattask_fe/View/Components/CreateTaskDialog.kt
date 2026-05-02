@@ -332,14 +332,15 @@ fun CreateTaskDialog(
                                             toastMessage = "Pick an assignee first"
                                             return@OutlinedButton
                                         }
-                                        if (name.isBlank()) {
+                                        val trimmedName = name.trim()
+                                        if (trimmedName.isEmpty()) {
                                             toastIsError = true
                                             toastMessage = "Name cannot be empty"
                                             return@OutlinedButton
                                         }
                                         val newTask = Task(
-                                            name = name,
-                                            description = description,
+                                            name = trimmedName,
+                                            description = description.trim(),
                                             category = category,
                                             status = taskStatus,
                                             ownership_username = assignee,
