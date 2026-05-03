@@ -37,14 +37,16 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.Invite
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun IncomingInvitesPage() {
     var invites by remember { mutableStateOf<List<Invite>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -59,7 +61,7 @@ fun IncomingInvitesPage() {
         error = null
         when (val resp = inviteApi.incoming()) {
             is ApiResult.Success -> invites = resp.data
-            is ApiResult.Error -> error = resp.message
+            is ApiResult.Error -> if (!resp.routeIfNetwork()) error = resp.message
             is ApiResult.NotFound -> error = resp.message
             is ApiResult.Unauthorized -> {
                 error = "Unauthorized"
@@ -76,7 +78,7 @@ fun IncomingInvitesPage() {
             Text(
                 "Incoming invites",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getMarinerBlue(),
+                color = TaskUIHelper.getPrimary(),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -127,7 +129,7 @@ fun IncomingInvitesPage() {
                                             authApi.refresh()
                                             reload()
                                         }
-                                        is ApiResult.Error -> message = resp.message
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
                                         is ApiResult.Unauthorized -> {
                                             error = "Unauthorized"
@@ -138,7 +140,7 @@ fun IncomingInvitesPage() {
                             },
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = TaskUIHelper.getMarinerBlue(),
+                                containerColor = TaskUIHelper.getPrimary(),
                                 contentColor = Color.White,
                             ),
                         ) { Text("Accept") }
@@ -148,7 +150,7 @@ fun IncomingInvitesPage() {
                                 CoroutineScope(Dispatchers.Default).launch {
                                     when (val resp = inviteApi.reject(invite.id)) {
                                         is ApiResult.Success -> reload()
-                                        is ApiResult.Error -> message = resp.message
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
                                         is ApiResult.Unauthorized -> {
                                             error = "Unauthorized"

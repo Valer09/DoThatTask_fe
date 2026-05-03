@@ -27,12 +27,22 @@ object AuthStorage {
     }
 
     private fun loadAndDecrypt(context: Context, keyName: String, ivName: String): String? {
-        val key = KeyStoreHelper.getOrCreateKey()
-        val encryptedStr = prefs(context).getString(keyName, null) ?: return null
-        val ivStr = prefs(context).getString(ivName, null) ?: return null
-        val encrypted = Base64.decode(encryptedStr, Base64.DEFAULT)
-        val iv = Base64.decode(ivStr, Base64.DEFAULT)
-        return CryptoHelper.decrypt(encrypted, iv, key)
+        return try {
+            val key = KeyStoreHelper.getOrCreateKey()
+            val encryptedStr = prefs(context).getString(keyName, null) ?: return null
+            val ivStr = prefs(context).getString(ivName, null) ?: return null
+            val encrypted = Base64.decode(encryptedStr, Base64.DEFAULT)
+            val iv = Base64.decode(ivStr, Base64.DEFAULT)
+            return CryptoHelper.decrypt(encrypted, iv, key)
+        } catch (e: javax.crypto.AEADBadTagException) {
+            Log.w("AuthStorage", "Invalidated key  or corrupted data. Logging out")
+            clear(context)
+            null
+        } catch (e: Exception) {
+            Log.w("AuthStorage", "An error happened while decrypting: ${e.message}, logging out")
+            clear(context)
+            null
+        }
     }
 
     fun saveUsername(context: Context, username: String) =

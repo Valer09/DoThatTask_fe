@@ -15,7 +15,6 @@ import io.ktor.http.contentType
 
 class TaskApi(private val httpClient: HttpClient) {
 
-
     suspend fun removeTask(task: Task): ApiResult<String> {
         return try
         {
@@ -34,7 +33,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return networkError(e)
         }
     }
 
@@ -63,7 +62,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -96,7 +95,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -117,7 +116,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -143,7 +142,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -172,7 +171,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -194,14 +193,10 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
-    /**
-     * Search tasks within a group. Always excludes tasks assigned to the
-     * caller (the "secret task" rule). Pass null/empty to omit a filter.
-     */
     suspend fun searchTasks(
         groupId: Int,
         creator: String? = null,
@@ -220,7 +215,7 @@ class TaskApi(private val httpClient: HttpClient) {
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -234,17 +229,11 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
-    /**
-     * Lists every task the caller has completed, across **all** groups they
-     * belong to. The server aggregates user-side, so no `X-Group-Id` filter
-     * is sent. Pages that need a per-group view filter on `task.groupId`
-     * client-side — cheaper than fanning out one request per group, and the
-     * server endpoint ignores the header anyway.
-     */
+
     suspend fun getCompleted(): ApiResult<List<Task>>
     {
         return try
@@ -255,7 +244,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 
@@ -268,7 +257,7 @@ class TaskApi(private val httpClient: HttpClient) {
                 else -> ApiResult.Error(response.status.toString())
             }
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Unknown error")
+            networkError(e)
         }
     }
 }

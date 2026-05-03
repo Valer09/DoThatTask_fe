@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
 /**
@@ -36,6 +37,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun UserListDropdown(
     label: String,
     users: List<User>,

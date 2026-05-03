@@ -22,7 +22,7 @@ class CategoryApi(private val client: HttpClient) {
         if (resp.status.value in 200..299) ApiResult.Success(resp.body())
         else ApiResult.Error("Could not load categories (${resp.status.value})")
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     /**
@@ -43,7 +43,7 @@ class CategoryApi(private val client: HttpClient) {
             else -> ApiResult.Error("Create category failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     /**
@@ -62,6 +62,6 @@ class CategoryApi(private val client: HttpClient) {
             else -> ApiResult.Error("Unlink failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 }

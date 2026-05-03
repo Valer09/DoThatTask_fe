@@ -32,20 +32,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun RegisterPage(onRegisterSuccess: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -87,7 +87,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
         Text(
             "Create your account",
             style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
@@ -166,7 +166,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                                 errorMessage = null
                                 onRegisterSuccess()
                             }
-                            is ApiResult.Error -> errorMessage = resp.message
+                            is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
                             is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
                             is ApiResult.Unauthorized -> {
                                 errorMessage = "Unauthorized"
@@ -194,7 +194,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "Already have an account? Log in",
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .pointerHoverIcon(PointerIcon.Hand, true)

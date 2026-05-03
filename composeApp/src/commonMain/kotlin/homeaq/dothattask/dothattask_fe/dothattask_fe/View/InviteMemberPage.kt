@@ -31,14 +31,16 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun InviteMemberPage() {
     var username by remember { mutableStateOf("") }
     var usernameError by remember { mutableStateOf<String?>(null) }
@@ -58,7 +60,7 @@ fun InviteMemberPage() {
             Text(
                 "Invite a member",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getMarinerBlue(),
+                color = TaskUIHelper.getPrimary(),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -126,7 +128,7 @@ fun InviteMemberPage() {
                                 messageIsError = true
                                 message = resp.message
                             }
-                            is ApiResult.Error -> {
+                            is ApiResult.Error -> if (!resp.routeIfNetwork()) {
                                 messageIsError = true
                                 message = resp.message
                             }
@@ -145,7 +147,7 @@ fun InviteMemberPage() {
             },
             modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = TaskUIHelper.getMarinerBlue(),
+                containerColor = TaskUIHelper.getPrimary(),
                 contentColor = Color.White,
             ),
         ) {
@@ -156,7 +158,7 @@ fun InviteMemberPage() {
             Spacer(Modifier.height(16.dp))
             Text(
                 it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getMarinerBlue(),
+                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
             )
         }
     }

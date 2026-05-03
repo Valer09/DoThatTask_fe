@@ -31,7 +31,7 @@ class InviteApi(private val client: HttpClient) {
             else -> ApiResult.Error("Invite failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     /** `GET /api/invites/incoming` — list PENDING invites for the caller. */
@@ -42,7 +42,7 @@ class InviteApi(private val client: HttpClient) {
             else -> ApiResult.Error("Could not load invites (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     suspend fun accept(inviteId: Int): ApiResult<Invite> = try {
@@ -55,7 +55,7 @@ class InviteApi(private val client: HttpClient) {
             else -> ApiResult.Error("Accept failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     suspend fun reject(inviteId: Int): ApiResult<Invite> = try {
@@ -67,7 +67,7 @@ class InviteApi(private val client: HttpClient) {
             else -> ApiResult.Error("Reject failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     /** Owner-only: mark a PENDING invite as REVOKED. */
@@ -81,6 +81,6 @@ class InviteApi(private val client: HttpClient) {
             else -> ApiResult.Error("Revoke failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 }
