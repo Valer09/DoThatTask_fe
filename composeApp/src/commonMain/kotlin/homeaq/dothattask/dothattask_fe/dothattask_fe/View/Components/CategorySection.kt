@@ -151,9 +151,10 @@ fun GroupCategoriesSection(groupId: Int) {
                         error = "Category name cannot be empty"
                         return@Button
                     }
+                    val trimmedColor = newColor.trim()
                     scope.launch {
                         loading = true
-                        when (val res = api.create(groupId, name, newColor.takeIf { it.isNotBlank() })) {
+                        when (val res = api.create(groupId, name, trimmedColor.takeIf { it.isNotBlank() })) {
                             is ApiResult.Success -> {
                                 newName = ""
                                 newColor = ""

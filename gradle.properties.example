@@ -16,9 +16,11 @@ android.useAndroidX=true
 # API endpoints
 ENV_MODE="dev" #or prod
 DEV_URL="192.168.x.x"
-DEV_PORT=12345
-PROD_PORT=443
+STAGING_URL="192.168.x.x"
 API_BASE_URL="https://your-backend-host"
+DEV_PORT=12345
+STAGING_PORT=12345
+PROD_PORT=443
 APP_VERSION="0.1.0"
 
 # Android release signing — leave as dummy locally unless you need a signed APK

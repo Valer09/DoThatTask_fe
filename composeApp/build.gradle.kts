@@ -56,14 +56,15 @@ val envProfile: String =
         ?: stripQuotes(envOrLocal("ENV_MODE", "dev")!!)
 
 val devHost: String = stripQuotes(envOrLocal("DEV_URL", "localhost")!!)
+val stagingHost: String = stripQuotes(envOrLocal("STAGING_URL", "localhost")!!)
 val devPort: String = envOrLocal("DEV_PORT", "10000")!!
+val stagingPort: String = envOrLocal("STAGING_PORT", "10000")!!
 val prodBase: String = stripQuotes(envOrLocal("API_BASE_URL", "https://example.com")!!)
 val prodPort: String = envOrLocal("PROD_PORT", "443")!!
 
-
 val envScheme: String = if (envProfile == "prod") parseBaseUrl(prodBase).first else "http"
-val envHost: String = if (envProfile == "prod") parseBaseUrl(prodBase).second else devHost
-val envPort: String = if (envProfile == "prod") prodPort else devPort
+val envHost: String = if (envProfile == "prod") parseBaseUrl(prodBase).second else if(envProfile == "staging") stagingHost else devHost
+val envPort: String = if (envProfile == "prod") prodPort else if(envProfile == "staging") stagingPort else devPort
 
 val generateEnvironment = tasks.register("generateEnvironment") {
     val outDir = layout.buildDirectory.dir("generated/environment/commonMain")
@@ -198,7 +199,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 3
-        versionName = "1.4.0"
+        versionName = "1.4.1"
     }
     packaging {
         resources {
@@ -258,7 +259,7 @@ compose.desktop {
             // installed one. Use semantic versioning (X.Y.Z); a fourth
             // component is allowed but Compose forwards this verbatim to
             // jpackage which forwards it to WiX.
-            packageVersion = "1.4.0"
+            packageVersion = "1.4.1"
             includeAllModules = true
             windows {
                 iconFile.set(File("logo/icon.ico"))

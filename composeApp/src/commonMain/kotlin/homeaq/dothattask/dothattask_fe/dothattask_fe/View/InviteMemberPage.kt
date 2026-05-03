@@ -85,7 +85,14 @@ fun InviteMemberPage() {
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it; usernameError = null; message = null },
+            onValueChange = {
+                // Usernames are single tokens — strip every whitespace char
+                // so a stray trailing space (or autofill hiccup) doesn't make
+                // the lookup miss the recipient.
+                username = it.filter { ch -> !ch.isWhitespace() }
+                usernameError = null
+                message = null
+            },
             label = { Text("Username") },
             isError = usernameError != null,
             supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
