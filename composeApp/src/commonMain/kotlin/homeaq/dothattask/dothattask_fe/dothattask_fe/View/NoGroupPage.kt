@@ -35,6 +35,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -109,7 +110,7 @@ fun NoGroupPage() {
                                     authApi.refresh()
                                     AppState.currentScreen = Screen.GroupHome
                                 }
-                                is ApiResult.Error -> {
+                                is ApiResult.Error -> if (!resp.routeIfNetwork()) {
                                     messageIsError = true
                                     message = resp.message
                                 }

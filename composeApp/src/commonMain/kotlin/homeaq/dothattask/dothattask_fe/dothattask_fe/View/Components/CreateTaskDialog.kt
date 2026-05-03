@@ -53,6 +53,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
 
@@ -116,7 +117,7 @@ fun CreateTaskDialog(
                     members = result.data
                     selectedUser = members.firstOrNull()
                 }
-                is ApiResult.Error -> {
+                is ApiResult.Error -> if (!result.routeIfNetwork()) {
                     toastIsError = true
                     toastMessage = result.message
                 }
@@ -352,7 +353,7 @@ fun CreateTaskDialog(
                                                     toastMessage = "Created"
                                                     onConfirm(result.data)
                                                 }
-                                                is ApiResult.Error -> {
+                                                is ApiResult.Error -> if (!result.routeIfNetwork()) {
                                                     toastIsError = true
                                                     toastMessage = result.message
                                                 }

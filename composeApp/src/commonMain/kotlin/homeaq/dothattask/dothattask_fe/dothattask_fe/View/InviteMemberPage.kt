@@ -32,6 +32,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
@@ -119,7 +120,7 @@ fun InviteMemberPage() {
                                 messageIsError = true
                                 message = resp.message
                             }
-                            is ApiResult.Error -> {
+                            is ApiResult.Error -> if (!resp.routeIfNetwork()) {
                                 messageIsError = true
                                 message = resp.message
                             }

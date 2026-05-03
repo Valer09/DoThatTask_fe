@@ -24,7 +24,7 @@ class GroupApi(private val client: HttpClient) {
             else -> ApiResult.Error("Create group failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
     /**
@@ -38,7 +38,7 @@ class GroupApi(private val client: HttpClient) {
             else -> ApiResult.Error("Could not load groups (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
     /** `POST /api/groups/leave` — leaves the [groupId] group specifically. */
@@ -53,6 +53,6 @@ class GroupApi(private val client: HttpClient) {
             else -> ApiResult.Error("Leave failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 }

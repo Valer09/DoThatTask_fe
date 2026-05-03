@@ -34,7 +34,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -63,7 +63,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -96,7 +96,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -117,7 +117,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -143,7 +143,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -172,7 +172,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -194,7 +194,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -220,7 +220,7 @@ class TaskApi(private val httpClient: HttpClient) {
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Unknown error")
+            ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -234,7 +234,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -255,7 +255,7 @@ class TaskApi(private val httpClient: HttpClient) {
         }
         catch (e: Exception)
         {
-            return ApiResult.Error(e.message ?: "Unknown error")
+            return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 
@@ -268,7 +268,7 @@ class TaskApi(private val httpClient: HttpClient) {
                 else -> ApiResult.Error(response.status.toString())
             }
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Unknown error")
+            ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
         }
     }
 }

@@ -37,6 +37,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -153,7 +154,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                                 errorMessage = null
                                 onRegisterSuccess()
                             }
-                            is ApiResult.Error -> errorMessage = resp.message
+                            is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
                             is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
                             is ApiResult.Unauthorized -> {
                                 errorMessage = "Unauthorized"

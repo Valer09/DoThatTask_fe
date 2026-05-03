@@ -45,6 +45,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupCategoriesSection
 import kotlinx.coroutines.CoroutineScope
@@ -73,7 +74,7 @@ fun GroupHomePage() {
                     AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
                 }
             }
-            is ApiResult.Error -> error = resp.message
+            is ApiResult.Error -> if (!resp.routeIfNetwork()) error = resp.message
             is ApiResult.NotFound -> error = resp.message
             is ApiResult.Unauthorized -> {
                 error = "Unauthorized"
@@ -187,7 +188,7 @@ fun GroupHomePage() {
                                                 authApi.refresh()
                                                 reload()
                                             }
-                                            is ApiResult.Error -> message = resp.message
+                                            is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                             is ApiResult.NotFound -> message = resp.message
                                             is ApiResult.Unauthorized -> {
                                                 error = "Unauthorized"

@@ -49,6 +49,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.CreateTaskDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
@@ -98,7 +99,7 @@ fun TaskManagementPage() {
         try {
             when (val res = taskApi.getAllUsers(groupId)) {
                 is ApiResult.Success -> members = res.data
-                is ApiResult.Error -> {
+                is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
                     toastMessage = res.message
                 }
@@ -122,7 +123,7 @@ fun TaskManagementPage() {
             }
             when (val res = taskApi.searchTasks(gid, creatorParam, category, assignee)) {
                 is ApiResult.Success -> tasks = res.data
-                is ApiResult.Error -> {
+                is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
                     toastMessage = res.message
                 }
@@ -404,7 +405,7 @@ fun TaskManagementPage() {
                                             toastMessage = result.message
                                             runSearch()
                                         }
-                                        is ApiResult.Error -> {
+                                        is ApiResult.Error -> if (!result.routeIfNetwork()) {
                                             toastIsError = true
                                             toastMessage = result.message
                                         }
@@ -425,7 +426,7 @@ fun TaskManagementPage() {
                             onUnassign = {
                                 scope.launch {
                                     val result = taskApi.unassignTask(task)
-                                    if (result is ApiResult.Error) {
+                                    if (result is ApiResult.Error && !result.routeIfNetwork()) {
                                         toastIsError = true
                                         toastMessage = result.message
                                     } else if (result is ApiResult.Success) {

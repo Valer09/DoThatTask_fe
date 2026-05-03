@@ -25,7 +25,7 @@ class NotificationApi(private val client: HttpClient) {
         if (resp.status.value in 200..299) ApiResult.Success(Unit)
         else ApiResult.Error("Register FCM token failed (${resp.status.value})")
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
     /** `DELETE /api/notifications/register` — unregister a token (e.g. on logout). */
@@ -37,7 +37,7 @@ class NotificationApi(private val client: HttpClient) {
         if (resp.status.value in 200..299) ApiResult.Success(Unit)
         else ApiResult.Error("Unregister FCM token failed (${resp.status.value})")
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
     suspend fun ackReminder(): ApiResult<Unit> = try {
@@ -47,7 +47,7 @@ class NotificationApi(private val client: HttpClient) {
         if (resp.status.value in 200..299) ApiResult.Success(Unit)
         else ApiResult.Error("Ack notification failed: (${resp.status.value})")
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
     suspend fun reactivateNotification(): ApiResult<Unit> = try {
@@ -57,7 +57,7 @@ class NotificationApi(private val client: HttpClient) {
         if (resp.status.value in 200..299) ApiResult.Success(Unit)
         else ApiResult.Error("Reactivation notification failed: (${resp.status.value})")
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error")
+        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
     }
 
 }

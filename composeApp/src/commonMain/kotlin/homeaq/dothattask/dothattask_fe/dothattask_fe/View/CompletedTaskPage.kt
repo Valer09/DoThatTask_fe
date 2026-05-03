@@ -41,6 +41,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
@@ -77,7 +78,7 @@ fun CompletedTaskPage() {
         try {
             when (val res = taskApi.getCompleted()) {
                 is ApiResult.Success -> allTasks = res.data
-                is ApiResult.Error -> {
+                is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
                     toastMessage = res.message
                 }

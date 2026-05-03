@@ -39,6 +39,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,7 +60,7 @@ fun IncomingInvitesPage() {
         error = null
         when (val resp = inviteApi.incoming()) {
             is ApiResult.Success -> invites = resp.data
-            is ApiResult.Error -> error = resp.message
+            is ApiResult.Error -> if (!resp.routeIfNetwork()) error = resp.message
             is ApiResult.NotFound -> error = resp.message
             is ApiResult.Unauthorized -> {
                 error = "Unauthorized"
@@ -127,7 +128,7 @@ fun IncomingInvitesPage() {
                                             authApi.refresh()
                                             reload()
                                         }
-                                        is ApiResult.Error -> message = resp.message
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
                                         is ApiResult.Unauthorized -> {
                                             error = "Unauthorized"
@@ -148,7 +149,7 @@ fun IncomingInvitesPage() {
                                 CoroutineScope(Dispatchers.Default).launch {
                                     when (val resp = inviteApi.reject(invite.id)) {
                                         is ApiResult.Success -> reload()
-                                        is ApiResult.Error -> message = resp.message
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                         is ApiResult.NotFound -> message = resp.message
                                         is ApiResult.Unauthorized -> {
                                             error = "Unauthorized"

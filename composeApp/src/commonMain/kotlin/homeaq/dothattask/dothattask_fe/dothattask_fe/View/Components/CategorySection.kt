@@ -39,6 +39,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
 
@@ -68,7 +69,7 @@ fun GroupCategoriesSection(groupId: Int) {
     suspend fun reload() {
         when (val res = api.list(groupId)) {
             is ApiResult.Success -> categories = res.data
-            is ApiResult.Error -> error = res.message
+            is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
             else -> {}
         }
     }
@@ -101,7 +102,7 @@ fun GroupCategoriesSection(groupId: Int) {
                             loading = true
                             when (val res = api.unlink(groupId, cat.id)) {
                                 is ApiResult.Success -> reload()
-                                is ApiResult.Error -> error = res.message
+                                is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
                                 is ApiResult.NotFound -> error = res.message
                                 is ApiResult.Unauthorized -> {
                                     error = "Unauthorized"
@@ -159,7 +160,7 @@ fun GroupCategoriesSection(groupId: Int) {
                                 error = null
                                 reload()
                             }
-                            is ApiResult.Error -> error = res.message
+                            is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
                             is ApiResult.NotFound -> error = res.message
                             is ApiResult.Unauthorized -> {
                                 error = "Unauthorized"

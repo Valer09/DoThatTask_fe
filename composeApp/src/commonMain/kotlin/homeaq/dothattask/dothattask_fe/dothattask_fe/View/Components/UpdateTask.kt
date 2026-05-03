@@ -53,6 +53,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
 
@@ -91,7 +92,7 @@ fun UpdateTaskDialog(
                     selectedUser = members.firstOrNull { it.username == task.ownership_username }
                         ?: members.firstOrNull()
                 }
-                is ApiResult.Error -> {
+                is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
                     toastMessage = res.message
                 }
@@ -273,7 +274,7 @@ fun UpdateTaskDialog(
                                                 toastMessage = "Completed"
                                                 onConfirm(result.data)
                                             }
-                                            is ApiResult.Error -> {
+                                            is ApiResult.Error -> if (!result.routeIfNetwork()) {
                                                 toastIsError = true
                                                 toastMessage = result.message
                                             }

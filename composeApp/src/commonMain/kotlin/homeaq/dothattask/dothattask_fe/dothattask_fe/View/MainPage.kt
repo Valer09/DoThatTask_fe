@@ -48,6 +48,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
@@ -113,7 +114,7 @@ fun MainPage(
 
             if (result is ApiResult.Success) assignedTask = result.data
             else if (result is ApiResult.NotFound) assignedTask = null
-            else if (result is ApiResult.Error) {
+            else if (result is ApiResult.Error && !result.routeIfNetwork()) {
                 toastIsError = true
                 toastMessage = result.message
             }
@@ -145,7 +146,7 @@ fun MainPage(
                 toastMessage = "No assignable task in this category for this user. Please assign tasks to the user"
                 loadAssignedTask()
             }
-            else if (result is ApiResult.Error)
+            else if (result is ApiResult.Error && !result.routeIfNetwork())
             {
                 toastIsError = true
                 toastMessage = result.message
@@ -168,7 +169,7 @@ fun MainPage(
             val result = taskApi.completeTask(assignedTask)
 
             if (result is ApiResult.Success) loadAssignedTask()
-            else if (result is ApiResult.Error)
+            else if (result is ApiResult.Error && !result.routeIfNetwork())
             {
                 toastIsError = true
                 toastMessage = result.message
