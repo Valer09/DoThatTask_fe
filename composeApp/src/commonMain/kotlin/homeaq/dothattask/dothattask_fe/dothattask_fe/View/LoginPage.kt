@@ -45,10 +45,12 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.WebLoginAutofillBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 @Composable
 fun LoginPage(onLoginSuccess: () -> Unit) {
@@ -68,6 +70,9 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     // bridge can fire the hidden form's `submit` event — that's what
     // triggers the browser's "save credentials" prompt.
     var autofillSubmitTrigger by remember { mutableStateOf(0) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastIsError by remember { mutableStateOf(false) }
+
     val focusManager = LocalFocusManager.current
 
     WebLoginAutofillBridge(
@@ -99,6 +104,13 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     LoadingOverlay(isLoading = loading)
 
     Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
+        toastMessage?.let {
+            ToastMessage(
+                message = it,
+                isError = toastIsError,
+                onDismiss = { toastMessage = null }
+            )
+        }
 
         Text(
             "Welcome in DO THAT TASK!",
@@ -163,23 +175,26 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                             when (val response = authApi.login(username.trim(), password)) {
                                 is ApiResult.Success -> {
                                     errorMessage = null
-                                    // Tell the web autofill bridge to fire
-                                    // the hidden form's submit so browsers
-                                    // can offer to save the credentials.
                                     autofillSubmitTrigger += 1
                                     onLoginSuccess()
+                                    println("Success")
                                 }
-                                is ApiResult.Error -> if (!response.routeIfNetwork()) {
+                                is ApiResult.Error -> {
+                                    toastIsError = true
+                                    toastMessage = response.message
                                     errorMessage = response.message
                                     AuthState.clear()
+                                    println("Error")
                                 }
                                 is ApiResult.NotFound -> {
                                     errorMessage = "Login endpoint unavailable"
                                     AuthState.clear()
+                                    println("NotFound")
                                 }
                                 is ApiResult.Unauthorized -> {
                                     errorMessage = "Unauthorized"
                                     AppState.currentScreen = Screen.Login
+                                    println("Unauthorized")
                                 }
                             }
                         } catch (e: Exception) {

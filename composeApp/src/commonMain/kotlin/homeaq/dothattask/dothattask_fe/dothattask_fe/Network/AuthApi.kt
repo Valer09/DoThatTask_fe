@@ -39,7 +39,7 @@ class AuthApi(
             else -> ApiResult.Error("Login failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
+        ApiResult.Error(e.message ?: "Connection error")
     }
 
     suspend fun register(name: String, username: String, password: String): ApiResult<AuthTokens> = try {
@@ -57,7 +57,7 @@ class AuthApi(
             else -> ApiResult.Error("Registration failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
+        networkError(e)
     }
 
     suspend fun logout(): ApiResult<String> = try {
@@ -79,7 +79,7 @@ class AuthApi(
         // Even if the server is unreachable, drop local state so the user
         // sees a "logged out" UI.
         AuthState.clear()
-        ApiResult.Error(e.message ?: "Network error")
+        networkError(e)
     }
 
     /**
@@ -107,7 +107,7 @@ class AuthApi(
             else -> ApiResult.Error("Refresh failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
+        networkError(e)
     }
 
     suspend fun changePassword(oldPassword: String, newPassword: String): ApiResult<String> = try {
@@ -121,7 +121,7 @@ class AuthApi(
             else -> ApiResult.Error("Change password failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Network error", isNetwork = true)
+        networkError(e)
     }
 
     private fun applyTokens(tokens: AuthTokens) {

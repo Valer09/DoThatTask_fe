@@ -45,14 +45,12 @@ fun App(onLoginSuccess: () -> Unit = {}) {
             val response = TaskApi(client()).checkLogin()
             if (response is ApiResult.Success) {
                 val groupsResult = GroupApi(client()).myGroups()
-                if (groupsResult is ApiResult.Error) {
-                    // Authenticated, but the group list call failed — most
-                    // likely a transport/server issue. Surface it on the
-                    // error page rather than silently dropping the user on
-                    // a "no group" placeholder.
+                if (groupsResult is ApiResult.Error)
+                {
                     AppState.routeToError(groupsResult.message)
                     true
-                } else {
+                }
+                else {
                     val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
                     AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
                     if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
@@ -75,12 +73,8 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     true
                 }
             }
-            else if (response is ApiResult.Error) {
-                // Network/transport problem (no connection, server down, …).
-                // Don't pretend the user is fully logged in: the Home/NoGroup
-                // screens would just render empty states. Show the dedicated
-                // error page so the user can see what's wrong and retry from
-                // the Home button.
+            else if (response is ApiResult.Error)
+            {
                 AppState.routeToError(response.message)
                 true
             }
