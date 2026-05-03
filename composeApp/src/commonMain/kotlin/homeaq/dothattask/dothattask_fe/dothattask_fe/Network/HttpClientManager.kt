@@ -10,6 +10,7 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.post
@@ -30,10 +31,22 @@ private val json = Json {
     ignoreUnknownKeys = true
 }
 
+// Bound HTTP timeouts so a server that never responds eventually surfaces an
+// exception (caught by the API layer → routed to ErrorPage) instead of the
+// caller's spinner hanging forever.
+private const val REQUEST_TIMEOUT_MILLIS: Long = 15_000
+private const val CONNECT_TIMEOUT_MILLIS: Long = 10_000
+private const val SOCKET_TIMEOUT_MILLIS: Long = 15_000
+
 // Client used for auth endpoints (login/register/refresh) — no Authorization
 // header, never intercepted by the Auth plugin.
 fun createUnauthenticatedClient() = HttpClient {
     install(ContentNegotiation) { json(json) }
+    install(HttpTimeout) {
+        requestTimeoutMillis = REQUEST_TIMEOUT_MILLIS
+        connectTimeoutMillis = CONNECT_TIMEOUT_MILLIS
+        socketTimeoutMillis = SOCKET_TIMEOUT_MILLIS
+    }
     defaultRequest {
         url {
             protocol = envProtocol
@@ -57,6 +70,11 @@ fun createUnauthenticatedClient() = HttpClient {
  */
 fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
     install(ContentNegotiation) { json(json) }
+    install(HttpTimeout) {
+        requestTimeoutMillis = REQUEST_TIMEOUT_MILLIS
+        connectTimeoutMillis = CONNECT_TIMEOUT_MILLIS
+        socketTimeoutMillis = SOCKET_TIMEOUT_MILLIS
+    }
     install(Auth) {
         bearer {
             loadTokens {

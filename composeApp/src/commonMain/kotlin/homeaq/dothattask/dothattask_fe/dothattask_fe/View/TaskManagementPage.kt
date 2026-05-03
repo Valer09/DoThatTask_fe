@@ -159,8 +159,12 @@ fun TaskManagementPage() {
         CreateTaskDialog(
             groups = groups,
             initialGroupId = selectedGroup?.id,
-            onConfirm = {
+            onConfirm = { created ->
                 taskCreationOpen = false
+                // Toast lives on the parent: the dialog dismisses itself
+                // immediately, so a toast set inside it would never paint.
+                toastIsError = false
+                toastMessage = "Task '${created.name}' created"
                 scope.launch { runSearch() }
             },
             onDismiss = { taskCreationOpen = false },
@@ -170,8 +174,10 @@ fun TaskManagementPage() {
     if (currentTaskToUpdate != null) {
         UpdateTaskDialog(
             currentTaskToUpdate!!,
-            onConfirm = {
+            onConfirm = { updated ->
                 currentTaskToUpdate = null
+                toastIsError = false
+                toastMessage = "Task '${updated.name}' updated"
                 scope.launch { runSearch() }
             },
             onDismiss = { currentTaskToUpdate = null },
@@ -290,14 +296,6 @@ fun TaskManagementPage() {
             }
 
             Spacer(Modifier.height(8.dp))
-
-            toastMessage?.let {
-                ToastMessage(
-                    message = it,
-                    isError = toastIsError,
-                    onDismiss = { toastMessage = null },
-                )
-            }
 
             // Defensive client-side filter: never show tasks assigned to me.
             val visible = tasks.filter { !it.ownership_username.equals(AuthState.username, ignoreCase = true) }
