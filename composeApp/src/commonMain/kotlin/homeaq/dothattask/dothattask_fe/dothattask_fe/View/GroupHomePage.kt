@@ -43,7 +43,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
@@ -51,8 +50,10 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupCatego
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun GroupHomePage() {
     var groups by remember { mutableStateOf<List<GroupInfo>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -99,7 +100,7 @@ fun GroupHomePage() {
             Text(
                 "My groups",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getMarinerBlue(),
+                color = TaskUIHelper.getPrimary(),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -107,7 +108,7 @@ fun GroupHomePage() {
                 onClick = { AppState.currentScreen = Screen.NoGroup },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getMarinerBlue(),
+                    containerColor = TaskUIHelper.getPrimary(),
                     contentColor = Color.White,
                 ),
             ) { Text("+ Create group") }
@@ -152,7 +153,7 @@ fun GroupHomePage() {
                                 Text(
                                     if (m.username.equals(group.ownerUsername, ignoreCase = true)) "owner"
                                     else m.role.name.lowercase(),
-                                    color = TaskUIHelper.getMarinerBlue(),
+                                    color = TaskUIHelper.getPrimary(),
                                 )
                             }
                             Spacer(Modifier.height(4.dp))
@@ -174,7 +175,7 @@ fun GroupHomePage() {
                                     },
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = TaskUIHelper.getMarinerBlue(),
+                                        containerColor = TaskUIHelper.getPrimary(),
                                         contentColor = Color.White,
                                     ),
                                 ) { Text("Invite member") }

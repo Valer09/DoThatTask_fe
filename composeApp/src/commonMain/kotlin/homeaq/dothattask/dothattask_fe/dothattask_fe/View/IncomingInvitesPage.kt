@@ -37,15 +37,16 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.Invite
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun IncomingInvitesPage() {
     var invites by remember { mutableStateOf<List<Invite>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
@@ -77,7 +78,7 @@ fun IncomingInvitesPage() {
             Text(
                 "Incoming invites",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getMarinerBlue(),
+                color = TaskUIHelper.getPrimary(),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -139,7 +140,7 @@ fun IncomingInvitesPage() {
                             },
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = TaskUIHelper.getMarinerBlue(),
+                                containerColor = TaskUIHelper.getPrimary(),
                                 contentColor = Color.White,
                             ),
                         ) { Text("Accept") }

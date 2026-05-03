@@ -31,20 +31,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -77,7 +77,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
         Text(
             "Change password",
             style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
@@ -166,7 +166,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getMarinerBlue(), contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getPrimary(), contentColor = Color.White),
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
             ) {
                 Text("Change password")
@@ -177,7 +177,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
             Spacer(Modifier.height(16.dp))
             Text(
                 it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getMarinerBlue(),
+                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
             )
         }
     }

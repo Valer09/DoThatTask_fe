@@ -33,15 +33,16 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun NoGroupPage() {
     var groupName by remember { mutableStateOf("") }
     var nameError by remember { mutableStateOf<String?>(null) }
@@ -59,7 +60,7 @@ fun NoGroupPage() {
         Text(
             title,
             style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
@@ -134,7 +135,7 @@ fun NoGroupPage() {
                 },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getMarinerBlue(),
+                    containerColor = TaskUIHelper.getPrimary(),
                     contentColor = Color.White,
                 ),
             ) {
@@ -153,7 +154,7 @@ fun NoGroupPage() {
             Spacer(Modifier.height(16.dp))
             Text(
                 it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getMarinerBlue(),
+                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
             )
         }
     }

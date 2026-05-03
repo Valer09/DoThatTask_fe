@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Full-screen fallback shown after a non-auth failure (network unreachable,
@@ -36,6 +37,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
  * don't route here — they keep flowing through `AuthState.onSessionExpired`
  * which redirects to the login page.
  */
+@Preview
 @Composable
 fun ErrorPage(
     onHome: () -> Unit = {
@@ -72,7 +74,7 @@ fun ErrorPage(
                 "Something went wrong",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = TaskUIHelper.getMarinerBlue(),
+                color = TaskUIHelper.getPrimary(),
                 textAlign = TextAlign.Center,
             )
 
@@ -90,7 +92,7 @@ fun ErrorPage(
                 onClick = onHome,
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getMarinerBlue(),
+                    containerColor = TaskUIHelper.getPrimary(),
                     contentColor = Color.White,
                 ),
             ) {

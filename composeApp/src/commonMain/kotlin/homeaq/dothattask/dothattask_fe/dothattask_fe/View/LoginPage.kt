@@ -41,18 +41,17 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.WebLoginAutofillBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.log
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun LoginPage(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -115,7 +114,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         Text(
             "Welcome in DO THAT TASK!",
             style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
@@ -223,7 +222,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "Don't have an account? Register",
-            color = TaskUIHelper.getMarinerBlue(),
+            color = TaskUIHelper.getPrimary(),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .pointerHoverIcon(PointerIcon.Hand, true)

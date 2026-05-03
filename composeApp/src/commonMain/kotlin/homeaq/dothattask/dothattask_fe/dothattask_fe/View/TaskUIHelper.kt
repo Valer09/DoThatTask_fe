@@ -25,6 +25,30 @@ class TaskUIHelper
             return Color(0xffe0e0e0)
         }
 
+        fun getPrimary(): Color {
+            return Color(0xff1F0A35)
+        }
+
+        fun getSecondary(): Color {
+            return Color(0xff7B2FBE)
+        }
+
+        fun getAccent(): Color {
+            return Color(0xffC77DFF)
+        }
+
+        fun getComplementary(): Color {
+            return Color(0xffFFB347)
+        }
+
+        fun getSurface(): Color {
+            return Color(0xff2D1148)
+        }
+
+        fun getAlternativeText(): Color {
+            return Color(0xffF0E6FF)
+        }
+
         fun getMarinerBlue(): Color {
             return Color(0xff246cd1)
         }
@@ -40,14 +64,14 @@ class TaskUIHelper
          * missing or malformed so a stale group color never breaks the UI.
          */
         fun parseHexColor(hex: String?): Color {
-            if (hex.isNullOrBlank()) return getMarinerBlue()
+            if (hex.isNullOrBlank()) return getPrimary()
             val raw = hex.removePrefix("#")
             val padded = when (raw.length) {
                 6 -> "FF$raw"
                 8 -> raw
-                else -> return getMarinerBlue()
+                else -> return getPrimary()
             }
-            val value = padded.toLongOrNull(16) ?: return getMarinerBlue()
+            val value = padded.toLongOrNull(16) ?: return getPrimary()
             return Color(value)
         }
 

@@ -47,7 +47,7 @@ fun TaskDetailDialog(
             shape = RoundedCornerShape(CornerSize(4.dp))
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getMarinerBlue()).padding(8.dp),
+                modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getPrimary()).padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             )
             {

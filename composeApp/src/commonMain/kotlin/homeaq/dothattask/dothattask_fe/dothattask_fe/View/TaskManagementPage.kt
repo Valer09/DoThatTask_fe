@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -48,8 +49,8 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ColoredDropdown
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.CreateTaskDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
@@ -57,12 +58,15 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailD
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UpdateTaskDialog
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val ANY_OPTION = "Anyone"
+private const val ANY_CATEGORY = "Any"
 private const val CREATOR_ME_OPTION = "Me"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun TaskManagementPage() {
     val taskApi = remember { TaskApi(client()) }
     val categoryApi = remember { CategoryApi(client()) }
@@ -77,7 +81,7 @@ fun TaskManagementPage() {
     /** null = "Anyone" / "Any". */
     var creator by remember { mutableStateOf<String?>(null) }
     var category by remember { mutableStateOf<TaskCategory?>(null) }
-    var assignee by remember { mutableStateOf<String?>(null) }
+    var assignee by remember { mutableStateOf<User?>(null) }
 
     var groupExpanded by remember { mutableStateOf(false) }
     var creatorExpanded by remember { mutableStateOf(false) }
@@ -121,7 +125,7 @@ fun TaskManagementPage() {
                 null -> null
                 else -> creator
             }
-            when (val res = taskApi.searchTasks(gid, creatorParam, category, assignee)) {
+            when (val res = taskApi.searchTasks(gid, creatorParam, category, assignee?.username)) {
                 is ApiResult.Success -> tasks = res.data
                 is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
@@ -183,9 +187,14 @@ fun TaskManagementPage() {
     }
 
     Box {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Text("Manage Tasks", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
             Spacer(Modifier.height(8.dp))
+
+            toastMessage?.let {
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = (-20).dp), verticalAlignment = Alignment.Top) {
+                    ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
+                }
+            }
 
             if (groups.isEmpty()) {
                 Text(
@@ -195,171 +204,73 @@ fun TaskManagementPage() {
                 return@Column
             }
 
-            // Group filter
-            ExposedDropdownMenuBox(
-                expanded = groupExpanded,
-                onExpandedChange = { groupExpanded = !groupExpanded },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) {
-                TextField(
-                    value = selectedGroup?.name ?: "",
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
-                        unfocusedTextColor = TaskUIHelper.parseHexColor(selectedGroup?.color),
-                    ),
-                    onValueChange = {},
-                    label = { Text("Group", fontSize = 11.sp) },
-                    textStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp),
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = groupExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                )
-                ExposedDropdownMenu(
-                    expanded = groupExpanded,
-                    onDismissRequest = { groupExpanded = false },
-                ) {
-                    groups.forEach { g ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    g.name,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TaskUIHelper.parseHexColor(g.color),
-                                )
-                            },
-                            onClick = {
-                                selectedGroup = g
-                                groupExpanded = false
-                            },
-                        )
-                    }
-                }
-            }
+            val groups = AuthState.groups
 
-            Spacer(Modifier.height(6.dp))
+            ColoredDropdown(
+                items = groups,
+                selected = selectedGroup ?: groups.first(),
+                label = "Group",
+                itemLabel = { it.name },
+                onSelect = { selectedGroup = it ; },
+                itemColor = { TaskUIHelper.parseHexColor(it.color) },
+            )
 
-            // Creator filter (Anyone / Me / one of the group members)
             val creatorOptions: List<String> = buildList {
                 add(ANY_OPTION)
                 add(CREATOR_ME_OPTION)
                 addAll(members.map { it.username })
             }
-            ExposedDropdownMenuBox(
-                expanded = creatorExpanded,
-                onExpandedChange = { creatorExpanded = !creatorExpanded },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) {
-                TextField(
-                    value = creator ?: ANY_OPTION,
-                    onValueChange = {},
-                    label = { Text("Creator", fontSize = 11.sp) },
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = creatorExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                )
-                ExposedDropdownMenu(
-                    expanded = creatorExpanded,
-                    onDismissRequest = { creatorExpanded = false },
-                ) {
-                    creatorOptions.forEach { opt ->
-                        DropdownMenuItem(
-                            text = { Text(opt) },
-                            onClick = {
-                                creator = if (opt == ANY_OPTION) null else opt
-                                creatorExpanded = false
-                            },
-                        )
-                    }
-                }
+
+            ColoredDropdown(
+                items = creatorOptions,
+                selected = creator ?: ANY_OPTION,
+                label = "Creator",
+                itemLabel = { it },
+                onSelect = { creator = if (it == ANY_OPTION) null else it; },
+            )
+
+
+            val anyCategory = TaskCategory(id = -1, name = ANY_CATEGORY)
+            val categoryOptions = buildList {
+                add(anyCategory)
+                addAll(availableCategories)
+            }
+            val color =MaterialTheme.colorScheme.onSurface
+
+            ColoredDropdown(
+                items = categoryOptions,
+                selected = category ?: anyCategory,
+                label = "Category",
+                itemLabel = { it.name },
+                itemColor = { if(it.name == ANY_CATEGORY) color else TaskUIHelper.pickColor(it) },
+                onSelect = { selected -> category = if (selected.id < 0) null else selected
+                },
+            )
+
+            val anyUser= User("any", "")
+            val userOptions = buildList {
+                add(anyUser)
+                addAll(members)
             }
 
-            Spacer(Modifier.height(6.dp))
+            ColoredDropdown(
+                items = userOptions,
+                selected = assignee ?: anyUser,
+                label = "Assignee",
+                itemLabel = { it.name },
+                itemColor = { color },
+                onSelect = { assignee = it },
+            )
 
-            // Category filter
-            ExposedDropdownMenuBox(
-                expanded = categoryExpanded,
-                onExpandedChange = { categoryExpanded = !categoryExpanded },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) {
-                TextField(
-                    value = category?.name ?: "Any",
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = category?.let { TaskUIHelper.pickColor(it) } ?: Color.Black,
-                        unfocusedTextColor = category?.let { TaskUIHelper.pickColor(it) } ?: Color.Black,
-                    ),
-                    onValueChange = {},
-                    label = { Text("Category", fontSize = 11.sp) },
-                    textStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp),
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                )
-                ExposedDropdownMenu(
-                    expanded = categoryExpanded,
-                    onDismissRequest = { categoryExpanded = false },
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Any") },
-                        onClick = { category = null; categoryExpanded = false },
-                    )
-                    availableCategories.forEach { cat ->
-                        DropdownMenuItem(
-                            text = { Text(cat.name, color = TaskUIHelper.pickColor(cat), fontWeight = FontWeight.Bold) },
-                            onClick = { category = cat; categoryExpanded = false },
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            // Assignee filter (excludes self — backend enforces it too)
-            ExposedDropdownMenuBox(
-                expanded = assigneeExpanded,
-                onExpandedChange = { assigneeExpanded = !assigneeExpanded },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) {
-                TextField(
-                    value = assignee ?: ANY_OPTION,
-                    onValueChange = {},
-                    label = { Text("Assignee", fontSize = 11.sp) },
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = assigneeExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                )
-                ExposedDropdownMenu(
-                    expanded = assigneeExpanded,
-                    onDismissRequest = { assigneeExpanded = false },
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(ANY_OPTION) },
-                        onClick = { assignee = null; assigneeExpanded = false },
-                    )
-                    members.forEach { u ->
-                        DropdownMenuItem(
-                            text = { Text(u.name) },
-                            onClick = { assignee = u.username; assigneeExpanded = false },
-                        )
-                    }
-                }
-            }
 
             Spacer(Modifier.height(8.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
+                    ),
                     onClick = { scope.launch { runSearch() } },
                     modifier = Modifier
                         .weight(1f)
@@ -372,8 +283,8 @@ fun TaskManagementPage() {
                         .weight(1f)
                         .pointerHoverIcon(PointerIcon.Hand, true),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getLightGray(),
-                        contentColor = Color.Black,
+                        containerColor = TaskUIHelper.getSecondary(),
+                        contentColor = TaskUIHelper.getAlternativeText(),
                     ),
                 ) { Text("Create Task") }
             }

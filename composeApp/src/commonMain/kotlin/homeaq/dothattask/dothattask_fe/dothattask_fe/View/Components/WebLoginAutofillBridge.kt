@@ -1,6 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Compose Multiplatform on Wasm/JS renders text fields into a `<canvas>`
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
  * password-manager equivalent).
  */
 @Composable
+@Preview
 expect fun WebLoginAutofillBridge(
     username: String,
     password: String,

@@ -42,15 +42,18 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ColoredDropdown
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskCard
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.TaskDetailDialog
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val ANY_GROUP_LABEL = "Any"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun CompletedTaskPage() {
 
     val taskApi = remember { TaskApi(client()) }
@@ -64,11 +67,7 @@ fun CompletedTaskPage() {
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
-
-    // null = "Any" → show every completed task. Otherwise, show only tasks
-    // belonging to that group.
     var selectedFilter by remember { mutableStateOf<GroupSummary?>(null) }
-    var groupExpanded by remember { mutableStateOf(false) }
 
     val groups = AuthState.groups
 
@@ -102,7 +101,7 @@ fun CompletedTaskPage() {
     }
 
     Box {
-        Column {
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             // Group filter — defaults to "Any" so the page shows every
             // completed task at first open. Switching the dropdown filters
             // the already-loaded list, no extra request needed.
@@ -110,59 +109,18 @@ fun CompletedTaskPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(vertical = 8.dp),
                 ) {
-                    ExposedDropdownMenuBox(
-                        expanded = groupExpanded,
-                        onExpandedChange = { groupExpanded = !groupExpanded },
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    ) {
-                        TextField(
-                            value = selectedFilter?.name ?: ANY_GROUP_LABEL,
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = TaskUIHelper.parseHexColor(selectedFilter?.color),
-                                unfocusedTextColor = TaskUIHelper.parseHexColor(selectedFilter?.color),
-                            ),
-                            onValueChange = {},
-                            label = { Text("Group", fontSize = 11.sp) },
-                            textStyle = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp),
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = groupExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
-                                .pointerHoverIcon(PointerIcon.Hand, true),
-                        )
-                        ExposedDropdownMenu(
-                            expanded = groupExpanded,
-                            onDismissRequest = { groupExpanded = false },
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(ANY_GROUP_LABEL, fontWeight = FontWeight.Bold) },
-                                onClick = {
-                                    selectedFilter = null
-                                    groupExpanded = false
-                                },
-                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                            )
-                            groups.forEach { g ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            g.name,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TaskUIHelper.parseHexColor(g.color),
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedFilter = g
-                                        groupExpanded = false
-                                    },
-                                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                                )
-                            }
-                        }
-                    }
+                    val groups = AuthState.groups
+
+                    ColoredDropdown(
+                        items = groups,
+                        selected = selectedFilter ?: groups.first(),
+                        label = "Group",
+                        itemLabel = { it.name },
+                        onSelect = { selectedFilter = it ; },
+                        itemColor = { TaskUIHelper.parseHexColor(it.color) },
+                    )
                 }
             }
 
