@@ -64,7 +64,6 @@ fun App(onLoginSuccess: () -> Unit = {}) {
     AppTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             LaunchedEffect(Unit) {
-                println(">>> APP INIT START")
 
                 try
                 {
@@ -74,16 +73,11 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                         initState = AppInitState.LoggedOut
                     }
                     AuthState.loadFromStorage()
-                    println(">>> TOKEN: ${AuthState.accessToken?.take(10)}")
-
-
                     initState = if (AuthState.accessToken != null) {
-                        println(">>> CALLING checkLogin")
 
                         val response = TaskApi(client()).checkLogin()
                         when {
                             response is ApiResult.Success -> {
-                                println(">>> CALLING myGroups")
 
                                 val groupsResult = GroupApi(client()).myGroups()
                                 if (groupsResult is ApiResult.Error) {
@@ -125,15 +119,12 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                         AppState.currentScreen = Screen.Login
                         AppInitState.LoggedOut
                     }
-                println(">>> INIT STATE SET TO: $initState")
 
                 } catch (e: Exception){
-                    println(">>> CAUGHT EXCEPTION: ${e::class.simpleName} - ${e.message}")
                     AppState.routeToError("Server connection error. Check your connection and try again")
                     initState = AppInitState.Error
                 }
                 catch (e: Throwable) {
-                    println(">>> CAUGHT: ${e::class.simpleName} - ${e.message}")
                     AppState.routeToError("Server connection error. Check your connection and try again")
                     initState = AppInitState.Error
                 }
