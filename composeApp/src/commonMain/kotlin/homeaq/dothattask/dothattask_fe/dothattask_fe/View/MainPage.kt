@@ -71,21 +71,6 @@ fun MainPage() {
     val cardShape = RoundedCornerShape(12.dp)
     val cardModifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
 
-    LaunchedEffect(selectedGroupId) {
-        AuthState.activeGroupId = selectedGroupId
-        val gid = selectedGroupId ?: return@LaunchedEffect
-        when (val result = categoryApi.list(gid)) {
-            is ApiResult.Success -> {
-                if (result.data.isNotEmpty()) {
-                    availableCategories = result.data
-                    if (availableCategories.none { it.id == category.id })
-                        category = availableCategories.first()
-                }
-            }
-            else -> {}
-        }
-    }
-
     suspend fun loadAssignedTask() {
         val gid = selectedGroupId ?: run { assignedTask = null; return }
         loading = true
@@ -130,6 +115,22 @@ fun MainPage() {
         } catch (e: Exception) {
             toastIsError = true; toastMessage = "Failed to complete the task: ${e.message}"
         } finally { loading = false }
+    }
+
+    LaunchedEffect(selectedGroupId) {
+        AuthState.activeGroupId = selectedGroupId
+        val gid = selectedGroupId ?: return@LaunchedEffect
+        when (val result = categoryApi.list(gid)) {
+            is ApiResult.Success -> {
+                if (result.data.isNotEmpty()) {
+                    availableCategories = result.data
+                    if (availableCategories.none { it.id == category.id })
+                        category = availableCategories.first()
+                    AppState.title = "Current task"
+                }
+            }
+            else -> {}
+        }
     }
 
     LaunchedEffect(selectedGroupId) { loadAssignedTask() }

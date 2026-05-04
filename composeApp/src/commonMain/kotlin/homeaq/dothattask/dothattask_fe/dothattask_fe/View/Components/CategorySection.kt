@@ -126,7 +126,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 onValueChange = { newName = it },
                 label = { Text("New category", fontSize = 11.sp) },
                 singleLine = true,
-                modifier = Modifier.weight(1.5f),
+                modifier = Modifier.weight(0.4f),
                 colors = TaskUIHelper.appTextFieldColors(),
             )
             Spacer(Modifier.width(6.dp))
@@ -135,7 +135,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 onValueChange = { newColor = it },
                 label = { Text("Color (#RRGGBB)", fontSize = 11.sp) },
                 singleLine = true,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(0.4f),
                 colors = TaskUIHelper.appTextFieldColors(),
             )
             Spacer(Modifier.width(6.dp))
@@ -171,7 +171,7 @@ fun GroupCategoriesSection(groupId: Int) {
                     containerColor = TaskUIHelper.getComplementary(),
                     contentColor = Color.Black,
                 ),
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).height(48.dp),
+                modifier = Modifier.weight(0.2f).pointerHoverIcon(PointerIcon.Hand, true).height(48.dp),
             ) { Text("Add") }
         }
 

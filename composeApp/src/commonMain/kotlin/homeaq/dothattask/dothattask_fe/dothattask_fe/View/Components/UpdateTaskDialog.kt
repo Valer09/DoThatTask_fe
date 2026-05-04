@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +19,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +54,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun UpdateTaskDialog(
     task: Task,
     onConfirm: (Task) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onDelete: (Task) -> Unit,
 ) {
     var name by remember { mutableStateOf(task.name) }
     var description by remember { mutableStateOf(task.description) }
@@ -138,10 +137,31 @@ fun UpdateTaskDialog(
                     }
 
                     Column(modifier = Modifier.padding(10.dp)) {
-                        if (task.groupName.isNotBlank()) {
-                            GroupBadge(task.groupName, task.groupColor)
-                            Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (task.groupName.isNotBlank()) {
+                                GroupBadge(task.groupName, task.groupColor)
+                            }
+                            else
+                            {
+                                Spacer(Modifier.size(0.dp))
+                            }
+
+                            OutlinedButton(
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black,
+                                    containerColor = TaskUIHelper.getRed()
+                                ),
+                                onClick = { onDelete(task) }
+                            ) {
+                                Text("Delete")
+                            }
                         }
+
                         TextField(
                             value = name,
                             onValueChange = { name = it },
@@ -191,10 +211,6 @@ fun UpdateTaskDialog(
                         {
                             OutlinedButton(
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color.Black,
-                                    containerColor = TaskUIHelper.getGray(),
-                                ),
                                 onClick = { onDismiss() },
                             )
                             {

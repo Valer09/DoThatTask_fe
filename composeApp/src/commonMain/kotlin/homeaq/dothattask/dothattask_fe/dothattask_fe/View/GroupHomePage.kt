@@ -96,7 +96,7 @@ fun GroupHomePage() {
     }
 
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val memberRowBg = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+    val memberRowBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
 
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -169,9 +169,6 @@ fun GroupHomePage() {
                         }
 
                         Spacer(Modifier.height(12.dp))
-                        // Per-group categories editor — every member can add or
-                        // unlink (the backend enforces blocking unlink while
-                        // tasks still reference a category).
                         GroupCategoriesSection(groupId = group.id)
 
                         Spacer(Modifier.height(16.dp))

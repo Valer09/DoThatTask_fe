@@ -161,7 +161,6 @@ fun CompletedTaskPage() {
                     items(visibleTasks) { task ->
                         TaskCard(
                             task,
-                            onDelete = {},
                             onUpdate = { },
                             onDetails = { currentDetailTask = task },
                             hideDelete = true,

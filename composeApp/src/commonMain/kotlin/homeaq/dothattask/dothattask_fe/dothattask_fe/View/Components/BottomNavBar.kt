@@ -1,6 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -21,7 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
@@ -42,8 +45,8 @@ fun BottomNavBar() {
 
     Surface(
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(50.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f),
         tonalElevation = 6.dp,
         shadowElevation = 6.dp,
     ) {
@@ -66,7 +69,7 @@ fun BottomNavBar() {
                         unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
                     ),
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).size(40.dp).padding(horizontal = 20.dp),
                 )
             }
         }

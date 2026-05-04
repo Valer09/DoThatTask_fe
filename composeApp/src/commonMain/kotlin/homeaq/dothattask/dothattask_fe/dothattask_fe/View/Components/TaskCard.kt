@@ -32,7 +32,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 @Composable
 fun TaskCard(
     task: Task,
-    onDelete: (Task) -> Unit,
     onUpdate: (Task) -> Unit,
     onDetails: (Task) -> Unit,
     hideDelete: Boolean = false,
@@ -72,37 +71,34 @@ fun TaskCard(
             )
             Spacer(Modifier.height(10.dp))
             Row {
-                if(!hideDelete)
+
+                OutlinedButton(
+                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getSecondary(),
+                        contentColor = TaskUIHelper.getAlternativeText(),
+                    ),
+                    onClick = { onDetails(task) }
+                )
                 {
-                    OutlinedButton(
-                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getRed()),
-                        onClick = { onDelete(task) })
-                    {
-                        Text("Delete")
-                    }
-                    Spacer(Modifier.width(10.dp))
+                    Text("Details")
                 }
+
+                Spacer(Modifier.width(10.dp))
+
                 if(!hideUpdate)
                 {
                     OutlinedButton(
                         modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGreen()),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getComplementary(),
+                            contentColor = Color.Black,
+                        ),
                         onClick = { onUpdate(task) }
                     )
                     {
                         Text("Update")
                     }
-                }
-                Spacer(Modifier.width(10.dp))
-
-                OutlinedButton(
-                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getGray()),
-                    onClick = { onDetails(task) }
-                )
-                {
-                    Text("Details")
                 }
 
                 if(task.status == TaskStatus.ACTIVE)
@@ -114,7 +110,7 @@ fun TaskCard(
                         onClick = { onUnassign(task) }
                     )
                     {
-                        Text("<-X")
+                        Text("Unassing")
                     }
                 }
             }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -45,6 +47,12 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.NoGroupPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskManagementPage
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 
 /**
  * Root scaffold for the authenticated portion of the app. Replaces the
@@ -63,6 +71,8 @@ fun AppScaffold(onLogout: () -> Unit) {
     val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
     val headerColor = MaterialTheme.colorScheme.surfaceVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
+    var settingsMenuExpanded by remember { mutableStateOf(false) }
+
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -70,9 +80,9 @@ fun AppScaffold(onLogout: () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(headerColor)
-                    .padding(top = 35.dp, bottom = 10.dp)
-                    .padding(horizontal = 15.dp),
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(top = 20.dp, bottom = 5.dp)
+                    .padding(horizontal = 40.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -90,31 +100,55 @@ fun AppScaffold(onLogout: () -> Unit) {
                     Box(modifier = Modifier.weight(1f))
                 }
 
-                IconButton(
-                    onClick = { AppState.changePage(Screen.ChangePassword) },
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Change password",
-                        tint = onSurface,
-                    )
-                }
-
-                Button(
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    onClick = {
-                        scope.launch {
-                            runCatching { authApi.logout() }
-                            onLogout()
+                Box {
+                    IconButton(
+                        onClick = { settingsMenuExpanded = true },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(45.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = AuthState.username?.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                            )
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getRed(),
-                        contentColor = Color.White,
-                    ),
-                ) {
-                    Text("Logout")
+                    }
+
+                    DropdownMenu(
+                        expanded = settingsMenuExpanded,
+                        onDismissRequest = { settingsMenuExpanded = false },
+                        modifier = Modifier.background(TaskUIHelper.getPrimary()),
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Change password") },
+                            onClick = {
+                                settingsMenuExpanded = false
+                                AppState.changePage(Screen.ChangePassword)
+                            },
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+                                .background(TaskUIHelper.getSurface()),
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Logout") },
+                            onClick = {
+                                settingsMenuExpanded = false
+                                scope.launch {
+                                    runCatching { authApi.logout() }
+                                    onLogout()
+                                }
+                            },
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()),
+                        )
+                    }
                 }
             }
         },

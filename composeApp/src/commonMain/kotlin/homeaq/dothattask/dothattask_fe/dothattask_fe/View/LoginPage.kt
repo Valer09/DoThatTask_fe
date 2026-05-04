@@ -60,22 +60,15 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
-
     var loading by remember { mutableStateOf(false) }
     val usernameFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val loginButtonFocusRequester = remember { FocusRequester() }
-
     var usernameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
-    // Counter incremented after a successful login so the web autofill
-    // bridge can fire the hidden form's `submit` event — that's what
-    // triggers the browser's "save credentials" prompt.
     var autofillSubmitTrigger by remember { mutableStateOf(0) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
-
-    val focusManager = LocalFocusManager.current
 
     WebLoginAutofillBridge(
         username = username,
@@ -95,6 +88,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         }
         return usernameError == null
     }
+
     fun validatePassword(): Boolean {
         passwordError = when {
             password.isBlank() -> "Password cannot be empty"
@@ -132,10 +126,6 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 OutlinedTextField(
                     value = username,
                     onValueChange = {
-                        // Strip every whitespace character: usernames are a single
-                        // token (regex below rejects spaces) and we want
-                        // `valerio99 ` to behave like `valerio99` even when the user
-                        // accidentally appended a trailing space (or autofill did).
                         username = it.filter { ch -> !ch.isWhitespace() }
                         if (usernameError != null) validateUsername()
                     },
@@ -179,7 +169,6 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         val isUsernameValid = validateUsername()
                         val isPasswordValid = validatePassword()
                         if (isUsernameValid && isPasswordValid) {
-                            loading = true
                             CoroutineScope(Dispatchers.Default).launch {
                                 try {
                                     when (val response = authApi.login(username.trim(), password)) {
@@ -206,9 +195,8 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                 } catch (e: Exception) {
                                     errorMessage = "Login failed: ${e.message}"
                                     AuthState.clear()
-                                } finally {
-                                    loading = false
                                 }
+                                finally { }
                             }
                         }
                     },

@@ -182,6 +182,31 @@ fun TaskManagementPage() {
                 scope.launch { runSearch() }
             },
             onDismiss = { currentTaskToUpdate = null },
+            onDelete = {
+                scope.launch {
+                    when (val result = taskApi.removeTask(it)) {
+                        is ApiResult.Success -> {
+                            toastIsError = false
+                            toastMessage = result.message
+                            currentTaskToUpdate = null
+                            runSearch()
+                        }
+                        is ApiResult.Error -> if (!result.routeIfNetwork()) {
+                            toastIsError = true
+                            toastMessage = result.message
+                        }
+                        is ApiResult.NotFound -> {
+                            toastIsError = true
+                            toastMessage = result.message
+                        }
+                        is ApiResult.Unauthorized -> {
+                            toastIsError = true
+                            toastMessage = "Unauthorized"
+                            AppState.currentScreen = Screen.Login
+                        }
+                    }
+                }
+            },
         )
     }
 
@@ -307,31 +332,7 @@ fun TaskManagementPage() {
                     items(visible) { task ->
                         TaskCard(
                             task,
-                            onDelete = {
-                                scope.launch {
-                                    when (val result = taskApi.removeTask(it)) {
-                                        is ApiResult.Success -> {
-                                            toastIsError = false
-                                            toastMessage = result.message
-                                            runSearch()
-                                        }
-                                        is ApiResult.Error -> if (!result.routeIfNetwork()) {
-                                            toastIsError = true
-                                            toastMessage = result.message
-                                        }
-                                        is ApiResult.NotFound -> {
-                                            toastIsError = true
-                                            toastMessage = result.message
-                                        }
-                                        is ApiResult.Unauthorized -> {
-                                            toastIsError = true
-                                            toastMessage = "Unauthorized"
-                                            AppState.currentScreen = Screen.Login
-                                        }
-                                    }
-                                }
-                            },
-                            onUpdate = { currentTaskToUpdate = task },
+                            onUpdate = { currentTaskToUpdate = task  },
                             onDetails = { currentDetailTask = task },
                             onUnassign = {
                                 scope.launch {

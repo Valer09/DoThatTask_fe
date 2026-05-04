@@ -63,57 +63,64 @@ fun App(onLoginSuccess: () -> Unit = {}) {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background) {
             LaunchedEffect(Unit) {
-                AuthState.onSessionExpired = {
-                    AuthState.clear()
-                    AppState.currentScreen = Screen.Login
-                    isLogged = false
-                }
+                try{
+                    AuthState.onSessionExpired = {
+                        AuthState.clear()
+                        AppState.currentScreen = Screen.Login
+                        isLogged = false
+                    }
 
-                AuthState.loadFromStorage()
-                isLogged = if (AuthState.accessToken != null) {
-                    val response = TaskApi(client()).checkLogin()
-                    if (response is ApiResult.Success) {
-                        val groupsResult = GroupApi(client()).myGroups()
-                        if (groupsResult is ApiResult.Error)
-                        {
-                            AppState.routeToError(groupsResult.message)
-                            true
-                        }
-                        else {
-                            val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
-                            AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
-                            if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
-                                AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
+                    AuthState.loadFromStorage()
+                    isLogged = if (AuthState.accessToken != null) {
+                        val response = TaskApi(client()).checkLogin()
+                        if (response is ApiResult.Success) {
+                            val groupsResult = GroupApi(client()).myGroups()
+                            if (groupsResult is ApiResult.Error)
+                            {
+                                AppState.routeToError(groupsResult.message)
+                                true
                             }
+                            else {
+                                val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
+                                AuthState.groups = groups.map { GroupSummary(it.id, it.name, it.color) }
+                                if (AuthState.activeGroupId == null || AuthState.groups.none { it.id == AuthState.activeGroupId }) {
+                                    AuthState.activeGroupId = AuthState.groups.firstOrNull()?.id
+                                }
 
-                            AppState.currentScreen = notificationTarget
-                                ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                                AppState.currentScreen = notificationTarget
+                                    ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                                true
+                            }
+                        } else if(response is ApiResult.Unauthorized){
+                            if (AuthState.accessToken == null)
+                            {
+                                AppState.currentScreen = Screen.Login
+                                false
+                            }
+                            else
+                            {
+                                AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                                true
+                            }
+                        }
+                        else if (response is ApiResult.Error)
+                        {
+                            AppState.routeToError(response.message)
                             true
                         }
-                    } else if(response is ApiResult.Unauthorized){
-                        if (AuthState.accessToken == null)
-                        {
-                            AppState.currentScreen = Screen.Login
-                            false
-                        }
-                        else
-                        {
+                        else{
                             AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                             true
                         }
+                    } else {
+                        AppState.currentScreen = Screen.Login
+                        false
                     }
-                    else if (response is ApiResult.Error)
-                    {
-                        AppState.routeToError(response.message)
-                        true
-                    }
-                    else{
-                        AppState.currentScreen = notificationTarget ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
-                        true
-                    }
-                } else {
-                    AppState.currentScreen = Screen.Login
-                    false
+                }
+                catch (e: Exception)
+                {
+                    AppState.routeToError("Server connection error. Check your connection and try again")
+                    isLogged = false
                 }
             }
 
@@ -148,13 +155,18 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 }
 
                 true -> {
-                    AppScaffold(
-                        onLogout = {
-                            AuthState.clear()
-                            AppState.currentScreen = Screen.Login
-                            isLogged = false
-                        },
-                    )
+                    if (AppState.currentScreen == Screen.Error)
+                        ErrorPage( )
+                    else
+                    {
+                        AppScaffold(
+                            onLogout = {
+                                AuthState.clear()
+                                AppState.currentScreen = Screen.Login
+                                isLogged = false
+                            },
+                        )
+                    }
                 }
             }
         }
