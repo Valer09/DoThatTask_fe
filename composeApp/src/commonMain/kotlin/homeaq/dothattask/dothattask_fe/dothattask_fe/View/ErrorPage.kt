@@ -42,9 +42,6 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ErrorPage(
     onHome: () -> Unit = {
-        // Default destination depends on session state: drop to Login if the
-        // user isn't authenticated, otherwise pick the right "main" screen
-        // based on whether they belong to any group.
         AppState.errorMessage = null
         AppState.currentScreen = when {
             AuthState.accessToken == null -> Screen.Login
@@ -88,7 +85,7 @@ fun ErrorPage(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    message ?: "We couldn't reach the server. Check your connection and try again.",
+                    message ?: "Unexpected Error",
                     color = onSurface.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,
                 )

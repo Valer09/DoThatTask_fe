@@ -10,5 +10,5 @@ import kotlinx.coroutines.CancellationException
  */
 fun networkError(e: Exception): ApiResult.Error {
     if (e is CancellationException) throw e
-    return ApiResult.Error(e.message ?: "Unknown error", isNetwork = true)
+    return ApiResult.Error(e.message ?: "Unknown error", e, isNetwork = true)
 }

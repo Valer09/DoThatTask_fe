@@ -39,7 +39,7 @@ class AuthApi(
             else -> ApiResult.Error("Login failed (${resp.status.value})")
         }
     } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Connection error")
+        ApiResult.Error(e.message ?: "Connection error", e)
     }
 
     suspend fun register(name: String, username: String, password: String): ApiResult<AuthTokens> = try {

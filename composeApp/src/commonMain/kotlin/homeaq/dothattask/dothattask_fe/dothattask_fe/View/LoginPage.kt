@@ -190,8 +190,8 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                         }
                                         is ApiResult.Error -> {
                                             toastIsError = true
-                                            toastMessage = response.message
-                                            errorMessage = response.message
+                                            toastMessage = if(response.isNetwork) "Server connection error" else response.message
+                                            errorMessage = if(response.isNetwork) "Server connection error" else response.message
                                             AuthState.clear()
                                         }
                                         is ApiResult.NotFound -> {

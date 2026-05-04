@@ -135,16 +135,16 @@ fun MainPage() {
     LaunchedEffect(selectedGroupId) { loadAssignedTask() }
 
     Box {
+        // Toast
+        toastMessage?.let {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
+            }
+        }
+
         Column(modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)) {
-
-            // Toast
-            toastMessage?.let {
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = (-20).dp), verticalAlignment = Alignment.Top) {
-                    ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
-                }
-            }
 
             val groups = AuthState.groups
             val selectedGroup = groups.firstOrNull { it.id == selectedGroupId }

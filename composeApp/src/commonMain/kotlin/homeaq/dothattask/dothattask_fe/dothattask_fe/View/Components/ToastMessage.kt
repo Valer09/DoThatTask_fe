@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 
 @Composable
 fun ToastMessage(message: String, isError: Boolean, onDismiss: () -> Unit) {
@@ -18,6 +20,7 @@ fun ToastMessage(message: String, isError: Boolean, onDismiss: () -> Unit) {
             .fillMaxWidth()
             .background(if (isError) Color(0xFFB00020) else Color(0xFF4CAF50))
             .padding(12.dp)
+            .zIndex(10f)
     ) {
         Text(message, color = Color.White)
     }
