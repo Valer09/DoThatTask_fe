@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -55,107 +56,120 @@ fun NoGroupPage() {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.padding(top = 40.dp).padding(horizontal = 30.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp)) {
         val title = if (AuthState.groups.isEmpty()) "You're not in a group yet" else "Create another group"
-        Text(
-            title,
-            style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getPrimary(),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
 
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "Create a new group to start assigning tasks, or wait for an " +
-                "incoming invite from someone who already has one.",
-            color = Color.DarkGray,
-        )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Create a new group to start assigning tasks, or wait for an " +
+                        "incoming invite from someone who already has one.",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                )
 
-        Spacer(Modifier.height(24.dp))
-        Text("Create a group", fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = groupName,
-            onValueChange = { groupName = it; nameError = null; message = null },
-            label = { Text("Group name") },
-            isError = nameError != null,
-            supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-        )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    "Create a group",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = groupName,
+                    onValueChange = { groupName = it; nameError = null; message = null },
+                    label = { Text("Group name") },
+                    isError = nameError != null,
+                    supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(8.dp))
-        Row {
-            Button(
-                onClick = {
-                    val trimmed = groupName.trim()
-                    if (trimmed.isEmpty()) {
-                        nameError = "Group name cannot be empty"
-                        return@Button
-                    }
-                    loading = true
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            when (val resp = groupApi.create(trimmed)) {
-                                is ApiResult.Success -> {
-                                    val created = resp.data
-                                    AuthState.groups = AuthState.groups + GroupSummary(
-                                        id = created.id,
-                                        name = created.name,
-                                        color = created.color,
-                                    )
-                                    AuthState.activeGroupId = created.id
-                                    // Refresh tokens so the persisted session
-                                    // reflects the new group list.
-                                    authApi.refresh()
-                                    AppState.currentScreen = Screen.GroupHome
-                                }
-                                is ApiResult.Error -> if (!resp.routeIfNetwork()) {
+                Spacer(Modifier.height(12.dp))
+                Row {
+                    Button(
+                        onClick = {
+                            val trimmed = groupName.trim()
+                            if (trimmed.isEmpty()) {
+                                nameError = "Group name cannot be empty"
+                                return@Button
+                            }
+                            loading = true
+                            CoroutineScope(Dispatchers.Default).launch {
+                                try {
+                                    when (val resp = groupApi.create(trimmed)) {
+                                        is ApiResult.Success -> {
+                                            val created = resp.data
+                                            AuthState.groups = AuthState.groups + GroupSummary(
+                                                id = created.id,
+                                                name = created.name,
+                                                color = created.color,
+                                            )
+                                            AuthState.activeGroupId = created.id
+                                            // Refresh tokens so the persisted session
+                                            // reflects the new group list.
+                                            authApi.refresh()
+                                            AppState.currentScreen = Screen.GroupHome
+                                        }
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) {
+                                            messageIsError = true
+                                            message = resp.message
+                                        }
+                                        is ApiResult.NotFound -> {
+                                            messageIsError = true
+                                            message = "Group endpoint unavailable"
+                                        }
+                                        is ApiResult.Unauthorized -> {
+                                            messageIsError = true
+                                            message = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
+                                        }
+                                    }
+                                } catch (e: Exception) {
                                     messageIsError = true
-                                    message = resp.message
-                                }
-                                is ApiResult.NotFound -> {
-                                    messageIsError = true
-                                    message = "Group endpoint unavailable"
-                                }
-                                is ApiResult.Unauthorized -> {
-                                    messageIsError = true
-                                    message = "Unauthorized"
-                                    AppState.currentScreen = Screen.Login
+                                    message = e.message ?: "Create group failed"
+                                } finally {
+                                    loading = false
                                 }
                             }
-                        } catch (e: Exception) {
-                            messageIsError = true
-                            message = e.message ?: "Create group failed"
-                        } finally {
-                            loading = false
-                        }
+                        },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getComplementary(),
+                            contentColor = Color.Black,
+                        ),
+                    ) {
+                        Text("Create group")
                     }
-                },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getPrimary(),
-                    contentColor = Color.White,
-                ),
-            ) {
-                Text("Create group")
-            }
-            Spacer(Modifier.width(12.dp))
-            OutlinedButton(
-                onClick = { AppState.currentScreen = Screen.IncomingInvites },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) {
-                Text("See incoming invites")
-            }
-        }
+                    Spacer(Modifier.width(12.dp))
+                    OutlinedButton(
+                        onClick = { AppState.currentScreen = Screen.IncomingInvites },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    ) {
+                        Text("See incoming invites")
+                    }
+                }
 
-        message?.let {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
-            )
+                message?.let {
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        it,
+                        color = if (messageIsError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 }

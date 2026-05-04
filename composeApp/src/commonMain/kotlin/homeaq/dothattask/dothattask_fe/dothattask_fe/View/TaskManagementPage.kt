@@ -274,8 +274,8 @@ fun TaskManagementPage() {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getComplementary(),
-                        contentColor = Color.Black,
+                        containerColor = TaskUIHelper.getSecondary(),
+                        contentColor = TaskUIHelper.getAlternativeText(),
                     ),
                     onClick = { scope.launch { runSearch() } },
                     modifier = Modifier
@@ -289,8 +289,8 @@ fun TaskManagementPage() {
                         .weight(1f)
                         .pointerHoverIcon(PointerIcon.Hand, true),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getSecondary(),
-                        contentColor = TaskUIHelper.getAlternativeText(),
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
                     ),
                 ) { Text("Create Task") }
             }

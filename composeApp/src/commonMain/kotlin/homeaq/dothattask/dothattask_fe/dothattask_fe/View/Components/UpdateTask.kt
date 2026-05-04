@@ -105,11 +105,7 @@ fun UpdateTaskDialog(
         }
     }
 
-    val colors = TextFieldDefaults.colors(
-        focusedTextColor = Color.Blue,
-        focusedContainerColor = TaskUIHelper.getLightGray(),
-        unfocusedContainerColor = TaskUIHelper.getGray(),
-    )
+    val colors = TaskUIHelper.appTextFieldColors()
 
     Box(modifier = Modifier
         .fillMaxSize().wrapContentSize(Alignment.Center)){
@@ -130,7 +126,8 @@ fun UpdateTaskDialog(
 
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(4.dp),
-                    shape = RoundedCornerShape(CornerSize(4.dp))
+                    shape = TaskUIHelper.appCardShape(),
+                    colors = TaskUIHelper.appCardColors(),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getPrimary()).padding(8.dp),
@@ -208,7 +205,7 @@ fun UpdateTaskDialog(
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = Color.Black,
-                                    containerColor = TaskUIHelper.getGreen(),
+                                    containerColor = TaskUIHelper.getComplementary(),
                                 ),
                                 onClick = {
                                     val trimmedName = name.trim()

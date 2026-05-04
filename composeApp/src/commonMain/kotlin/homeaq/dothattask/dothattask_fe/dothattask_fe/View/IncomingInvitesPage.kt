@@ -1,9 +1,9 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -73,12 +74,14 @@ fun IncomingInvitesPage() {
 
     LaunchedEffect(Unit) { reload() }
 
-    Column(modifier = Modifier.padding(top = 24.dp).padding(horizontal = 24.dp)) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+
+    Column(modifier = Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
                 "Incoming invites",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getPrimary(),
+                color = onSurface,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -91,10 +94,13 @@ fun IncomingInvitesPage() {
             ) { Text("Back") }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         if (loading) {
-            CircularProgressIndicator()
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
             return
         }
         error?.let {
@@ -102,68 +108,69 @@ fun IncomingInvitesPage() {
             return
         }
         if (invites.isEmpty()) {
-            Text("No pending invites.", color = Color.DarkGray)
+            Text("No pending invites.", color = onSurface.copy(alpha = 0.7f))
             return
         }
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(invites) { invite ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(TaskUIHelper.getLightGray())
-                        .padding(12.dp),
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                    shape = TaskUIHelper.appCardShape(),
+                    colors = TaskUIHelper.appCardColors(),
                 ) {
-                    GroupBadge(invite.groupName, invite.groupColor)
-                    Spacer(Modifier.height(6.dp))
-                    Text("Invited by @${invite.inviterUsername}", color = Color.DarkGray)
-                    Spacer(Modifier.height(10.dp))
-                    Row {
-                        Button(
-                            onClick = {
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    when (val resp = inviteApi.accept(invite.id)) {
-                                        is ApiResult.Success -> {
-                                            // Refresh tokens so AuthState.groups reflects
-                                            // the newly accepted membership.
-                                            authApi.refresh()
-                                            reload()
-                                        }
-                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
-                                        is ApiResult.NotFound -> message = resp.message
-                                        is ApiResult.Unauthorized -> {
-                                            error = "Unauthorized"
-                                            AppState.currentScreen = Screen.Login
-                                        }
-                                    }
-                                }
-                            },
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = TaskUIHelper.getPrimary(),
-                                contentColor = Color.White,
-                            ),
-                        ) { Text("Accept") }
-                        Spacer(Modifier.width(10.dp))
-                        OutlinedButton(
-                            onClick = {
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    when (val resp = inviteApi.reject(invite.id)) {
-                                        is ApiResult.Success -> reload()
-                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
-                                        is ApiResult.NotFound -> message = resp.message
-                                        is ApiResult.Unauthorized -> {
-                                            error = "Unauthorized"
-                                            AppState.currentScreen = Screen.Login
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        GroupBadge(invite.groupName, invite.groupColor)
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Invited by @${invite.inviterUsername}",
+                            color = onSurface.copy(alpha = 0.75f),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Row {
+                            Button(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        when (val resp = inviteApi.accept(invite.id)) {
+                                            is ApiResult.Success -> {
+                                                authApi.refresh()
+                                                reload()
+                                            }
+                                            is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
+                                            is ApiResult.NotFound -> message = resp.message
+                                            is ApiResult.Unauthorized -> {
+                                                error = "Unauthorized"
+                                                AppState.currentScreen = Screen.Login
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                        ) { Text("Reject") }
+                                },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = TaskUIHelper.getComplementary(),
+                                    contentColor = Color.Black,
+                                ),
+                            ) { Text("Accept") }
+                            Spacer(Modifier.width(10.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        when (val resp = inviteApi.reject(invite.id)) {
+                                            is ApiResult.Success -> reload()
+                                            is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
+                                            is ApiResult.NotFound -> message = resp.message
+                                            is ApiResult.Unauthorized -> {
+                                                error = "Unauthorized"
+                                                AppState.currentScreen = Screen.Login
+                                            }
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                            ) { Text("Reject") }
+                        }
                     }
                 }
-                Spacer(Modifier.height(8.dp))
             }
         }
 

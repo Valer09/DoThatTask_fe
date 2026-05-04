@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -55,111 +56,123 @@ fun InviteMemberPage() {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.padding(top = 40.dp).padding(horizontal = 30.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                "Invite a member",
-                style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getPrimary(),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-            )
-            OutlinedButton(
-                onClick = { AppState.currentScreen = Screen.GroupHome },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-            ) { Text("Back") }
-        }
-
-        Spacer(Modifier.height(12.dp))
-        if (targetGroup != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Inviting into ", color = Color.DarkGray)
-                GroupBadge(targetGroup.name, targetGroup.color)
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-        Text(
-            "Enter the exact username of the person you want to invite.",
-            color = Color.DarkGray,
-        )
-
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = username,
-            onValueChange = {
-                // Usernames are single tokens — strip every whitespace char
-                // so a stray trailing space (or autofill hiccup) doesn't make
-                // the lookup miss the recipient.
-                username = it.filter { ch -> !ch.isWhitespace() }
-                usernameError = null
-                message = null
-            },
-            label = { Text("Username") },
-            isError = usernameError != null,
-            supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-        )
-
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = {
-                val trimmed = username.trim()
-                if (trimmed.isEmpty()) {
-                    usernameError = "Username cannot be empty"
-                    return@Button
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp).padding(horizontal = 20.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Invite a member",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
+                    )
+                    OutlinedButton(
+                        onClick = { AppState.currentScreen = Screen.GroupHome },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    ) { Text("Back") }
                 }
-                val gid = targetGroupId
-                if (gid == null) {
-                    messageIsError = true
-                    message = "No group selected"
-                    return@Button
+
+                Spacer(Modifier.height(12.dp))
+                if (targetGroup != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Inviting into ",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                        )
+                        GroupBadge(targetGroup.name, targetGroup.color)
+                    }
+                    Spacer(Modifier.height(8.dp))
                 }
-                loading = true
-                CoroutineScope(Dispatchers.Default).launch {
-                    try {
-                        when (val resp = inviteApi.sendInvite(gid, trimmed)) {
-                            is ApiResult.Success -> {
-                                messageIsError = false
-                                message = "Invite sent to @${resp.data.inviteeUsername}"
-                                username = ""
-                            }
-                            is ApiResult.NotFound -> {
+                Text(
+                    "Enter the exact username of the person you want to invite.",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                )
+
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {
+                        // Usernames are single tokens — strip every whitespace char
+                        // so a stray trailing space (or autofill hiccup) doesn't make
+                        // the lookup miss the recipient.
+                        username = it.filter { ch -> !ch.isWhitespace() }
+                        usernameError = null
+                        message = null
+                    },
+                    label = { Text("Username") },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = usernameError != null,
+                    supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        val trimmed = username.trim()
+                        if (trimmed.isEmpty()) {
+                            usernameError = "Username cannot be empty"
+                            return@Button
+                        }
+                        val gid = targetGroupId
+                        if (gid == null) {
+                            messageIsError = true
+                            message = "No group selected"
+                            return@Button
+                        }
+                        loading = true
+                        CoroutineScope(Dispatchers.Default).launch {
+                            try {
+                                when (val resp = inviteApi.sendInvite(gid, trimmed)) {
+                                    is ApiResult.Success -> {
+                                        messageIsError = false
+                                        message = "Invite sent to @${resp.data.inviteeUsername}"
+                                        username = ""
+                                    }
+                                    is ApiResult.NotFound -> {
+                                        messageIsError = true
+                                        message = resp.message
+                                    }
+                                    is ApiResult.Error -> if (!resp.routeIfNetwork()) {
+                                        messageIsError = true
+                                        message = resp.message
+                                    }
+                                    is ApiResult.Unauthorized -> {
+                                        message = "Unauthorized"
+                                        AppState.currentScreen = Screen.Login
+                                    }
+                                }
+                            } catch (e: Exception) {
                                 messageIsError = true
-                                message = resp.message
-                            }
-                            is ApiResult.Error -> if (!resp.routeIfNetwork()) {
-                                messageIsError = true
-                                message = resp.message
-                            }
-                            is ApiResult.Unauthorized -> {
-                                message = "Unauthorized"
-                                AppState.currentScreen = Screen.Login
+                                message = e.message ?: "Invite failed"
+                            } finally {
+                                loading = false
                             }
                         }
-                    } catch (e: Exception) {
-                        messageIsError = true
-                        message = e.message ?: "Invite failed"
-                    } finally {
-                        loading = false
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
+                    ),
+                ) {
+                    Text("Send invite")
                 }
-            },
-            modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = TaskUIHelper.getPrimary(),
-                contentColor = Color.White,
-            ),
-        ) {
-            Text("Send invite")
-        }
 
-        message?.let {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
-            )
+                message?.let {
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        it,
+                        color = if (messageIsError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 }

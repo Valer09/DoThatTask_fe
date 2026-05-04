@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -22,6 +24,7 @@ import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -102,7 +105,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.padding(top = 150.dp).padding(horizontal = 30.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 80.dp).padding(horizontal = 20.dp)) {
         toastMessage?.let {
             ToastMessage(
                 message = it,
@@ -111,122 +114,132 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
             )
         }
 
-        Text(
-            "Welcome in DO THAT TASK!",
-            style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getPrimary(),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    "Welcome in DO THAT TASK!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
 
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = username,
-            onValueChange = {
-                // Strip every whitespace character: usernames are a single
-                // token (regex below rejects spaces) and we want
-                // `valerio99 ` to behave like `valerio99` even when the user
-                // accidentally appended a trailing space (or autofill did).
-                username = it.filter { ch -> !ch.isWhitespace() }
-                if (usernameError != null) validateUsername()
-            },
-            label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
-                .focusRequester(usernameFocusRequester)
-                .focusProperties { next = passwordFocusRequester }
-                .semantics { contentType = ContentType.Username },
-            supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            isError = usernameError != null,
-            singleLine = true,
-        )
+                Spacer(Modifier.height(20.dp))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {
+                        // Strip every whitespace character: usernames are a single
+                        // token (regex below rejects spaces) and we want
+                        // `valerio99 ` to behave like `valerio99` even when the user
+                        // accidentally appended a trailing space (or autofill did).
+                        username = it.filter { ch -> !ch.isWhitespace() }
+                        if (usernameError != null) validateUsername()
+                    },
+                    label = { Text("Username") },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    modifier = Modifier.fillMaxWidth()
+                        .focusRequester(usernameFocusRequester)
+                        .focusProperties { next = passwordFocusRequester }
+                        .semantics { contentType = ContentType.Username },
+                    supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    isError = usernameError != null,
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
-                if (passwordError != null) validatePassword()
-            },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = passwordError != null,
-            supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .focusRequester(passwordFocusRequester)
-                .onPreviewKeyEvent { event ->
-                    if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
-                        loginButtonFocusRequester.requestFocus()
-                        true
-                    } else false
-                }
-                .semantics { contentType = ContentType.Password },
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        if (passwordError != null) validatePassword()
+                    },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = passwordError != null,
+                    supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .focusRequester(passwordFocusRequester)
+                        .onPreviewKeyEvent { event ->
+                            if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
+                                loginButtonFocusRequester.requestFocus()
+                                true
+                            } else false
+                        }
+                        .semantics { contentType = ContentType.Password },
+                )
 
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = {
-                val isUsernameValid = validateUsername()
-                val isPasswordValid = validatePassword()
-                if (isUsernameValid && isPasswordValid) {
-                    loading = true
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            when (val response = authApi.login(username.trim(), password)) {
-                                is ApiResult.Success -> {
-                                    errorMessage = null
-                                    autofillSubmitTrigger += 1
-                                    onLoginSuccess()
-                                    println("Success")
-                                }
-                                is ApiResult.Error -> {
-                                    toastIsError = true
-                                    toastMessage = response.message
-                                    errorMessage = response.message
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        val isUsernameValid = validateUsername()
+                        val isPasswordValid = validatePassword()
+                        if (isUsernameValid && isPasswordValid) {
+                            loading = true
+                            CoroutineScope(Dispatchers.Default).launch {
+                                try {
+                                    when (val response = authApi.login(username.trim(), password)) {
+                                        is ApiResult.Success -> {
+                                            errorMessage = null
+                                            autofillSubmitTrigger += 1
+                                            onLoginSuccess()
+                                        }
+                                        is ApiResult.Error -> {
+                                            toastIsError = true
+                                            toastMessage = response.message
+                                            errorMessage = response.message
+                                            AuthState.clear()
+                                        }
+                                        is ApiResult.NotFound -> {
+                                            errorMessage = "Login endpoint unavailable"
+                                            AuthState.clear()
+                                        }
+                                        is ApiResult.Unauthorized -> {
+                                            errorMessage = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    errorMessage = "Login failed: ${e.message}"
                                     AuthState.clear()
-                                    println("Error")
-                                }
-                                is ApiResult.NotFound -> {
-                                    errorMessage = "Login endpoint unavailable"
-                                    AuthState.clear()
-                                    println("NotFound")
-                                }
-                                is ApiResult.Unauthorized -> {
-                                    errorMessage = "Unauthorized"
-                                    AppState.currentScreen = Screen.Login
-                                    println("Unauthorized")
+                                } finally {
+                                    loading = false
                                 }
                             }
-                        } catch (e: Exception) {
-                            errorMessage = "Login failed: ${e.message}"
-                            AuthState.clear()
-                        } finally {
-                            loading = false
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand, true)
+                        .focusRequester(loginButtonFocusRequester)
+                        .focusable()
+                        .focusProperties { next = usernameFocusRequester },
+                ) {
+                    Text("Login")
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-                .pointerHoverIcon(PointerIcon.Hand, true)
-                .focusRequester(loginButtonFocusRequester)
-                .focusable()
-                .focusProperties { next = usernameFocusRequester },
-        ) {
-            Text("Login")
-        }
 
-        errorMessage?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
+                errorMessage?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
 
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "Don't have an account? Register",
-            color = TaskUIHelper.getPrimary(),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .pointerHoverIcon(PointerIcon.Hand, true)
-                .clickable { AppState.currentScreen = Screen.Register },
-        )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    "Don't have an account? Register",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .pointerHoverIcon(PointerIcon.Hand, true)
+                        .clickable { AppState.currentScreen = Screen.Register },
+                )
+            }
+        }
     }
 }

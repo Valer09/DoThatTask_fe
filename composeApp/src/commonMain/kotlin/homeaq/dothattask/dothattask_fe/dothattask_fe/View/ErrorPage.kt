@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,50 +54,57 @@ fun ErrorPage(
     },
 ) {
     val message = AppState.errorMessage
+    val onSurface = MaterialTheme.colorScheme.onSurface
 
     Box(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(20.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Card(
             modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
         ) {
-            Text(
-                "⚠",
-                fontSize = 48.sp,
-                color = MaterialTheme.colorScheme.error,
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Text(
-                "Something went wrong",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = TaskUIHelper.getPrimary(),
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                message ?: "We couldn't reach the server. Check your connection and try again.",
-                color = Color.DarkGray,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Button(
-                onClick = onHome,
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getPrimary(),
-                    contentColor = Color.White,
-                ),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
             ) {
-                Text("Home")
+                Text(
+                    "⚠",
+                    fontSize = 48.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    "Something went wrong",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = onSurface,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    message ?: "We couldn't reach the server. Check your connection and try again.",
+                    color = onSurface.copy(alpha = 0.75f),
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                Button(
+                    onClick = onHome,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
+                    ),
+                ) {
+                    Text("Home")
+                }
             }
         }
     }

@@ -1,6 +1,16 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.Shape
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 
 class TaskUIHelper
@@ -86,5 +96,41 @@ class TaskUIHelper
             val luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
             return if (luminance > 0.55) Color.Black else Color.White
         }
+
+        /**
+         * Card colors shared by every "page panel" — surface background,
+         * `onSurface` content. Use [appCardShape] alongside.
+         */
+        @Composable
+        @ReadOnlyComposable
+        fun appCardColors(): CardColors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
+
+        @Composable
+        @ReadOnlyComposable
+        fun appCardShape(): Shape = RoundedCornerShape(12.dp)
+
+        /**
+         * Text-field colors that work on top of [appCardColors] in the dark
+         * theme: transparent container so the card surface shows through,
+         * primary indicator/cursor, onSurface text and label.
+         */
+        @Composable
+        @ReadOnlyComposable
+        fun appTextFieldColors(): TextFieldColors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            errorContainerColor = Color.Transparent,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedLabelColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+            cursorColor = MaterialTheme.colorScheme.primary,
+        )
     }
 }

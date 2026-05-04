@@ -87,11 +87,7 @@ fun CreateTaskDialog(
     val taskApi = remember { TaskApi(client()) }
     val categoryApi = remember { CategoryApi(client()) }
 
-    val colors = TextFieldDefaults.colors(
-        focusedTextColor = Color.Blue,
-        focusedContainerColor = TaskUIHelper.getLightGray(),
-        unfocusedContainerColor = TaskUIHelper.getGray(),
-    )
+    val colors = TaskUIHelper.appTextFieldColors()
 
     var loading by remember { mutableStateOf(false) }
     var isUsersLoading by remember { mutableStateOf(false) }
@@ -149,7 +145,8 @@ fun CreateTaskDialog(
 
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(4.dp),
-                        shape = RoundedCornerShape(CornerSize(4.dp))
+                        shape = TaskUIHelper.appCardShape(),
+                        colors = TaskUIHelper.appCardColors(),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getPrimary())
@@ -238,7 +235,7 @@ fun CreateTaskDialog(
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = Color.Black,
-                                        containerColor = TaskUIHelper.getGreen(),
+                                        containerColor = TaskUIHelper.getComplementary(),
                                     ),
                                     onClick = {
                                         val gid = selectedGroup?.id

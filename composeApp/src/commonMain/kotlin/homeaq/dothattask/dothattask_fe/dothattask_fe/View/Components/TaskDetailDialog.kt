@@ -8,15 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,16 +33,12 @@ fun TaskDetailDialog(
     onConfirm: (Task) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val colors = TextFieldDefaults.colors(
-        focusedTextColor = Color.Black,
-        focusedContainerColor = TaskUIHelper.getGray(),
-        unfocusedContainerColor = TaskUIHelper.getGray(),
-    )
-
+    val onSurface = MaterialTheme.colorScheme.onSurface
     Dialog(onDismissRequest = {}) {
         Card(
             modifier = Modifier.fillMaxWidth().padding(4.dp),
-            shape = RoundedCornerShape(CornerSize(4.dp))
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().background(TaskUIHelper.getPrimary()).padding(8.dp),
@@ -54,22 +48,22 @@ fun TaskDetailDialog(
                 Text("${task.name}: details", fontSize = 20.sp, color = Color.White)
             }
 
-            Column(modifier = Modifier.padding(10.dp)) {
-                Spacer(Modifier.height(15.dp))
+            Column(modifier = Modifier.padding(16.dp)) {
+                Spacer(Modifier.height(8.dp))
                 if (task.groupName.isNotBlank()) {
                     GroupBadge(task.groupName, task.groupColor)
                     Spacer(Modifier.height(10.dp))
                 }
-                Text("Assigned to: @${task.ownership_username}")
+                Text("Assigned to: @${task.ownership_username}", color = onSurface)
                 Spacer(Modifier.height(10.dp))
-                Text("Category: ${task.category.name}")
+                Text("Category: ${task.category.name}", color = onSurface)
                 Spacer(Modifier.height(10.dp))
-                TextField(
+                OutlinedTextField(
                     readOnly = true,
                     value = task.description,
                     onValueChange = {},
                     label = { Text("Description") },
-                    colors = colors,
+                    colors = TaskUIHelper.appTextFieldColors(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(250.dp),

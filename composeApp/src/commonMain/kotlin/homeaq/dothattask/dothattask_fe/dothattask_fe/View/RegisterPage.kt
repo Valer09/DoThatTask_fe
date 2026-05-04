@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,9 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalFocusManager
@@ -83,122 +86,138 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.padding(top = 100.dp).padding(horizontal = 30.dp)) {
-        Text(
-            "Create your account",
-            style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getPrimary(),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 60.dp).padding(horizontal = 20.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    "Create your account",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
 
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = name,
-            onValueChange = {
-                name = it
-                if (nameError != null) nameError = if (it.isBlank()) "Name cannot be empty" else null
-            },
-            label = { Text("Name") },
-            isError = nameError != null,
-            supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.PersonFullName },
-            singleLine = true,
-        )
+                Spacer(Modifier.height(20.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        if (nameError != null) nameError = if (it.isBlank()) "Name cannot be empty" else null
+                    },
+                    label = { Text("Name") },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = nameError != null,
+                    supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.PersonFullName },
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = username,
-            onValueChange = {
-                // Strip whitespace: usernames are single tokens, regex below
-                // rejects spaces. Keeps `valerio99 ` equivalent to `valerio99`.
-                username = it.filter { ch -> !ch.isWhitespace() }
-                usernameError = null
-            },
-            label = { Text("Username") },
-            isError = usernameError != null,
-            supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.NewUsername },
-            singleLine = true,
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {
+                        // Strip whitespace: usernames are single tokens, regex below
+                        // rejects spaces. Keeps `valerio99 ` equivalent to `valerio99`.
+                        username = it.filter { ch -> !ch.isWhitespace() }
+                        usernameError = null
+                    },
+                    label = { Text("Username") },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = usernameError != null,
+                    supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.NewUsername },
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it; passwordError = null },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = passwordError != null,
-            supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.NewPassword },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-            singleLine = true,
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it; passwordError = null },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = passwordError != null,
+                    supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.NewPassword },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it; confirmError = null },
-            label = { Text("Confirm password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = confirmError != null,
-            supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.NewPassword },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-            singleLine = true,
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it; confirmError = null },
+                    label = { Text("Confirm password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = confirmError != null,
+                    supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.NewPassword },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                    singleLine = true,
+                )
 
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = {
-                if (!validate()) return@Button
-                loading = true
-                CoroutineScope(Dispatchers.Default).launch {
-                    try {
-                        when (val resp = authApi.register(name.trim(), username.trim(), password)) {
-                            is ApiResult.Success -> {
-                                errorMessage = null
-                                onRegisterSuccess()
-                            }
-                            is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
-                            is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
-                            is ApiResult.Unauthorized -> {
-                                errorMessage = "Unauthorized"
-                                AppState.currentScreen = Screen.Login
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        if (!validate()) return@Button
+                        loading = true
+                        CoroutineScope(Dispatchers.Default).launch {
+                            try {
+                                when (val resp = authApi.register(name.trim(), username.trim(), password)) {
+                                    is ApiResult.Success -> {
+                                        errorMessage = null
+                                        onRegisterSuccess()
+                                    }
+                                    is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
+                                    is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
+                                    is ApiResult.Unauthorized -> {
+                                        errorMessage = "Unauthorized"
+                                        AppState.currentScreen = Screen.Login
+                                    }
+                                }
+
+                            } catch (e: Exception) {
+                                errorMessage = e.message ?: "Registration failed"
+                            } finally {
+                                loading = false
                             }
                         }
-
-                    } catch (e: Exception) {
-                        errorMessage = e.message ?: "Registration failed"
-                    } finally {
-                        loading = false
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TaskUIHelper.getComplementary(),
+                        contentColor = Color.Black,
+                    ),
+                    modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
+                ) {
+                    Text("Create account")
                 }
-            },
-            modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
-        ) {
-            Text("Create account")
-        }
 
-        errorMessage?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
+                errorMessage?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
 
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "Already have an account? Log in",
-            color = TaskUIHelper.getPrimary(),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .pointerHoverIcon(PointerIcon.Hand, true)
-                .clickable { AppState.currentScreen = Screen.Login },
-        )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    "Already have an account? Log in",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .pointerHoverIcon(PointerIcon.Hand, true)
+                        .clickable { AppState.currentScreen = Screen.Login },
+                )
+            }
+        }
     }
 }

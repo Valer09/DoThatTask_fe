@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -73,112 +74,126 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.padding(top = 40.dp).padding(horizontal = 30.dp)) {
-        Text(
-            "Change password",
-            style = MaterialTheme.typography.headlineMedium,
-            color = TaskUIHelper.getPrimary(),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp).padding(horizontal = 20.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            shape = TaskUIHelper.appCardShape(),
+            colors = TaskUIHelper.appCardColors(),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    "Change password",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
 
-        Spacer(Modifier.height(24.dp))
-        OutlinedTextField(
-            value = oldPassword,
-            onValueChange = { oldPassword = it; oldError = null; message = null },
-            label = { Text("Current password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = oldError != null,
-            supportingText = oldError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.Password },
-        )
+                Spacer(Modifier.height(20.dp))
+                OutlinedTextField(
+                    value = oldPassword,
+                    onValueChange = { oldPassword = it; oldError = null; message = null },
+                    label = { Text("Current password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = oldError != null,
+                    supportingText = oldError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.Password },
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = newPassword,
-            onValueChange = { newPassword = it; newError = null; message = null },
-            singleLine = true,
-            label = { Text("New password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = newError != null,
-            supportingText = newError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.NewPassword },
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it; newError = null; message = null },
+                    singleLine = true,
+                    label = { Text("New password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = newError != null,
+                    supportingText = newError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.NewPassword },
+                )
 
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it; confirmError = null; message = null },
-            singleLine = true,
-            label = { Text("Confirm new password") },
-            visualTransformation = PasswordVisualTransformation(),
-            isError = confirmError != null,
-            supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            modifier = Modifier.fillMaxWidth()
-                .semantics { contentType = ContentType.NewPassword },
-        )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it; confirmError = null; message = null },
+                    singleLine = true,
+                    label = { Text("Confirm new password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = confirmError != null,
+                    supportingText = confirmError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.NewPassword },
+                )
 
-        Spacer(Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
-            ) {
-                Text("Cancel")
-            }
-            Spacer(Modifier.width(12.dp))
-            Button(
-                onClick = {
-                    if (!validate()) return@Button
-                    loading = true
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            when (val resp = authApi.changePassword(oldPassword, newPassword)) {
-                                is ApiResult.Success -> {
-                                    messageIsError = false
-                                    message = "Password changed. Other sessions have been signed out."
-                                    oldPassword = ""
-                                    newPassword = ""
-                                    confirmPassword = ""
-                                    onPasswordChanged()
-                                }
-                                is ApiResult.Error -> if (!resp.routeIfNetwork()) {
+                Spacer(Modifier.height(20.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(
+                        onClick = onBack,
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
+                    ) {
+                        Text("Cancel")
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        onClick = {
+                            if (!validate()) return@Button
+                            loading = true
+                            CoroutineScope(Dispatchers.Default).launch {
+                                try {
+                                    when (val resp = authApi.changePassword(oldPassword, newPassword)) {
+                                        is ApiResult.Success -> {
+                                            messageIsError = false
+                                            message = "Password changed. Other sessions have been signed out."
+                                            oldPassword = ""
+                                            newPassword = ""
+                                            confirmPassword = ""
+                                            onPasswordChanged()
+                                        }
+                                        is ApiResult.Error -> if (!resp.routeIfNetwork()) {
+                                            messageIsError = true
+                                            message = resp.message
+                                        }
+                                        is ApiResult.NotFound -> {
+                                            messageIsError = true
+                                            message = "Change-password endpoint unavailable"
+                                        }
+                                        is ApiResult.Unauthorized -> {
+                                            messageIsError = true
+                                            message = "Unauthorized"
+                                            AppState.currentScreen = Screen.Login
+                                        }
+                                    }
+                                } catch (e: Exception) {
                                     messageIsError = true
-                                    message = resp.message
-                                }
-                                is ApiResult.NotFound -> {
-                                    messageIsError = true
-                                    message = "Change-password endpoint unavailable"
-                                }
-                                is ApiResult.Unauthorized -> {
-                                    messageIsError = true
-                                    message = "Unauthorized"
-                                    AppState.currentScreen = Screen.Login
+                                    message = e.message ?: "Change password failed"
+                                } finally {
+                                    loading = false
                                 }
                             }
-                        } catch (e: Exception) {
-                            messageIsError = true
-                            message = e.message ?: "Change password failed"
-                        } finally {
-                            loading = false
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getComplementary(),
+                            contentColor = Color.Black,
+                        ),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
+                    ) {
+                        Text("Change password")
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getPrimary(), contentColor = Color.White),
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
-            ) {
-                Text("Change password")
-            }
-        }
+                }
 
-        message?.let {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                it,
-                color = if (messageIsError) MaterialTheme.colorScheme.error else TaskUIHelper.getPrimary(),
-            )
+                message?.let {
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        it,
+                        color = if (messageIsError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 }

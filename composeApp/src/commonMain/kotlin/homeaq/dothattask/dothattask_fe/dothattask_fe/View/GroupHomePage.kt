@@ -91,16 +91,19 @@ fun GroupHomePage() {
         Column(
             Modifier.fillMaxWidth().padding(top = 60.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ) { CircularProgressIndicator() }
+        ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
         return
     }
 
-    Column(modifier = Modifier.padding(top = 24.dp).padding(horizontal = 24.dp).fillMaxSize()) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val memberRowBg = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
                 "My groups",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TaskUIHelper.getPrimary(),
+                color = onSurface,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -108,13 +111,13 @@ fun GroupHomePage() {
                 onClick = { AppState.currentScreen = Screen.NoGroup },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getPrimary(),
-                    contentColor = Color.White,
+                    containerColor = TaskUIHelper.getComplementary(),
+                    contentColor = Color.Black,
                 ),
             ) { Text("+ Create group") }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(groups) { group ->
@@ -123,49 +126,55 @@ fun GroupHomePage() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = TaskUIHelper.appCardShape(),
+                    colors = TaskUIHelper.appCardColors(),
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             GroupBadge(group.name, group.color, fontSize = 14.sp)
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 "owned by @${group.ownerUsername}",
-                                color = Color.DarkGray,
+                                color = onSurface.copy(alpha = 0.7f),
                                 modifier = Modifier.weight(1f),
                             )
                         }
-                        Spacer(Modifier.height(10.dp))
-                        Text("Members (${group.members.size})", fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "Members (${group.members.size})",
+                            fontWeight = FontWeight.SemiBold,
+                            color = onSurface,
+                        )
                         Spacer(Modifier.height(4.dp))
                         group.members.forEach { m ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(TaskUIHelper.getLightGray())
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                    .padding(vertical = 2.dp)
+                                    .background(memberRowBg, RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(Modifier.weight(1f)) {
-                                    Text(m.name, fontWeight = FontWeight.Bold)
-                                    Text("@${m.username}", color = Color.DarkGray)
+                                    Text(m.name, fontWeight = FontWeight.Bold, color = onSurface)
+                                    Text("@${m.username}", color = onSurface.copy(alpha = 0.7f))
                                 }
                                 Text(
                                     if (m.username.equals(group.ownerUsername, ignoreCase = true)) "owner"
                                     else m.role.name.lowercase(),
-                                    color = TaskUIHelper.getPrimary(),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                             }
-                            Spacer(Modifier.height(4.dp))
                         }
 
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(12.dp))
                         // Per-group categories editor — every member can add or
                         // unlink (the backend enforces blocking unlink while
                         // tasks still reference a category).
                         GroupCategoriesSection(groupId = group.id)
 
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(16.dp))
                         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                             if (isOwner) {
                                 Button(
@@ -175,8 +184,8 @@ fun GroupHomePage() {
                                     },
                                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = TaskUIHelper.getPrimary(),
-                                        contentColor = Color.White,
+                                        containerColor = TaskUIHelper.getSecondary(),
+                                        contentColor = TaskUIHelper.getAlternativeText(),
                                     ),
                                 ) { Text("Invite member") }
                                 Spacer(Modifier.width(8.dp))

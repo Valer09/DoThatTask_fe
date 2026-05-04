@@ -12,9 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,7 +73,11 @@ fun GroupCategoriesSection(groupId: Int) {
     LaunchedEffect(groupId) { reload() }
 
     Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-        Text("Categories (${categories.size})", fontWeight = FontWeight.SemiBold)
+        Text(
+            "Categories (${categories.size})",
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         Spacer(Modifier.height(4.dp))
 
         categories.forEach { cat ->
@@ -123,10 +127,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 label = { Text("New category", fontSize = 11.sp) },
                 singleLine = true,
                 modifier = Modifier.weight(1.5f),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = TaskUIHelper.getLightGray(),
-                    unfocusedContainerColor = TaskUIHelper.getGray(),
-                ),
+                colors = TaskUIHelper.appTextFieldColors(),
             )
             Spacer(Modifier.width(6.dp))
             OutlinedTextField(
@@ -135,10 +136,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 label = { Text("Color (#RRGGBB)", fontSize = 11.sp) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = TaskUIHelper.getLightGray(),
-                    unfocusedContainerColor = TaskUIHelper.getGray(),
-                ),
+                colors = TaskUIHelper.appTextFieldColors(),
             )
             Spacer(Modifier.width(6.dp))
             Button(
@@ -170,8 +168,8 @@ fun GroupCategoriesSection(groupId: Int) {
                 },
                 enabled = !loading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TaskUIHelper.getPrimary(),
-                    contentColor = Color.White,
+                    containerColor = TaskUIHelper.getComplementary(),
+                    contentColor = Color.Black,
                 ),
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).height(48.dp),
             ) { Text("Add") }
