@@ -169,6 +169,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         val isUsernameValid = validateUsername()
                         val isPasswordValid = validatePassword()
                         if (isUsernameValid && isPasswordValid) {
+
                             CoroutineScope(Dispatchers.Default).launch {
                                 try {
                                     when (val response = authApi.login(username.trim(), password)) {
