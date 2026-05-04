@@ -41,14 +41,20 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 @Composable
 fun ErrorPage(
+    onRetry: (() -> Unit)? = null,
     onHome: () -> Unit = {
-        AppState.errorMessage = null
-        AppState.currentScreen = when {
-            AuthState.accessToken == null -> Screen.Login
-            AuthState.groups.isNotEmpty() -> Screen.Home
-            else -> Screen.NoGroup
+
+        if(onRetry != null) onRetry.invoke()
+        else
+        {
+            AppState.errorMessage = null
+            AppState.currentScreen = when {
+                AuthState.accessToken == null -> Screen.Login
+                AuthState.groups.isNotEmpty() -> Screen.Home
+                else -> Screen.NoGroup
+            }
         }
-    },
+    }
 ) {
     val message = AppState.errorMessage
     val onSurface = MaterialTheme.colorScheme.onSurface

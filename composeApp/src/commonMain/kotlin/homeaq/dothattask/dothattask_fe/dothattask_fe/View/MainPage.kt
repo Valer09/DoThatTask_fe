@@ -118,20 +118,38 @@ fun MainPage() {
     }
 
     LaunchedEffect(selectedGroupId) {
-        AuthState.activeGroupId = selectedGroupId
-        val gid = selectedGroupId ?: return@LaunchedEffect
-        when (val result = categoryApi.list(gid)) {
-            is ApiResult.Success -> {
-                if (result.data.isNotEmpty()) {
-                    availableCategories = result.data
-                    if (availableCategories.none { it.id == category.id })
-                        category = availableCategories.first()
-                    AppState.title = "Current task"
+        try{
+            AuthState.activeGroupId = selectedGroupId
+            val gid = selectedGroupId ?: return@LaunchedEffect
+            when (val result = categoryApi.list(gid)) {
+                is ApiResult.Success -> {
+                    if (result.data.isNotEmpty()) {
+                        availableCategories = result.data
+                        if (availableCategories.none { it.id == category.id })
+                            category = availableCategories.first()
+                        AppState.title = "Current task"
+                    }
+                }
+                else -> {
+                    if (result is ApiResult.Error && result.routeIfNetwork())
+                    {
+                        toastIsError = true; toastMessage = result.message
+                    }
+                    else if(result is ApiResult.Error && result.routeIfNetwork())
+                    {
+                        AppState.currentScreen = Screen.Error
+                    }
                 }
             }
-            else -> {}
         }
+        catch (e: Exception) {
+            AppState.errorMessage = "Unexpected Error"
+            AppState.currentScreen = Screen.Error
+        }
+        finally { loading = false }
+
     }
+
 
     LaunchedEffect(selectedGroupId) { loadAssignedTask() }
 

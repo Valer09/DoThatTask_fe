@@ -59,10 +59,12 @@ private sealed class AppInitState {
 fun App(onLoginSuccess: () -> Unit = {}) {
     var initState by remember { mutableStateOf<AppInitState>(AppInitState.Loading) }
     val notificationTarget = remember { AppState.currentScreen.takeIf { it != Screen.Login } }
+    var initKey by remember { mutableStateOf(0) }
+
 
     AppTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            LaunchedEffect(Unit) {
+            LaunchedEffect(initKey) {
                 // Catch Throwable (not just Exception) because on Kotlin/Wasm-JS
                 // browser fetch failures are plain JS errors that don't extend
                 // kotlin.Exception and would otherwise escape silently, leaving
@@ -133,7 +135,9 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     contentAlignment = Alignment.Center,
                 ) { CircularProgressIndicator() }
 
-                AppInitState.Error -> ErrorPage()
+                AppInitState.Error -> ErrorPage(onRetry = {
+                    initKey++
+                })
 
                 AppInitState.LoggedOut -> when (AppState.currentScreen) {
                     Screen.Register -> RegisterPage(

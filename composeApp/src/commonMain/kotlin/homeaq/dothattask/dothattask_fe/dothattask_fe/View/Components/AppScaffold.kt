@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -81,7 +83,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(top = 20.dp, bottom = 5.dp)
+                    .padding(top = 35.dp, bottom = 0.dp)
                     .padding(horizontal = 40.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -135,7 +137,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                                 AppState.changePage(Screen.ChangePassword)
                             },
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-                                .background(TaskUIHelper.getSurface()),
+                                .background(TaskUIHelper.getSurface()).height(75.dp).width(200.dp).padding(bottom = 1.dp),
                         )
                         DropdownMenuItem(
                             text = { Text("Logout") },
@@ -146,7 +148,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                                     onLogout()
                                 }
                             },
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()),
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()).height(75.dp).width(200.dp),
                         )
                     }
                 }

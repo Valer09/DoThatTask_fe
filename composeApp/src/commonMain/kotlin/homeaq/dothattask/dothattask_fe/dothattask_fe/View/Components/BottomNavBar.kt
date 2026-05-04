@@ -1,5 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +46,7 @@ fun BottomNavBar() {
     val selectedTopLevel = AppState.currentScreen.topLevel()
 
     Surface(
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
         shape = RoundedCornerShape(50.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f),
         tonalElevation = 6.dp,
@@ -53,15 +55,16 @@ fun BottomNavBar() {
         NavigationBar(
             containerColor = Color.Transparent,
             tonalElevation = 0.dp,
+            modifier = Modifier.padding(horizontal = 15.dp)
         ) {
             bottomNavDestinations.forEach { screen ->
                 val (icon, label) = screen.tabPresentation()
                 NavigationBarItem(
                     selected = selectedTopLevel == screen,
                     onClick = { AppState.changePage(screen.resolveTarget()) },
-                    icon = { Icon(imageVector = icon, contentDescription = label) },
-                    label = { Text(label) },
-                    alwaysShowLabel = true,
+                    icon = { Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(35.dp)) },
+                    label = {  },
+                    alwaysShowLabel = false,
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.onSurface,
                         selectedTextColor = MaterialTheme.colorScheme.onSurface,
@@ -69,11 +72,13 @@ fun BottomNavBar() {
                         unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
                     ),
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).size(40.dp).padding(horizontal = 20.dp),
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).padding(horizontal = 15.dp),
                 )
             }
         }
     }
+    Spacer(modifier = Modifier.height(8.dp))
+
 }
 
 private fun Screen.tabPresentation(): Pair<ImageVector, String> = when (this) {

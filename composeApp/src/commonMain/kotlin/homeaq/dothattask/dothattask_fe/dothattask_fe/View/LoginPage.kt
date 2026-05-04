@@ -166,6 +166,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = {
+                        loading = true
                         val isUsernameValid = validateUsername()
                         val isPasswordValid = validatePassword()
                         if (isUsernameValid && isPasswordValid) {
@@ -197,7 +198,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                     errorMessage = "Login failed: ${e.message}"
                                     AuthState.clear()
                                 }
-                                finally { }
+                                finally {loading = false}
                             }
                         }
                     },
