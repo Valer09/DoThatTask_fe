@@ -8,24 +8,38 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 
 /**
- * Wraps a transport-level failure as an [ApiResult.Error] flagged as a
- * network error. Re-throws [CancellationException] so coroutine cancellation
- * (page navigation, scope teardown) is never mistaken for a server outage and
- * doesn't kick the user to the global ErrorPage.
+ * Returns true if [t] is a transport/network-level failure.
+ * On Kotlin/JVM these are typed exceptions; on Kotlin/Wasm-JS the browser
+ * surfaces a raw JS TypeError ("Fail to fetch" / "Failed to fetch") which
+ * does NOT extend Exception — it arrives as a plain Throwable whose message
+ * contains a known fetch-failure string.
  */
-fun networkError(e: Exception): ApiResult.Error {
-    if (checkExceptionType(e))
-        return ApiResult.Error(e.message ?: "Timeout", e, isNetwork = true)
-
-    if (e is CancellationException) throw e
-    return ApiResult.Error(e.message ?: "Unknown error", e, isNetwork = true)
+fun isNetworkError(t: Throwable): Boolean {
+    if (t is TimeoutCancellationException) return true
+    if (t is SocketTimeoutException) return true
+    if (t is HttpRequestTimeoutException) return true
+    if (t is ConnectTimeoutException) return true
+    if (t is NoTransformationFoundException) return true
+    // Kotlin/Wasm-JS: browser fetch failure comes as a Throwable with this message
+    val msg = t.message?.lowercase() ?: return false
+    return msg.contains("fail to fetch") || msg.contains("failed to fetch") || msg.contains("networkerror")
 }
 
-fun checkExceptionType(e: Exception?): Boolean {
-    return e is TimeoutCancellationException
-            || e is SocketTimeoutException
-            || e is HttpRequestTimeoutException
-            || e is NoTransformationFoundException
-            || e is ConnectTimeoutException
-
+/**
+ * Wraps any transport-level failure as an [ApiResult.Error] flagged as
+ * isNetwork = true, with a sanitized user-friendly message.
+ *
+ * Re-throws [CancellationException] (but NOT timeout subclasses) so that
+ * normal coroutine cancellation (navigation, scope teardown) is never
+ * mistaken for a server outage.
+ */
+fun networkError(t: Throwable): ApiResult.Error {
+    // Let genuine coroutine cancellations propagate — but NOT Ktor timeouts
+    // which may wrap CancellationException internally.
+    if (t is CancellationException && !isNetworkError(t)) throw t
+    return ApiResult.Error(
+        message = "Connection error",
+        e = if (t is Exception) t else null,
+        isNetwork = true,
+    )
 }

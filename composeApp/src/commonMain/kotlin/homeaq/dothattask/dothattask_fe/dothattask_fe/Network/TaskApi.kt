@@ -16,12 +16,10 @@ import io.ktor.http.contentType
 class TaskApi(private val httpClient: HttpClient) {
 
     suspend fun removeTask(task: Task): ApiResult<String> {
-        return try
-        {
+        return try {
             val response = httpClient.delete("api/tasks/${task.name}") {
                 withGroup(task.groupId)
             }
-
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success("Task deleted successfully")
                 403 -> ApiResult.Error(
@@ -30,18 +28,13 @@ class TaskApi(private val httpClient: HttpClient) {
                 )
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
-        }
-        catch (e: Exception)
-        {
-            return networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    /** Creates a task in [groupId] (which the caller must belong to). */
-    suspend fun createTask(task: Task, groupId: Int) : ApiResult<Task>
-    {
-        return try
-        {
+    suspend fun createTask(task: Task, groupId: Int): ApiResult<Task> {
+        return try {
             val taskUpdate = TaskUpdate(
                 "",
                 task.name,
@@ -50,25 +43,20 @@ class TaskApi(private val httpClient: HttpClient) {
                 task.status,
                 task.ownership_username
             )
-            val response = httpClient.post("/api/tasks")
-            {
+            val response = httpClient.post("/api/tasks") {
                 withGroup(groupId)
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
             }
-
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
     suspend fun updateTask(oldTask: Task, newTask: Task): ApiResult<Task> {
-        return try
-        {
+        return try {
             val taskUpdate = TaskUpdate(
                 oldTask.name,
                 newTask.name,
@@ -77,13 +65,11 @@ class TaskApi(private val httpClient: HttpClient) {
                 newTask.status,
                 newTask.ownership_username
             )
-            val response = httpClient.post("/api/tasks")
-            {
+            val response = httpClient.post("/api/tasks") {
                 withGroup(oldTask.groupId)
                 contentType(ContentType.Application.Json)
                 setBody(taskUpdate)
             }
-
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
                 403 -> ApiResult.Error(
@@ -92,73 +78,50 @@ class TaskApi(private val httpClient: HttpClient) {
                 )
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    /** Fetches the task currently assigned to the caller in [groupId]. */
-    suspend fun getAssignedTask(groupId: Int): ApiResult<Task>
-    {
-        return try
-        {
+    suspend fun getAssignedTask(groupId: Int): ApiResult<Task> {
+        return try {
             val response = httpClient.get("/api/tasks/assignedTask") {
                 withGroup(groupId)
             }
-
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
                 404 -> ApiResult.NotFound(response.body())
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    /** Picks a random task in [groupId] within [category] for the caller. */
-    suspend fun pickTask(groupId: Int, category: TaskCategory): ApiResult<Task>
-    {
-        return try
-        {
-            val response = httpClient.post("/api/tasks/pickTask")
-            {
+    suspend fun pickTask(groupId: Int, category: TaskCategory): ApiResult<Task> {
+        return try {
+            val response = httpClient.post("/api/tasks/pickTask") {
                 withGroup(groupId)
-                url{
-                    parameters.append("category", category.name)
-                }
+                url { parameters.append("category", category.name) }
                 contentType(ContentType.Application.Json)
             }
-
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(response.body())
                 404 -> ApiResult.NotFound(response.body())
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    suspend fun unassignTask(task: Task):  ApiResult<Task>
-    {
-        return try
-        {
-            val response = httpClient.post("/api/tasks/unassign")
-            {
+    suspend fun unassignTask(task: Task): ApiResult<Task> {
+        return try {
+            val response = httpClient.post("/api/tasks/unassign") {
                 withGroup(task.groupId)
-                url{
-                    parameters.append("task_name", task.name)
-                }
+                url { parameters.append("task_name", task.name) }
                 contentType(ContentType.Application.Json)
             }
-
             when (response.status.value) {
                 in 200..299 -> ApiResult.Success(task)
                 404 -> ApiResult.NotFound(response.body())
@@ -168,32 +131,25 @@ class TaskApi(private val httpClient: HttpClient) {
                 )
                 else -> ApiResult.Error(response.call.response.status.toString())
             }
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    suspend fun completeTask(assignedTask: Task?) : ApiResult<String>
-    {
-        return try
-        {
-            if(assignedTask == null || assignedTask.name.isEmpty()) return ApiResult.Error("No task assigned. Error on the client")
+    suspend fun completeTask(assignedTask: Task?): ApiResult<String> {
+        return try {
+            if (assignedTask == null || assignedTask.name.isEmpty())
+                return ApiResult.Error("No task assigned. Error on the client")
             val response = httpClient.post("api/tasks/completeTask") {
                 withGroup(assignedTask.groupId)
-                url{
-                    parameters.append("task_name", assignedTask.name)
-                }
+                url { parameters.append("task_name", assignedTask.name) }
                 contentType(ContentType.Application.Json)
             }
             if (response.status.value in 200..299) ApiResult.Success("Task completed successfully")
             else if (response.status.value == 404) ApiResult.NotFound("Task not found")
-            else return ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+            else ApiResult.Error(response.call.response.status.toString())
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
@@ -214,37 +170,28 @@ class TaskApi(private val httpClient: HttpClient) {
             }
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
-        } catch (e: Exception) {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-    suspend fun getAllUsers(groupId: Int): ApiResult<List<User>>
-    {
-        return try
-        {
+    suspend fun getAllUsers(groupId: Int): ApiResult<List<User>> {
+        return try {
             val response = httpClient.get("/api/user/groupMembers/$groupId")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
-
-    suspend fun getCompleted(): ApiResult<List<Task>>
-    {
-        return try
-        {
+    suspend fun getCompleted(): ApiResult<List<Task>> {
+        return try {
             val response = httpClient.get("/api/tasks/completed")
             if (response.status.value in 200..299) ApiResult.Success(response.body())
             else ApiResult.Error(response.call.response.status.toString())
-        }
-        catch (e: Exception)
-        {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 
@@ -256,8 +203,8 @@ class TaskApi(private val httpClient: HttpClient) {
                 401 -> ApiResult.Unauthorized()
                 else -> ApiResult.Error(response.status.toString())
             }
-        } catch (e: Exception) {
-            networkError(e)
+        } catch (t: Throwable) {
+            networkError(t)
         }
     }
 }

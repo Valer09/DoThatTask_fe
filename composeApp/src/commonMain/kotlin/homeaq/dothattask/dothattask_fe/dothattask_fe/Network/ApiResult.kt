@@ -1,15 +1,15 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
 
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
-import io.ktor.client.call.NoTransformationFoundException
-import io.ktor.client.network.sockets.ConnectTimeoutException
-import io.ktor.client.network.sockets.SocketTimeoutException
-import io.ktor.client.plugins.HttpRequestTimeoutException
-import kotlinx.coroutines.TimeoutCancellationException
 
 sealed class ApiResult<out T> {
     data class Success<out T>(val data: T, val message: String = "Completed!") : ApiResult<T>()
-    data class Error(val message: String?, val e : Exception? = null, val isNetwork: Boolean = false) : ApiResult<Nothing>()
+    data class Error(
+        /** User-visible message — must never contain raw URLs or internal exception details. */
+        val message: String?,
+        val e: Exception? = null,
+        val isNetwork: Boolean = false,
+    ) : ApiResult<Nothing>()
     data class NotFound(val message: String) : ApiResult<Nothing>()
     data class Unauthorized(val message: String = "Unauthorized") : ApiResult<Nothing>()
 }
@@ -21,6 +21,6 @@ sealed class ApiResult<out T> {
  */
 fun ApiResult.Error.routeIfNetwork(): Boolean {
     if (!isNetwork) return false
-    AppState.routeToError("Server communication error. Check your connection and try again")
+    AppState.routeToError("Connection error. Check your connection and try again.")
     return true
 }

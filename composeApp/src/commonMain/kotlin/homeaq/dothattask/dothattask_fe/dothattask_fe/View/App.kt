@@ -23,7 +23,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.isNetworkError
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.AppScaffold
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -46,7 +46,6 @@ fun AppTheme(content: @Composable () -> Unit) {
     )
 }
 
-
 private sealed class AppInitState {
     object Loading : AppInitState()
     object LoggedIn : AppInitState()
@@ -64,24 +63,25 @@ fun App(onLoginSuccess: () -> Unit = {}) {
     AppTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             LaunchedEffect(Unit) {
-
-                try
-                {
+                // Catch Throwable (not just Exception) because on Kotlin/Wasm-JS
+                // browser fetch failures are plain JS errors that don't extend
+                // kotlin.Exception and would otherwise escape silently, leaving
+                // initState = Loading forever.
+                try {
                     AuthState.onSessionExpired = {
                         AuthState.clear()
                         AppState.currentScreen = Screen.Login
                         initState = AppInitState.LoggedOut
                     }
                     AuthState.loadFromStorage()
-                    initState = if (AuthState.accessToken != null) {
 
+                    initState = if (AuthState.accessToken != null) {
                         val response = TaskApi(client()).checkLogin()
                         when {
                             response is ApiResult.Success -> {
-
                                 val groupsResult = GroupApi(client()).myGroups()
                                 if (groupsResult is ApiResult.Error) {
-                                    AppState.routeToError(groupsResult.message)
+                                    AppState.routeToError("Connection error. Check your connection and try again.")
                                     AppInitState.Error
                                 } else {
                                     val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
@@ -104,7 +104,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                                 }
                             }
                             response is ApiResult.Error -> {
-                                AppState.routeToError(response.message)
+                                AppState.routeToError("Connection error. Check your connection and try again.")
                                 AppInitState.Error
                             }
                             else -> {
@@ -114,21 +114,17 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                             }
                         }
                     } else {
-                        println(">>> NO TOKEN, going to login")
-
                         AppState.currentScreen = Screen.Login
                         AppInitState.LoggedOut
                     }
-
-                } catch (e: Exception){
-                    AppState.routeToError("Server connection error. Check your connection and try again")
+                } catch (t: Throwable) {
+                    // Genuine coroutine cancellations (navigation teardown) are
+                    // re-thrown by networkError; everything else means the server
+                    // was unreachable — show the error page.
+                    if (t is kotlinx.coroutines.CancellationException && !isNetworkError(t)) throw t
+                    AppState.routeToError("Connection error. Check your connection and try again.")
                     initState = AppInitState.Error
                 }
-                catch (e: Throwable) {
-                    AppState.routeToError("Server connection error. Check your connection and try again")
-                    initState = AppInitState.Error
-                }
-
             }
 
             when (initState) {
@@ -142,7 +138,8 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 AppInitState.LoggedOut -> when (AppState.currentScreen) {
                     Screen.Register -> RegisterPage(
                         onRegisterSuccess = {
-                            AppState.currentScreen = if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
+                            AppState.currentScreen =
+                                if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
                             initState = AppInitState.LoggedIn
                             onLoginSuccess()
                         },

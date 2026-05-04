@@ -38,8 +38,11 @@ class AuthApi(
             405 -> ApiResult.Error("Method not allowed")
             else -> ApiResult.Error("Login failed (${resp.status.value})")
         }
-    } catch (e: Exception) {
-        ApiResult.Error(e.message ?: "Connection error", e)
+    } catch (t: Throwable) {
+        // Login errors are shown as toast, not error page — return Error with
+        // a user-friendly message regardless of network vs server failure.
+        if (isNetworkError(t)) ApiResult.Error("Connection error", isNetwork = false)
+        else networkError(t)
     }
 
     suspend fun register(name: String, username: String, password: String): ApiResult<AuthTokens> = try {
@@ -56,8 +59,9 @@ class AuthApi(
             409 -> ApiResult.Error("Username already taken")
             else -> ApiResult.Error("Registration failed (${resp.status.value})")
         }
-    } catch (e: Exception) {
-        networkError(e)
+    } catch (t: Throwable) {
+        if (isNetworkError(t)) ApiResult.Error("Connection error", isNetwork = false)
+        else networkError(t)
     }
 
     suspend fun logout(): ApiResult<String> = try {
@@ -66,8 +70,6 @@ class AuthApi(
             unauthenticated.post("/api/auth/logout") {
                 contentType(ContentType.Application.Json)
                 setBody(LogoutRequest(refresh))
-                // Logout requires the bearer on the backend; attach it manually
-                // since we're using the unauthenticated client here.
                 AuthState.accessToken?.let { token ->
                     headers.append("Authorization", "Bearer $token")
                 }
@@ -75,18 +77,11 @@ class AuthApi(
         }
         AuthState.clear()
         ApiResult.Success("Logged out")
-    } catch (e: Exception) {
-        // Even if the server is unreachable, drop local state so the user
-        // sees a "logged out" UI.
+    } catch (t: Throwable) {
         AuthState.clear()
-        networkError(e)
+        networkError(t)
     }
 
-    /**
-     * Force a refresh of the access token. Useful after a state change on the
-     * server (e.g. a new group joined/created) so [AuthState.groups] is
-     * reloaded without waiting for natural access-token expiry.
-     */
     suspend fun refresh(): ApiResult<AuthTokens> = try {
         val refresh = AuthState.refreshToken
             ?: return ApiResult.Error("No refresh token present")
@@ -106,8 +101,8 @@ class AuthApi(
             }
             else -> ApiResult.Error("Refresh failed (${resp.status.value})")
         }
-    } catch (e: Exception) {
-        networkError(e)
+    } catch (t: Throwable) {
+        networkError(t)
     }
 
     suspend fun changePassword(oldPassword: String, newPassword: String): ApiResult<String> = try {
@@ -120,8 +115,8 @@ class AuthApi(
             403 -> ApiResult.Error("Old password is incorrect")
             else -> ApiResult.Error("Change password failed (${resp.status.value})")
         }
-    } catch (e: Exception) {
-        networkError(e)
+    } catch (t: Throwable) {
+        networkError(t)
     }
 
     private fun applyTokens(tokens: AuthTokens) {
