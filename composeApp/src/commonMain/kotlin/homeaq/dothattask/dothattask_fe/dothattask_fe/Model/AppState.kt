@@ -48,3 +48,35 @@ object AppState {
     }
 }
 
+/**
+ * The 5 destinations rendered in the bottom navigation bar, left → right.
+ * Order is meaningful (it drives the visual tab order).
+ */
+val bottomNavDestinations: List<Screen> = listOf(
+    Screen.Home,
+    Screen.TaskManagement,
+    Screen.CompletedTask,
+    Screen.GroupHome,
+    Screen.IncomingInvites,
+)
+
+/**
+ * Maps the current screen to the tab that should appear "selected" in the
+ * bottom bar. Sub-pages (InviteMember, NoGroup) bubble up to their parent
+ * tab; pages that aren't part of the navigation (ChangePassword, Error,
+ * Login, Register) return `null` so no tab is highlighted.
+ */
+fun Screen.topLevel(): Screen? = when (this) {
+    Screen.Home,
+    Screen.TaskManagement,
+    Screen.CompletedTask,
+    Screen.GroupHome,
+    Screen.IncomingInvites -> this
+    Screen.NoGroup,
+    Screen.InviteMember -> Screen.GroupHome
+    Screen.ChangePassword,
+    Screen.Error,
+    Screen.Login,
+    Screen.Register -> null
+}
+

@@ -2,7 +2,6 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +24,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.SideMenu
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.AppScaffold
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -149,19 +148,13 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 }
 
                 true -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                        verticalAlignment = Alignment.Top,
-                    ) {
-                        SideMenu(
-                            onLogout = {
-                                AuthState.clear()
-                                AppState.currentScreen = Screen.Login
-                                isLogged = false
-                            },
-                            onPageChange = { AppState.currentScreen = it },
-                        )
-                    }
+                    AppScaffold(
+                        onLogout = {
+                            AuthState.clear()
+                            AppState.currentScreen = Screen.Login
+                            isLogged = false
+                        },
+                    )
                 }
             }
         }
