@@ -60,8 +60,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessag
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.UpdateTaskDialog
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-private const val ANY_OPTION = "Anyone"
 private const val ANY_CATEGORY = "Any"
 private const val CREATOR_ME_OPTION = "Me"
 
@@ -72,29 +70,18 @@ fun TaskManagementPage() {
     val taskApi = remember { TaskApi(client()) }
     val categoryApi = remember { CategoryApi(client()) }
     val scope = rememberCoroutineScope()
-
     val groups: List<GroupSummary> = AuthState.groups
     var selectedGroup by remember { mutableStateOf<GroupSummary?>(AuthState.activeGroup() ?: groups.firstOrNull()) }
-
     var members by remember { mutableStateOf<List<User>>(emptyList()) }
     var availableCategories by remember { mutableStateOf<List<TaskCategory>>(TaskCategory.Defaults) }
-
-    /** null = "Anyone" / "Any". */
     var creator by remember { mutableStateOf<String?>(null) }
     var category by remember { mutableStateOf<TaskCategory?>(null) }
     var assignee by remember { mutableStateOf<User?>(null) }
-
-    var groupExpanded by remember { mutableStateOf(false) }
-    var creatorExpanded by remember { mutableStateOf(false) }
-    var categoryExpanded by remember { mutableStateOf(false) }
-    var assigneeExpanded by remember { mutableStateOf(false) }
-
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var loading by remember { mutableStateOf(false) }
     var membersLoading by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
-
     var currentTaskToUpdate by remember { mutableStateOf<Task?>(null) }
     var currentDetailTask by remember { mutableStateOf<Task?>(null) }
     var taskCreationOpen by remember { mutableStateOf(false) }
@@ -119,14 +106,12 @@ fun TaskManagementPage() {
         val gid = selectedGroup?.id ?: return
         loading = true
         try {
-            // Translate "Me" creator selection into the actual username — the
-            // backend doesn't know about the synthetic option.
             val creatorParam = when (creator) {
                 CREATOR_ME_OPTION -> AuthState.username
                 null -> null
                 else -> creator
             }
-            when (val res = taskApi.searchTasks(gid, creatorParam, category, assignee?.username)) {
+            when (val res = taskApi.searchTasks(gid, category, assignee?.username)) {
                 is ApiResult.Success -> tasks = res.data
                 is ApiResult.Error -> if (!res.routeIfNetwork()) {
                     toastIsError = true
@@ -246,21 +231,6 @@ fun TaskManagementPage() {
                 onSelect = { selectedGroup = it ; },
                 itemColor = { TaskUIHelper.parseHexColor(it.color) },
             )
-
-            val creatorOptions: List<String> = buildList {
-                add(ANY_OPTION)
-                add(CREATOR_ME_OPTION)
-                addAll(members.map { it.username })
-            }
-
-            ColoredDropdown(
-                items = creatorOptions,
-                selected = creator ?: ANY_OPTION,
-                label = "Creator",
-                itemLabel = { it },
-                onSelect = { creator = if (it == ANY_OPTION) null else it; },
-            )
-
 
             val anyCategory = TaskCategory(id = -1, name = ANY_CATEGORY)
             val categoryOptions = buildList {

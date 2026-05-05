@@ -155,7 +155,6 @@ class TaskApi(private val httpClient: HttpClient) {
 
     suspend fun searchTasks(
         groupId: Int,
-        creator: String? = null,
         category: TaskCategory? = null,
         assignee: String? = null,
     ): ApiResult<List<Task>> {
@@ -163,7 +162,6 @@ class TaskApi(private val httpClient: HttpClient) {
             val response = httpClient.get("/api/tasks") {
                 withGroup(groupId)
                 url {
-                    creator?.takeIf { it.isNotBlank() }?.let { parameters.append("creator", it) }
                     category?.takeIf { it.name.isNotBlank() }?.let { parameters.append("category", it.name) }
                     assignee?.takeIf { it.isNotBlank() }?.let { parameters.append("assignee", it) }
                 }
