@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
@@ -47,19 +48,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+
 @Composable
 @Preview
 fun RegisterPage(onRegisterSuccess: () -> Unit) {
     var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
     var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
     var usernameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmError by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
 
     val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
@@ -68,11 +74,19 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
     fun validate(): Boolean {
         val trimmedName = name.trim()
         nameError = if (trimmedName.isBlank()) "Name cannot be empty" else null
+        emailError = when {
+            email.isBlank() -> "Email cannot be empty"
+            email.length > 320 -> "Email is too long"
+            !EmailRegex.matches(email.trim()) -> "Enter a valid email address"
+            else -> null
+        }
+        // Username is optional; only validate the format when supplied so
+        // that the BE-side derivation from the email local-part can run.
         usernameError = when {
-            username.isBlank() -> "Username cannot be empty"
+            username.isBlank() -> null
             username.length < 3 -> "Username must be at least 3 characters"
             username.length > 50 -> "Username too long"
-            !username.matches(Regex("^[a-zA-Z0-9_]+$")) -> "Only letters, numbers and underscore allowed"
+            !username.matches(Regex("^[a-zA-Z0-9_]+\$")) -> "Only letters, numbers and underscore allowed"
             else -> null
         }
         passwordError = when {
@@ -81,12 +95,12 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             else -> null
         }
         confirmError = if (confirmPassword != password) "Passwords do not match" else null
-        return listOf(nameError, usernameError, passwordError, confirmError).all { it == null }
+        return listOf(nameError, emailError, usernameError, passwordError, confirmError).all { it == null }
     }
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 60.dp).padding(horizontal = 20.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 40.dp).padding(horizontal = 20.dp)) {
         Card(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             shape = TaskUIHelper.appCardShape(),
@@ -119,14 +133,33 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it.filter { ch -> !ch.isWhitespace() }
+                        emailError = null
+                    },
+                    label = { Text("Email") },
+                    colors = TaskUIHelper.appTextFieldColors(),
+                    isError = emailError != null,
+                    supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.EmailAddress },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                    singleLine = true,
+                )
+
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
                     value = username,
                     onValueChange = {
-                        // Strip whitespace: usernames are single tokens, regex below
-                        // rejects spaces. Keeps `valerio99 ` equivalent to `valerio99`.
                         username = it.filter { ch -> !ch.isWhitespace() }
                         usernameError = null
                     },
-                    label = { Text("Username") },
+                    label = { Text("Username (optional)") },
+                    placeholder = { Text("Defaults to the part before @") },
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = usernameError != null,
                     supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -174,9 +207,15 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                         loading = true
                         CoroutineScope(Dispatchers.Default).launch {
                             try {
-                                when (val resp = authApi.register(name.trim(), username.trim(), password)) {
+                                when (val resp = authApi.register(
+                                    name = name.trim(),
+                                    email = email.trim(),
+                                    password = password,
+                                    username = username.trim().ifBlank { null },
+                                )) {
                                     is ApiResult.Success -> {
                                         errorMessage = null
+                                        infoMessage = "Check your inbox to confirm your email."
                                         onRegisterSuccess()
                                     }
                                     is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
@@ -201,6 +240,11 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
                 ) {
                     Text("Create account")
+                }
+
+                infoMessage?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, color = MaterialTheme.colorScheme.primary)
                 }
 
                 errorMessage?.let {

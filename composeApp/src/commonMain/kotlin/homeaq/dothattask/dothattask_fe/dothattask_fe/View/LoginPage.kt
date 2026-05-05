@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,10 +33,11 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
@@ -53,40 +55,41 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+
 @Composable
 @Preview
 fun LoginPage(onLoginSuccess: () -> Unit) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
     var loading by remember { mutableStateOf(false) }
-    val usernameFocusRequester = remember { FocusRequester() }
+    val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
     val loginButtonFocusRequester = remember { FocusRequester() }
-    var usernameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var autofillSubmitTrigger by remember { mutableStateOf(0) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastIsError by remember { mutableStateOf(false) }
 
     WebLoginAutofillBridge(
-        username = username,
+        username = email,
         password = password,
-        onUsernameChange = { username = it.filter { ch -> !ch.isWhitespace() } },
+        onUsernameChange = { email = it.filter { ch -> !ch.isWhitespace() } },
         onPasswordChange = { password = it },
         submitTrigger = autofillSubmitTrigger,
     )
 
-    fun validateUsername(): Boolean {
-        usernameError = when {
-            username.isBlank() -> "Username cannot be empty"
-            username.length < 3 -> "Username must be at least 3 characters"
-            username.length > 50 -> "Username too long"
-            !username.matches(Regex("^[a-zA-Z0-9_]+$")) -> "Only letters, numbers and underscore allowed"
+    fun validateEmail(): Boolean {
+        emailError = when {
+            email.isBlank() -> "Email cannot be empty"
+            email.length > 320 -> "Email is too long"
+            !EmailRegex.matches(email.trim()) -> "Enter a valid email address"
             else -> null
         }
-        return usernameError == null
+        return emailError == null
     }
 
     fun validatePassword(): Boolean {
@@ -124,19 +127,23 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(20.dp))
                 OutlinedTextField(
-                    value = username,
+                    value = email,
                     onValueChange = {
-                        username = it.filter { ch -> !ch.isWhitespace() }
-                        if (usernameError != null) validateUsername()
+                        email = it.filter { ch -> !ch.isWhitespace() }
+                        if (emailError != null) validateEmail()
                     },
-                    label = { Text("Username") },
+                    label = { Text("Email") },
                     colors = TaskUIHelper.appTextFieldColors(),
                     modifier = Modifier.fillMaxWidth()
-                        .focusRequester(usernameFocusRequester)
+                        .focusRequester(emailFocusRequester)
                         .focusProperties { next = passwordFocusRequester }
-                        .semantics { contentType = ContentType.Username },
-                    supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                    isError = usernameError != null,
+                        .semantics { contentType = ContentType.EmailAddress },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                    supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    isError = emailError != null,
                     singleLine = true,
                 )
 
@@ -167,13 +174,13 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 Button(
                     onClick = {
                         loading = true
-                        val isUsernameValid = validateUsername()
+                        val isEmailValid = validateEmail()
                         val isPasswordValid = validatePassword()
-                        if (isUsernameValid && isPasswordValid) {
+                        if (isEmailValid && isPasswordValid) {
 
                             CoroutineScope(Dispatchers.Default).launch {
                                 try {
-                                    when (val response = authApi.login(username.trim(), password)) {
+                                    when (val response = authApi.login(email.trim(), password)) {
                                         is ApiResult.Success -> {
                                             errorMessage = null
                                             autofillSubmitTrigger += 1
@@ -200,6 +207,8 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                 }
                                 finally {loading = false}
                             }
+                        } else {
+                            loading = false
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -210,7 +219,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         .pointerHoverIcon(PointerIcon.Hand, true)
                         .focusRequester(loginButtonFocusRequester)
                         .focusable()
-                        .focusProperties { next = usernameFocusRequester },
+                        .focusProperties { next = emailFocusRequester },
                 ) {
                     Text("Login")
                 }

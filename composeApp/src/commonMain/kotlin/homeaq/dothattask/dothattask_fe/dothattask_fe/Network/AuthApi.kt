@@ -23,10 +23,10 @@ class AuthApi(
     private val unauthenticated: HttpClient,
     private val authenticated: HttpClient,
 ) {
-    suspend fun login(username: String, password: String): ApiResult<AuthTokens> = try {
+    suspend fun login(email: String, password: String): ApiResult<AuthTokens> = try {
         val resp = unauthenticated.post("/api/auth/login") {
             contentType(ContentType.Application.Json)
-            setBody(LoginRequest(username, password))
+            setBody(LoginRequest(email, password))
         }
         when (resp.status.value) {
             in 200..299 -> {
@@ -45,10 +45,26 @@ class AuthApi(
         else networkError(t)
     }
 
-    suspend fun register(name: String, username: String, password: String): ApiResult<AuthTokens> = try {
+    /**
+     * Registers a new account. [username] is optional — pass null/blank to
+     * let the backend derive one from the email local-part.
+     */
+    suspend fun register(
+        name: String,
+        email: String,
+        password: String,
+        username: String? = null,
+    ): ApiResult<AuthTokens> = try {
         val resp = unauthenticated.post("/api/auth/register") {
             contentType(ContentType.Application.Json)
-            setBody(RegisterRequest(name, username, password))
+            setBody(
+                RegisterRequest(
+                    name = name,
+                    email = email,
+                    password = password,
+                    username = username?.takeIf { it.isNotBlank() },
+                )
+            )
         }
         when (resp.status.value) {
             in 200..299 -> {
@@ -56,7 +72,27 @@ class AuthApi(
                 applyTokens(tokens)
                 ApiResult.Success(tokens)
             }
-            409 -> ApiResult.Error("Username already taken")
+            409 -> {
+                // Body is `{ "error": "email_taken" | "username_taken" }`
+                val message = runCatching { resp.body<Map<String, String>>()["error"] }
+                    .getOrNull()
+                    ?.let {
+                        when (it) {
+                            "email_taken" -> "Email already in use"
+                            "username_taken" -> "Username already taken"
+                            else -> "Account already exists"
+                        }
+                    }
+                    ?: "Account already exists"
+                ApiResult.Error(message)
+            }
+            400 -> {
+                val message = runCatching { resp.body<Map<String, String>>()["error"] }
+                    .getOrNull()
+                    ?.let { if (it == "invalid_email") "Invalid email format" else null }
+                    ?: "Invalid registration data"
+                ApiResult.Error(message)
+            }
             else -> ApiResult.Error("Registration failed (${resp.status.value})")
         }
     } catch (t: Throwable) {
