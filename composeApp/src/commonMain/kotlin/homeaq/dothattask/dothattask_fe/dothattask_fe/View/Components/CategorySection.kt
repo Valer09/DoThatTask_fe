@@ -109,6 +109,9 @@ fun GroupCategoriesSection(groupId: Int) {
                                     error = "Unauthorized"
                                     AppState.currentScreen = Screen.Login
                                 }
+                                is ApiResult.Forbidden -> {
+                                    error = "Forbidden"
+                                }
                             }
                             loading = false
                         }
@@ -161,6 +164,9 @@ fun GroupCategoriesSection(groupId: Int) {
                             is ApiResult.Unauthorized -> {
                                 error = "Unauthorized"
                                 AppState.currentScreen = Screen.Login
+                            }
+                            is ApiResult.Forbidden -> {
+                                error = "Forbidden"
                             }
                         }
                         loading = false

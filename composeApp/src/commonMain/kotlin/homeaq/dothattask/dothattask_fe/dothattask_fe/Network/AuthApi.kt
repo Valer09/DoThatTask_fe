@@ -34,7 +34,14 @@ class AuthApi(
                 applyTokens(tokens)
                 ApiResult.Success(tokens)
             }
-            401 -> ApiResult.Error("Invalid credentials")
+            401 -> {ApiResult.Unauthorized("Invalid credentials")}
+            403 -> {
+
+                val message = runCatching { resp.body<Map<String, String>>()["error"] }.getOrNull()
+                if(message.equals("Need email confirmation")) ApiResult.Forbidden(message.toString())
+                else ApiResult.Forbidden("Forbidden")
+
+            }
             405 -> ApiResult.Error("Method not allowed")
             else -> ApiResult.Error("Login failed (${resp.status.value})")
         }
@@ -42,7 +49,7 @@ class AuthApi(
         // Login errors are shown as toast, not error page — return Error with
         // a user-friendly message regardless of network vs server failure.
         if (isNetworkError(t)) ApiResult.Error("Connection error", isNetwork = false)
-        else networkError(t)
+        else {println(t);networkError(t)}
     }
 
     /**

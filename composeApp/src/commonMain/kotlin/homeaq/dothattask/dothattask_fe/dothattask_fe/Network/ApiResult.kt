@@ -12,6 +12,7 @@ sealed class ApiResult<out T> {
     ) : ApiResult<Nothing>()
     data class NotFound(val message: String) : ApiResult<Nothing>()
     data class Unauthorized(val message: String = "Unauthorized") : ApiResult<Nothing>()
+    data class Forbidden(val message: String = "Forbidden") : ApiResult<Nothing>()
 }
 
 /**

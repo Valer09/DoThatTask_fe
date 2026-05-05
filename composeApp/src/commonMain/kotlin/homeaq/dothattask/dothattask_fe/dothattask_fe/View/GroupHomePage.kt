@@ -81,6 +81,9 @@ fun GroupHomePage() {
                 error = "Unauthorized"
                 AppState.currentScreen = Screen.Login
             }
+            is ApiResult.Forbidden -> {
+            error = "Forbidden"
+            }
         }
         loading = false
     }
@@ -200,6 +203,9 @@ fun GroupHomePage() {
                                             is ApiResult.Unauthorized -> {
                                                 error = "Unauthorized"
                                                 AppState.currentScreen = Screen.Login
+                                            }
+                                            is ApiResult.Forbidden -> {
+                                                error = "Forbidden"
                                             }
                                         }
                                     }

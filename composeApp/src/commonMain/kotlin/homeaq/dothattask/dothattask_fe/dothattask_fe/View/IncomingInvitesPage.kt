@@ -68,6 +68,9 @@ fun IncomingInvitesPage() {
                 error = "Unauthorized"
                 AppState.currentScreen = Screen.Login
             }
+            is ApiResult.Forbidden -> {
+                error = "Forbidden"
+            }
         }
         loading = false
     }
@@ -142,6 +145,9 @@ fun IncomingInvitesPage() {
                                                 error = "Unauthorized"
                                                 AppState.currentScreen = Screen.Login
                                             }
+                                            is ApiResult.Forbidden -> {
+                                                error = "Forbidden"
+                                            }
                                         }
                                     }
                                 },
@@ -162,6 +168,9 @@ fun IncomingInvitesPage() {
                                             is ApiResult.Unauthorized -> {
                                                 error = "Unauthorized"
                                                 AppState.currentScreen = Screen.Login
+                                            }
+                                            is ApiResult.Forbidden -> {
+                                                error = "Forbidden"
                                             }
                                         }
                                     }

@@ -147,6 +147,9 @@ fun InviteMemberPage() {
                                         message = "Unauthorized"
                                         AppState.currentScreen = Screen.Login
                                     }
+                                    is ApiResult.Forbidden -> {
+                                        message = "Forbidden"
+                                    }
                                 }
                             } catch (e: Exception) {
                                 messageIsError = true

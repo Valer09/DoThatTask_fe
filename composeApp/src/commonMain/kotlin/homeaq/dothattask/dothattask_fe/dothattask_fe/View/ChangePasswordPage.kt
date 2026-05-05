@@ -167,6 +167,11 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                                             message = "Unauthorized"
                                             AppState.currentScreen = Screen.Login
                                         }
+                                        is ApiResult.Forbidden -> {
+                                            messageIsError = true
+                                            message = "Forbidden"
+                                            AppState.currentScreen = Screen.Login
+                                        }
                                     }
                                 } catch (e: Exception) {
                                     messageIsError = true

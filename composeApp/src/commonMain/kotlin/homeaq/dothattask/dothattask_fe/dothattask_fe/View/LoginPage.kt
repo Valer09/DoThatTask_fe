@@ -200,6 +200,12 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                             errorMessage = "Unauthorized"
                                             AppState.currentScreen = Screen.Login
                                         }
+
+                                        is ApiResult.Forbidden -> {
+                                            errorMessage = response.message
+                                            AppState.currentScreen = Screen.Login
+                                        }
+
                                     }
                                 } catch (e: Exception) {
                                     errorMessage = "Login failed: ${e.message}"

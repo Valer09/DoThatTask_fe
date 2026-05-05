@@ -189,6 +189,9 @@ fun TaskManagementPage() {
                             toastMessage = "Unauthorized"
                             AppState.currentScreen = Screen.Login
                         }
+                        is ApiResult.Forbidden -> {
+                            toastMessage = "Forbidden"
+                        }
                     }
                 }
             },

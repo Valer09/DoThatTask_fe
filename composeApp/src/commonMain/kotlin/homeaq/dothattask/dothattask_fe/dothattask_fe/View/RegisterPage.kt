@@ -224,6 +224,9 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                                         errorMessage = "Unauthorized"
                                         AppState.currentScreen = Screen.Login
                                     }
+                                    is ApiResult.Forbidden -> {
+                                        errorMessage = "Forbidden"
+                                    }
                                 }
 
                             } catch (e: Exception) {
