@@ -45,38 +45,36 @@ private data class FeatureStep(
 private val featureSteps = listOf(
     FeatureStep(
         emoji = "🧭",
-        title = "Cinque sezioni, una barra in basso",
-        body = "Home: la task che stai facendo ora. Manage: tutte le task. " +
-            "Completed: cosa hai già chiuso. Groups: i tuoi gruppi. Inviti: chi ti chiama.",
-        highlight = "Tap = navighi. Niente menu nascosti.",
+        title = "Your task comes first!",
+        body = "Home: Pick a random task or remember what you were supposed to do. " +
+                "Completed: see what you’ve already finished.",
+        highlight = "Home",
     ),
     FeatureStep(
         emoji = "👥",
-        title = "Crea o entra in un gruppo",
-        body = "Vai su Groups e crea il primo (es: \"Casa\", \"Coppia\", \"Team\"). " +
-            "Oppure accetta un invito da Inviti. Le task vivono dentro al gruppo.",
-        highlight = "Senza gruppo, niente task. È il primo passo.",
+        title = "Group Management",
+        body = "Go to Groups and create your first group (for example: \"Home\", \"Couple\", \"Team\"). " +
+                "Or accept an invite from Invites. Tasks live inside a group.",
+        highlight = "No group, no tasks. It’s the first step — remember, this is all about collaboration!",
     ),
     FeatureStep(
         emoji = "🗂",
-        title = "Categorie su misura",
-        body = "Su Manage Tasks aggiungi categorie con un colore — Casa, Lavoro, Studio, " +
-            "Spesa… ognuna è un \"barattolo\" dove infili task di quel tipo.",
-        highlight = "I colori ti aiutano a riconoscerle al volo.",
+        title = "Task categories",
+        body = "In Group Management, add categories with a color: Home, Work, Study...",
+        highlight = "Create the jar",
     ),
     FeatureStep(
         emoji = "📝",
-        title = "Riempi i barattoli",
-        body = "Dentro ogni categoria aggiungi tutte le task che ti vengono in mente, " +
-            "anche le piccole. Più ne hai, più opzioni avrà la pesca.",
-        highlight = "Scrivi tutto, decidi dopo.",
+        title = "Create some tasks!",
+        body = "Inside each category, add every task that comes to mind. " +
+                "Assign them to someone. When that task gets picked for them, they’ll know it was assigned by you!",
+        highlight = "Fill the jars",
     ),
     FeatureStep(
         emoji = "🎲",
-        title = "Pesca, fai, completa",
-        body = "Sulla Home tocca una categoria → l'app pesca una task a caso e la rende attiva. " +
-            "Tu la fai. Premi \"Completa\". Ne peschi un'altra.",
-        highlight = "Nessuna decisione su cosa fare per primo.",
+        title = "Be creative",
+        body = "Remember: the more creative you are, the more fun and challenging it will be.",
+        highlight = "No decision fatigue, lots of creativity to inspire others!",
     ),
 )
 

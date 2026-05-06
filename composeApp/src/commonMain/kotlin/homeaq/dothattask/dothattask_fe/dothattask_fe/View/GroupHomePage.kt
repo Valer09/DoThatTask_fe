@@ -124,7 +124,7 @@ fun GroupHomePage() {
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(groups) { group ->
-                val isOwner = (AuthState.username ?: "").equals(group.ownerUsername, ignoreCase = true)
+                val isOwner = (AuthState.username ?: "").equals(group.ownerEmail, ignoreCase = true)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,7 +137,7 @@ fun GroupHomePage() {
                             GroupBadge(group.name, group.color, fontSize = 14.sp)
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "owned by @${group.ownerUsername}",
+                                "owned by @${group.ownerEmail}",
                                 color = onSurface.copy(alpha = 0.7f),
                                 modifier = Modifier.weight(1f),
                             )
@@ -163,7 +163,7 @@ fun GroupHomePage() {
                                     Text("@${m.username}", color = onSurface.copy(alpha = 0.7f))
                                 }
                                 Text(
-                                    if (m.username.equals(group.ownerUsername, ignoreCase = true)) "owner"
+                                    if (m.username.equals(group.ownerEmail, ignoreCase = true)) "owner"
                                     else m.role.name.lowercase(),
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold,

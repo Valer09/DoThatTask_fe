@@ -126,7 +126,7 @@ fun IncomingInvitesPage() {
                         GroupBadge(invite.groupName, invite.groupColor)
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Invited by @${invite.inviterUsername}",
+                            "Invited by @${invite.inviterEmail}",
                             color = onSurface.copy(alpha = 0.75f),
                         )
                         Spacer(Modifier.height(12.dp))

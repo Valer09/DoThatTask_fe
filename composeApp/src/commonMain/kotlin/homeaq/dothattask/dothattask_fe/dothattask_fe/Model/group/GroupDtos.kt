@@ -9,13 +9,14 @@ enum class GroupRole { MEMBER, ADMIN }
 data class Group(
     val id: Int,
     val name: String,
-    val ownerUsername: String,
+    val ownerEmail: String,
     val color: String = "#7E57C2",
 )
 
 @Serializable
 data class GroupMember(
-    val username: String,
+    val username: String?,
+    val email: String,
     val name: String,
     val role: GroupRole,
 )
@@ -24,7 +25,7 @@ data class GroupMember(
 data class GroupInfo(
     val id: Int,
     val name: String,
-    val ownerUsername: String,
+    val ownerEmail: String,
     val color: String = "#7E57C2",
     val members: List<GroupMember>,
 )
@@ -40,7 +41,7 @@ data class GroupSummary(
 data class CreateGroupRequest(val name: String)
 
 @Serializable
-data class SendInviteRequest(val inviteeUsername: String)
+data class SendInviteRequest(val inviteeEmail: String)
 
 @Serializable
 enum class InviteStatus { PENDING, ACCEPTED, REJECTED, REVOKED }
@@ -51,7 +52,7 @@ data class Invite(
     val groupId: Int,
     val groupName: String,
     val groupColor: String = "#7E57C2",
-    val inviterUsername: String,
-    val inviteeUsername: String,
+    val inviterEmail: String,
+    val inviteeEmail: String,
     val status: InviteStatus,
 )

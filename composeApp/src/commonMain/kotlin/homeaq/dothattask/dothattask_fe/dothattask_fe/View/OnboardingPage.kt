@@ -48,29 +48,29 @@ private data class OnboardingStep(
 private val steps = listOf(
     OnboardingStep(
         emoji = "✨",
-        title = "Smetti di scegliere.\nInizia a fare.",
-        body = "Do That Task elimina la decisione su cosa fare. " +
-            "Tu prepari le tue task; l'app ti dice qual è la prossima.",
+        title = "Stop choosing.\nStart doing.",
+        body = "Do That Task removes the decision of what to do next. " +
+                "You set up your tasks; Do That Task tells you which one comes next.",
     ),
     OnboardingStep(
         emoji = "👥",
-        title = "Crea il tuo gruppo.",
-        body = "Coinquilini, famiglia, team. " +
-            "Tutti vedono cosa va fatto e chi se ne sta occupando — " +
-            "niente più \"non sapevo toccava a me\".",
+        title = "Create your group.",
+        body = "Roommates, family, friends, team. " +
+                "Have fun together with challenges you assign each other! "
     ),
     OnboardingStep(
         emoji = "🎲",
-        title = "Pesca una task.",
-        body = "Scegli una categoria — Casa, Lavoro, Studio… — " +
-            "e tocca \"Pick\". L'app sceglie per te a caso. " +
-            "Niente procrastinazione su cosa fare per primo.",
+        title = "Pick a task.",
+        body = "Choose a category: Home, Work, Study… " +
+                "and tap \"Pick\". Do That Task chooses one for you at random. " +
+                "No more procrastinating over what to do first.",
     ),
     OnboardingStep(
         emoji = "🎯",
-        title = "Una alla volta.",
-        body = "Hai una sola task attiva. La fai, la chiudi, ne peschi un'altra. " +
-            "Il modo più semplice per finire davvero le cose.",
+        title = "One at a time.",
+        body = "You only have one active task a week. "+
+                "You get it, you complete it, then you pick another one. " +
+                "The simplest way to actually get things done!",
     ),
 )
 

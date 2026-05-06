@@ -17,11 +17,11 @@ class InviteApi(private val client: HttpClient) {
      * `POST /api/invites` — owner-only. The [groupId] tells the server which
      * of the inviter's groups the invite is for.
      */
-    suspend fun sendInvite(groupId: Int, inviteeUsername: String): ApiResult<Invite> = try {
+    suspend fun sendInvite(groupId: Int, email: String): ApiResult<Invite> = try {
         val resp = client.post("/api/invites") {
             withGroup(groupId)
             contentType(ContentType.Application.Json)
-            setBody(SendInviteRequest(inviteeUsername))
+            setBody(SendInviteRequest(inviteeEmail = email))
         }
         when (resp.status.value) {
             in 200..299 -> ApiResult.Success(resp.body())

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -21,10 +22,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
@@ -40,11 +45,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+
 @Composable
 @Preview
 fun InviteMemberPage() {
-    var username by remember { mutableStateOf("") }
-    var usernameError by remember { mutableStateOf<String?>(null) }
+    var userEmail by remember { mutableStateOf("") }
+    var userEmailError by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
     var messageIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
@@ -89,51 +96,57 @@ fun InviteMemberPage() {
                     Spacer(Modifier.height(8.dp))
                 }
                 Text(
-                    "Enter the exact username of the person you want to invite.",
+                    "Enter the email of the person you want to invite. " +
+                            "They must already have an account.",
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                 )
 
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = username,
+                    value = userEmail,
                     onValueChange = {
-                        // Usernames are single tokens — strip every whitespace char
-                        // so a stray trailing space (or autofill hiccup) doesn't make
-                        // the lookup miss the recipient.
-                        username = it.filter { ch -> !ch.isWhitespace() }
-                        usernameError = null
+                        userEmail = it.filter { ch -> !ch.isWhitespace() }
+                        userEmailError = null
                         message = null
                     },
-                    label = { Text("Username") },
+                    label = { Text("Email") },
                     colors = TaskUIHelper.appTextFieldColors(),
-                    isError = usernameError != null,
-                    supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                    modifier = Modifier.fillMaxWidth(),
+                    isError = userEmailError != null,
+                    supportingText = userEmailError?.let {
+                        { Text(it, color = MaterialTheme.colorScheme.error) }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth()
+                        .semantics { contentType = ContentType.EmailAddress },
                     singleLine = true,
                 )
 
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        val trimmed = username.trim()
-                        if (trimmed.isEmpty()) {
-                            usernameError = "Username cannot be empty"
-                            return@Button
+                        val trimmed = userEmail.trim()
+                        userEmailError = when {
+                            trimmed.isEmpty() -> "Email cannot be empty"
+                            trimmed.length > 320 -> "Email is too long"
+                            !EmailRegex.matches(trimmed) -> "Enter a valid email address"
+                            else -> null
                         }
-                        val gid = targetGroupId
-                        if (gid == null) {
+                        if (userEmailError != null) return@Button
+
+                        val gid = targetGroupId ?: run {
                             messageIsError = true
                             message = "No group selected"
                             return@Button
                         }
+
                         loading = true
                         CoroutineScope(Dispatchers.Default).launch {
                             try {
                                 when (val resp = inviteApi.sendInvite(gid, trimmed)) {
                                     is ApiResult.Success -> {
                                         messageIsError = false
-                                        message = "Invite sent to @${resp.data.inviteeUsername}"
-                                        username = ""
+                                        message = "Invite sent to ${resp.data.inviteeEmail}"
+                                        userEmail = ""
                                     }
                                     is ApiResult.NotFound -> {
                                         messageIsError = true
