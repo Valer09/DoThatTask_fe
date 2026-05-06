@@ -174,9 +174,9 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 Button(
                     onClick = {
                         loading = true
-                        val isEmailValid = validateEmail()
+                        //val isEmailValid = validateEmail()
                         val isPasswordValid = validatePassword()
-                        if (isEmailValid && isPasswordValid) {
+                        if (/*isEmailValid && */isPasswordValid) {
 
                             CoroutineScope(Dispatchers.Default).launch {
                                 try {
