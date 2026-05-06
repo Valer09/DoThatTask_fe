@@ -39,7 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
@@ -102,7 +104,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 80.dp).padding(horizontal = 20.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 40.dp).padding(horizontal = 20.dp)) {
         toastMessage?.let {
             ToastMessage(
                 message = it,
@@ -110,6 +112,34 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 onDismiss = { toastMessage = null }
             )
         }
+
+        // Hero tagline — same idea as the onboarding step #1, kept here as
+        // a permanent reminder of the value prop for returning users.
+        // "Start doing." is colored with the complementary orange to draw
+        // the eye and contrast the cool purple background.
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Stop choosing.",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 36.sp,
+            )
+            Text(
+                text = "Start doing.",
+                color = TaskUIHelper.getComplementary(),
+                fontSize = 34.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                lineHeight = 40.sp,
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
