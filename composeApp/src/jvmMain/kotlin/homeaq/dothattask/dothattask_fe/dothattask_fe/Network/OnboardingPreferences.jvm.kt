@@ -5,6 +5,7 @@ import java.util.Properties
 
 actual object OnboardingPreferences {
     private const val KEY_SEEN = "seen"
+    private const val KEY_FEATURES = "features_seen"
 
     private val file: File by lazy {
         val home = System.getProperty("user.home") ?: "."
@@ -17,11 +18,17 @@ actual object OnboardingPreferences {
         return p
     }
 
-    actual fun hasSeenOnboarding(): Boolean = load().getProperty(KEY_SEEN) == "true"
-
-    actual fun markOnboardingSeen() {
+    private fun put(key: String, value: String) {
         val p = load()
-        p.setProperty(KEY_SEEN, "true")
+        p.setProperty(key, value)
         file.outputStream().use { p.store(it, null) }
     }
+
+    actual fun hasSeenOnboarding(): Boolean = load().getProperty(KEY_SEEN) == "true"
+
+    actual fun markOnboardingSeen() = put(KEY_SEEN, "true")
+
+    actual fun hasSeenFeatures(): Boolean = load().getProperty(KEY_FEATURES) == "true"
+
+    actual fun markFeaturesSeen() = put(KEY_FEATURES, "true")
 }

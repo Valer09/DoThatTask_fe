@@ -61,6 +61,10 @@ fun App(onLoginSuccess: () -> Unit = {}) {
     var initState by remember { mutableStateOf<AppInitState>(AppInitState.Loading) }
     val notificationTarget = remember { AppState.currentScreen.takeIf { it != Screen.Login } }
     var initKey by remember { mutableStateOf(0) }
+    // Feature carousel: read once on first render. Once dismissed we set
+    // both the persistent flag and this in-memory state so the recomposition
+    // swaps the page out for AppScaffold without reading prefs again.
+    var featuresSeen by remember { mutableStateOf(OnboardingPreferences.hasSeenFeatures()) }
 
 
     AppTheme {
@@ -173,13 +177,22 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     )
                 }
 
-                AppInitState.LoggedIn -> AppScaffold(
-                    onLogout = {
-                        AuthState.clear()
-                        AppState.currentScreen = Screen.Login
-                        initState = AppInitState.LoggedOut
-                    },
-                )
+                AppInitState.LoggedIn -> if (!featuresSeen) {
+                    FeatureTourPage(
+                        onFinish = {
+                            OnboardingPreferences.markFeaturesSeen()
+                            featuresSeen = true
+                        },
+                    )
+                } else {
+                    AppScaffold(
+                        onLogout = {
+                            AuthState.clear()
+                            AppState.currentScreen = Screen.Login
+                            initState = AppInitState.LoggedOut
+                        },
+                    )
+                }
             }
         }
     }

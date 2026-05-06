@@ -4,11 +4,19 @@ import platform.Foundation.NSUserDefaults
 
 actual object OnboardingPreferences {
     private const val KEY_SEEN = "onboarding_seen"
+    private const val KEY_FEATURES = "features_seen"
 
     actual fun hasSeenOnboarding(): Boolean =
         NSUserDefaults.standardUserDefaults.boolForKey(KEY_SEEN)
 
     actual fun markOnboardingSeen() {
         NSUserDefaults.standardUserDefaults.setBool(true, KEY_SEEN)
+    }
+
+    actual fun hasSeenFeatures(): Boolean =
+        NSUserDefaults.standardUserDefaults.boolForKey(KEY_FEATURES)
+
+    actual fun markFeaturesSeen() {
+        NSUserDefaults.standardUserDefaults.setBool(true, KEY_FEATURES)
     }
 }
