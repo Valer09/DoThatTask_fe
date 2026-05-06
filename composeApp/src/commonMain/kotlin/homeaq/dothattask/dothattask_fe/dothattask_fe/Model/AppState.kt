@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen.*
 
 enum class Screen {
+    Onboarding,
     Login,
     Register,
     ChangePassword,
@@ -33,6 +34,7 @@ object AppState {
     fun changePage(screen: Screen) {
         currentScreen = screen
         title = when(screen) {
+            Onboarding -> ""
             Login -> "Welcome to Do That Task!"
             Register -> "Register"
             ChangePassword -> "Change password"
@@ -76,6 +78,7 @@ fun Screen.topLevel(): Screen? = when (this) {
     Screen.InviteMember -> Screen.GroupHome
     Screen.ChangePassword,
     Screen.Error,
+    Screen.Onboarding,
     Screen.Login,
     Screen.Register -> null
 }

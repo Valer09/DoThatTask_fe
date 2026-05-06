@@ -20,6 +20,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.OnboardingPreferences
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.NotificationApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.App
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         AuthProvider.init(applicationContext)
+        OnboardingPreferences.init(applicationContext)
 
         AuthState.loadFromStorage()
         DoThatTaskFcmService.ensureChannel(this)

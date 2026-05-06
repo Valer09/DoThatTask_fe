@@ -22,6 +22,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.OnboardingPreferences
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.isNetworkError
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.AppScaffold
@@ -60,6 +61,10 @@ fun App(onLoginSuccess: () -> Unit = {}) {
     var initState by remember { mutableStateOf<AppInitState>(AppInitState.Loading) }
     val notificationTarget = remember { AppState.currentScreen.takeIf { it != Screen.Login } }
     var initKey by remember { mutableStateOf(0) }
+    // Feature carousel: read once on first render. Once dismissed we set
+    // both the persistent flag and this in-memory state so the recomposition
+    // swaps the page out for AppScaffold without reading prefs again.
+    var featuresSeen by remember { mutableStateOf(OnboardingPreferences.hasSeenFeatures()) }
 
 
     AppTheme {
@@ -116,7 +121,12 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                             }
                         }
                     } else {
-                        AppState.currentScreen = Screen.Login
+                        // First launch on this device → tutorial. Once dismissed
+                        // the flag is persisted so subsequent launches go
+                        // straight to login.
+                        AppState.currentScreen =
+                            if (!OnboardingPreferences.hasSeenOnboarding()) Screen.Onboarding
+                            else Screen.Login
                         AppInitState.LoggedOut
                     }
                 } catch (t: Throwable) {
@@ -140,6 +150,16 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 })
 
                 AppInitState.LoggedOut -> when (AppState.currentScreen) {
+                    Screen.Onboarding -> OnboardingPage(
+                        onFinish = {
+                            // Default CTA = "Inizia ora" → register.
+                            // The "Ho già un account" link inside the page sets
+                            // currentScreen to Login itself before calling onFinish.
+                            if (AppState.currentScreen == Screen.Onboarding) {
+                                AppState.changePage(Screen.Register)
+                            }
+                        },
+                    )
                     Screen.Register -> RegisterPage(
                         onRegisterSuccess = {
                             AppState.currentScreen =
@@ -157,13 +177,22 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     )
                 }
 
-                AppInitState.LoggedIn -> AppScaffold(
-                    onLogout = {
-                        AuthState.clear()
-                        AppState.currentScreen = Screen.Login
-                        initState = AppInitState.LoggedOut
-                    },
-                )
+                AppInitState.LoggedIn -> if (!featuresSeen) {
+                    FeatureTourPage(
+                        onFinish = {
+                            OnboardingPreferences.markFeaturesSeen()
+                            featuresSeen = true
+                        },
+                    )
+                } else {
+                    AppScaffold(
+                        onLogout = {
+                            AuthState.clear()
+                            AppState.currentScreen = Screen.Login
+                            initState = AppInitState.LoggedOut
+                        },
+                    )
+                }
             }
         }
     }
