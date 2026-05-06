@@ -4,5 +4,17 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!--
+	  ATS exception scoped to local networking only. iOS otherwise blocks
+	  every plaintext HTTP request (the dev/staging profiles use http to
+	  reach a backend on `localhost` or a LAN IP). NSAllowsLocalNetworking
+	  permits `localhost`, `*.local` and RFC1918 (10/172.16/192.168) ranges
+	  while keeping HTTPS enforcement intact for the production profile.
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
