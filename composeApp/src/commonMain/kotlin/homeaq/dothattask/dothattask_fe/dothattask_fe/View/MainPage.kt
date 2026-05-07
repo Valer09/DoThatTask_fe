@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -200,11 +202,11 @@ fun MainPage() {
                     colors = cardColors,
                 ) {
                     Column(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp).fillMaxWidth().verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(
-                            modifier = Modifier.weight(0.1f).fillMaxWidth().padding(top = 15.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 15.dp),
                             horizontalArrangement = Arrangement.Center,
                         ) {
                             Text(
@@ -217,7 +219,7 @@ fun MainPage() {
                         }
 
                         Row(
-                            modifier = Modifier.weight(0.9f).padding(vertical = 15.dp).fillMaxWidth(),
+                            modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
                             horizontalArrangement = Arrangement.Start,
 
                         ) {
