@@ -55,7 +55,7 @@ private val featureSteps = listOf(
         title = "Group Management",
         body = "Go to Groups and create your first group (for example: \"Home\", \"Couple\", \"Team\"). " +
                 "Or accept an invite from Invites. Tasks live inside a group.",
-        highlight = "No group, no tasks. It’s the first step — remember, this is all about collaboration!",
+        highlight = "No group, no tasks: remember, this is all about collaboration!",
     ),
     FeatureStep(
         emoji = "🗂",
@@ -95,7 +95,7 @@ fun FeatureTourPage(onFinish: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Come funziona",
+                text = "How does it work",
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -150,7 +150,7 @@ fun FeatureTourPage(onFinish: () -> Unit) {
             ),
         ) {
             Text(
-                text = if (isLast) "Andiamo" else "Avanti",
+                text = if (isLast) "Let's go!" else "Next",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
             )

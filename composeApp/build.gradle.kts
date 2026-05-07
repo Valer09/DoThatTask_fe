@@ -13,20 +13,6 @@ plugins {
     kotlin("plugin.serialization") version "2.1.21"
 }
 
-// ---- Build-time Environment (dev/prod) ------------------------------------
-// Select profile with `-Penv=dev` (default) or `-Penv=prod`.
-//
-// Cascade di lettura per ogni chiave (pattern KMP standard):
-//   1. local.properties        → sviluppo locale (gitignored, mai committato)
-//   2. System.getenv(KEY)       → CI/CD (GitHub Actions secrets) e produzione
-//   3. findProperty(KEY)        → gradle.properties (committed, default safe)
-//   4. default hardcoded        → ultimo fallback
-//
-// gradle.properties resta statico e committato con valori safe (es.
-// API_BASE_URL=https://example.com). I segreti (signing keystore, URL prod
-// reali) vivono SOLO in local.properties locale o in env vars iniettate
-// dalla CI/piattaforma di deploy. Il build.gradle.kts non si tocca per cambiare
-// ambiente: basta cambiare la sorgente.
 
 fun stripQuotes(s: String): String = s.trim().trim('"')
 fun parseBaseUrl(url: String): Pair<String, String> {
@@ -38,7 +24,6 @@ fun parseBaseUrl(url: String): Pair<String, String> {
     }
 }
 
-// Carica local.properties se presente (gitignored di default in KMP/Android).
 val localProps: Properties = Properties().also { props ->
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { props.load(it) }

@@ -26,6 +26,9 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.OnboardingPreferenc
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.isNetworkError
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.AppScaffold
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.clearAuthTokens
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -152,9 +155,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 AppInitState.LoggedOut -> when (AppState.currentScreen) {
                     Screen.Onboarding -> OnboardingPage(
                         onFinish = {
-                            // Default CTA = "Inizia ora" → register.
-                            // The "Ho già un account" link inside the page sets
-                            // currentScreen to Login itself before calling onFinish.
+
                             if (AppState.currentScreen == Screen.Onboarding) {
                                 AppState.changePage(Screen.Register)
                             }
@@ -187,6 +188,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                 } else {
                     AppScaffold(
                         onLogout = {
+                            client().clearAuthTokens()
                             AuthState.clear()
                             AppState.currentScreen = Screen.Login
                             initState = AppInitState.LoggedOut

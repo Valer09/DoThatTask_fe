@@ -146,7 +146,7 @@ fun OnboardingPage(onFinish: () -> Unit) {
             ),
         ) {
             Text(
-                text = if (isLast) "Inizia ora" else "Avanti",
+                text = if (isLast) "Let's start!" else "Next",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
             )
@@ -163,7 +163,7 @@ fun OnboardingPage(onFinish: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Ho già un account",
+                text = "I already have an account",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             )
         }

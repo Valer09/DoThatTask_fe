@@ -144,8 +144,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                             onClick = {
                                 settingsMenuExpanded = false
                                 scope.launch {
-                                    runCatching { authApi.logout() }
-                                    onLogout()
+                                    runCatching { authApi.logout(); onLogout()}
                                 }
                             },
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()).height(75.dp).width(200.dp),

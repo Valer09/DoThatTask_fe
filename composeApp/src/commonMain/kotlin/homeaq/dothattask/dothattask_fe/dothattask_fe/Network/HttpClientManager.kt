@@ -77,6 +77,7 @@ fun createHttpClient(onRefreshFailed: () -> Unit = {}) = HttpClient {
     }
     install(Auth) {
         bearer {
+
             loadTokens {
                 val access = AuthState.accessToken
                 val refresh = AuthState.refreshToken

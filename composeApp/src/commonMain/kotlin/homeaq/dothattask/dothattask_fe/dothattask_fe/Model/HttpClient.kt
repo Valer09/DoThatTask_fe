@@ -7,7 +7,7 @@ import io.ktor.client.HttpClient
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private val sharedClient: HttpClient by lazy {
-    createHttpClient(onRefreshFailed = { AuthState.onSessionExpired?.invoke() })
+    createHttpClient(onRefreshFailed = { AuthState.onSessionExpired?.invoke()})
 }
 
 fun client(): HttpClient = sharedClient
