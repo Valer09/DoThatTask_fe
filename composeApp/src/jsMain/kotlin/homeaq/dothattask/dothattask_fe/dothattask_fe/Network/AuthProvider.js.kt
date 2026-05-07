@@ -11,11 +11,14 @@ import org.w3c.dom.set
  */
 actual object AuthProvider {
     private const val KEY_USERNAME = "username"
+    private const val KEY_EMAIL = "email"
     private const val KEY_ACCESS = "access_token"
     private const val KEY_REFRESH = "refresh_token"
 
     actual fun getUsername(): String? = localStorage[KEY_USERNAME]
+    actual fun getEmail(): String? = localStorage[KEY_EMAIL]
     actual fun saveUsername(username: String) { localStorage[KEY_USERNAME] = username }
+    actual fun saveEmail(email: String)  {localStorage[KEY_EMAIL] = email}
     actual fun getAccessToken(): String? = localStorage[KEY_ACCESS]
     actual fun saveAccessToken(token: String) { localStorage[KEY_ACCESS] = token }
     actual fun getRefreshToken(): String? = localStorage[KEY_REFRESH]
@@ -23,6 +26,7 @@ actual object AuthProvider {
 
     actual fun clearAll() {
         localStorage.removeItem(KEY_USERNAME)
+        localStorage.removeItem(KEY_EMAIL)
         localStorage.removeItem(KEY_ACCESS)
         localStorage.removeItem(KEY_REFRESH)
     }

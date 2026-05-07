@@ -125,7 +125,7 @@ fun GroupHomePage() {
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(groups) { group ->
-                val isOwner = (AuthState.username ?: "").equals(group.ownerEmail, ignoreCase = true)
+                val isOwner = (AuthState.email ?: "").equals(group.ownerEmail, ignoreCase = true)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -183,7 +183,7 @@ fun GroupHomePage() {
                                         AppState.inviteTargetGroupId = group.id
                                         AppState.currentScreen = Screen.InviteMember
                                     },
-                                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                    modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = TaskUIHelper.getSecondary(),
                                         contentColor = TaskUIHelper.getAlternativeText(),

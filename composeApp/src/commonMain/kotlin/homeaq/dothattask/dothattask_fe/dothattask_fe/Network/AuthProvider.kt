@@ -7,8 +7,9 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.Network
  */
 expect object AuthProvider {
     fun getUsername(): String?
+    fun getEmail(): String?
     fun saveUsername(username: String)
-
+    fun saveEmail(email: String)
     fun getAccessToken(): String?
     fun saveAccessToken(token: String)
     fun getRefreshToken(): String?

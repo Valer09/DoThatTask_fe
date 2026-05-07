@@ -8,7 +8,9 @@ import androidx.core.content.edit
 object AuthStorage {
     private const val PREFS = "auth_prefs"
     private const val KEY_USERNAME = "username"
+    private const val KEY_EMAIL = "email"
     private const val KEY_USERNAME_IV = "username_iv"
+    private const val KEY_EMAIL_IV = "email_iv"
     private const val KEY_ACCESS = "access_token"
     private const val KEY_ACCESS_IV = "access_token_iv"
     private const val KEY_REFRESH = "refresh_token"
@@ -47,9 +49,11 @@ object AuthStorage {
 
     fun saveUsername(context: Context, username: String) =
         encryptAndStore(context, username, KEY_USERNAME, KEY_USERNAME_IV)
-
+    fun saveEmail(context: Context, email: String) =
+        encryptAndStore(context, email, KEY_EMAIL, KEY_EMAIL_IV)
     fun getUsername(context: Context): String? =
         loadAndDecrypt(context, KEY_USERNAME, KEY_USERNAME_IV)
+    fun getEmail(context: Context): String? = loadAndDecrypt(context, KEY_EMAIL, KEY_EMAIL_IV)
 
     fun saveAccessToken(context: Context, token: String) = encryptAndStore(context, token, KEY_ACCESS, KEY_ACCESS_IV)
 
@@ -66,4 +70,5 @@ object AuthStorage {
     fun clear(context: Context) {
         prefs(context).edit { clear() }
     }
+
 }

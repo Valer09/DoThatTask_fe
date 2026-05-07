@@ -12,6 +12,7 @@ actual object AuthProvider {
     private const val KEY_USERNAME = "username"
     private const val KEY_ACCESS = "access_token"
     private const val KEY_REFRESH = "refresh_token"
+    private const val KEY_EMAIL = "email"
 
     private fun defaults(): NSUserDefaults = NSUserDefaults.standardUserDefaults
 
@@ -19,7 +20,9 @@ actual object AuthProvider {
     private fun get(key: String): String? = defaults().stringForKey(key)
     private fun remove(key: String) = defaults().removeObjectForKey(key)
     actual fun getUsername(): String? = get(KEY_USERNAME)
+    actual fun getEmail(): String? = get(KEY_EMAIL)
     actual fun saveUsername(username: String) = put(KEY_USERNAME, username)
+    actual fun saveEmail(email: String) = put(KEY_EMAIL, email)
     actual fun getAccessToken(): String? = get(KEY_ACCESS)
     actual fun saveAccessToken(token: String) = put(KEY_ACCESS, token)
     actual fun getRefreshToken(): String? = get(KEY_REFRESH)
@@ -27,6 +30,7 @@ actual object AuthProvider {
 
     actual fun clearAll() {
         remove(KEY_USERNAME)
+        remove(KEY_EMAIL)
         remove(KEY_ACCESS)
         remove(KEY_REFRESH)
     }

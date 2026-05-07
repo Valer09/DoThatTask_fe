@@ -165,6 +165,7 @@ class AuthApi(
     private fun applyTokens(tokens: AuthTokens) {
         AuthState.setSession(
             username = tokens.user.username,
+            email= tokens.user.email,
             displayName = tokens.user.name,
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,

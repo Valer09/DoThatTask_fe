@@ -36,7 +36,7 @@ data class ChangePasswordRequest(val oldPassword: String, val newPassword: Strin
 data class AuthenticatedUser(
     val username: String,
     val name: String,
-    val email: String? = null,
+    val email: String,
     val emailVerified: Boolean = false,
     val groups: List<GroupSummary> = emptyList(),
 )

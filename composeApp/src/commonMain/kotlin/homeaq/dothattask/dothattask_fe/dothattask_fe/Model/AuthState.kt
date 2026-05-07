@@ -10,6 +10,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthProvider
 object AuthState {
     // JWT session
     var username: String? = null
+    var email: String? = null
     var accessToken: String? = null
     var refreshToken: String? = null
     var displayName: String? = null
@@ -35,14 +36,14 @@ object AuthState {
         accessToken: String,
         refreshToken: String,
         groups: List<GroupSummary>,
+        email: String,
     ) {
         this.username = username
         this.displayName = displayName
         this.accessToken = accessToken
         this.refreshToken = refreshToken
         this.groups = groups
-        // Keep the user's current selection if it's still valid; otherwise
-        // fall back to the first group (or null if they have none).
+        this.email = email
         val current = activeGroupId
         activeGroupId = if (current != null && groups.any { it.id == current }) current
         else groups.firstOrNull()?.id
@@ -52,6 +53,7 @@ object AuthState {
     /** Load any previously-persisted session on app start. */
     fun loadFromStorage() {
         username = AuthProvider.getUsername()
+        email = AuthProvider.getEmail()
         accessToken = AuthProvider.getAccessToken()
         refreshToken = AuthProvider.getRefreshToken()
         // groups/activeGroupId are restored after the first authenticated call
@@ -60,12 +62,14 @@ object AuthState {
 
     fun persist() {
         username?.let { AuthProvider.saveUsername(it) }
+        email?.let { AuthProvider.saveEmail(it) }
         accessToken?.let { AuthProvider.saveAccessToken(it) }
         refreshToken?.let { AuthProvider.saveRefreshToken(it) }
     }
 
     fun clear() {
         username = null
+        email = null
         accessToken = null
         refreshToken = null
         displayName = null

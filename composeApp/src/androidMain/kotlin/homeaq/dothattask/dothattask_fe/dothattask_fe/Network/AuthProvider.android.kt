@@ -11,8 +11,9 @@ actual object AuthProvider {
     }
 
     actual fun getUsername(): String? = AuthStorage.getUsername(context)
+    actual fun getEmail(): String? = AuthStorage.getEmail(context)
     actual fun saveUsername(username: String) = AuthStorage.saveUsername(context, username)
-
+    actual fun saveEmail(email: String) = AuthStorage.saveEmail(context, email)
     actual fun getAccessToken(): String? = AuthStorage.getAccessToken(context)
     actual fun saveAccessToken(token: String) = AuthStorage.saveAccessToken(context, token)
     actual fun getRefreshToken(): String? = AuthStorage.getRefreshToken(context)
