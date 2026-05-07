@@ -3,8 +3,11 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,7 +22,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -50,10 +53,50 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ColoredDrop
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ToastMessage
-
-
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+/**
+ * Small composable that renders a Card with a floating label overlaid on the
+ * top-left edge, matching the style of Material OutlinedTextField labels.
+ */
+@Composable
+fun LabeledCard(
+    label: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val cardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    val cardShape = RoundedCornerShape(12.dp)
+
+    Box(modifier = modifier) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),     // leave space for the label to sit on the border
+            shape = cardShape,
+            colors = cardColors,
+        ) {
+            Box(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp)) {
+                content()
+            }
+        }
+
+        // Floating label – sits on top of the card border
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .align(Alignment.TopStart)
+                // Tiny background pill so the label masks the card border cleanly
+                .padding(horizontal = 4.dp),
+        )
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 @Preview
@@ -69,9 +112,6 @@ fun MainPage() {
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-    val cardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    val cardShape = RoundedCornerShape(12.dp)
-    val cardModifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
 
     suspend fun loadAssignedTask() {
         val gid = selectedGroupId ?: run { assignedTask = null; return }
@@ -120,7 +160,7 @@ fun MainPage() {
     }
 
     LaunchedEffect(selectedGroupId) {
-        try{
+        try {
             AuthState.activeGroupId = selectedGroupId
             val gid = selectedGroupId ?: return@LaunchedEffect
             when (val result = categoryApi.list(gid)) {
@@ -133,40 +173,33 @@ fun MainPage() {
                     }
                 }
                 else -> {
-                    if (result is ApiResult.Error && result.routeIfNetwork())
-                    {
+                    if (result is ApiResult.Error && result.routeIfNetwork()) {
                         toastIsError = true; toastMessage = result.message
-                    }
-                    else if(result is ApiResult.Error && result.routeIfNetwork())
-                    {
+                    } else if (result is ApiResult.Error && result.routeIfNetwork()) {
                         AppState.currentScreen = Screen.Error
                     }
                 }
             }
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             AppState.errorMessage = "Unexpected Error"
             AppState.currentScreen = Screen.Error
-        }
-        finally { loading = false }
-
+        } finally { loading = false }
     }
-
 
     LaunchedEffect(selectedGroupId) { loadAssignedTask() }
 
     Box {
-        // Toast
         toastMessage?.let {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
             }
         }
 
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)) {
-
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+        ) {
             val groups = AuthState.groups
             val selectedGroup = groups.firstOrNull { it.id == selectedGroupId }
 
@@ -179,7 +212,6 @@ fun MainPage() {
                     onSelect = { selectedGroupId = it.id },
                     itemColor = { TaskUIHelper.parseHexColor(it.color) },
                 )
-
             }
 
             if (assignedTask == null) {
@@ -193,104 +225,129 @@ fun MainPage() {
                     onSelect = { category = it },
                 )
             }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             if (assignedTask != null) {
-                Card(
-                    modifier = cardModifier.weight(0.70f),
-                    shape = cardShape,
-                    colors = cardColors,
+
+                // ── Task title (fixed, outside any card) ───────────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    Column(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp).fillMaxWidth().verticalScroll(rememberScrollState()),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Text(
+                        text = assignedTask?.name ?: "",
+                        fontWeight = FontWeight.Bold,
+                        color = onSurfaceColor,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 23.sp,
+                    )
+                }
+
+                // ── Group + Category side by side ──────────────────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    LabeledCard(
+                        label = "Group",
+                        modifier = Modifier.weight(1f).height(70.dp),
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(top = 15.dp),
-                            horizontalArrangement = Arrangement.Center,
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
                         ) {
-                            Text(
-                                text = "${assignedTask?.name}",
-                                fontWeight = FontWeight.Bold,
-                                color = onSurfaceColor,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontSize = 23.sp,
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.padding(vertical = 15.dp).fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start,
-
-                        ) {
-                            Column {
-                                Row {
-                                    Column(modifier = Modifier.weight(0.3f).padding(vertical = 8.dp)) {
-                                        Text("Group:", fontWeight = FontWeight.Bold, color = onSurfaceColor, style = MaterialTheme.typography.bodyLarge, fontSize = 17.sp)
-                                    }
-                                    Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
-                                        assignedTask?.let { t ->
-                                            if (t.groupName.isNotBlank()) {
-                                                Spacer(modifier = Modifier.width(10.dp))
-                                                GroupBadge(t.groupName, t.groupColor)
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Row {
-                                    Column(modifier = Modifier.weight(0.3f).padding(vertical = 8.dp)) {
-                                        Text("Category:", fontWeight = FontWeight.Bold, color = onSurfaceColor, style = MaterialTheme.typography.bodyLarge, fontSize = 17.sp)
-                                    }
-                                    Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
-                                        assignedTask?.category?.let {
-                                            Text(text = it.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, fontSize = 17.sp, color = TaskUIHelper.pickColor(it))
-                                        }
-                                    }
-                                }
-                                Row {
-                                    Column(modifier = Modifier.weight(0.3f).padding(vertical = 8.dp)) {
-                                        Text("Description:", fontWeight = FontWeight.Bold, color = onSurfaceColor, style = MaterialTheme.typography.bodyLarge, fontSize = 17.sp)
-                                    }
-                                    Column(modifier = Modifier.weight(0.7f).padding(vertical = 8.dp).padding(horizontal = 4.dp)) {
-                                        Text(text = assignedTask?.description ?: "N/A", color = onSurfaceColor, style = MaterialTheme.typography.bodyLarge, fontSize = 17.sp)
-                                    }
+                            assignedTask?.let { t ->
+                                if (t.groupName.isNotBlank()) {
+                                    GroupBadge(t.groupName, t.groupColor)
+                                } else {
+                                    Text("—", color = onSurfaceColor)
                                 }
                             }
                         }
                     }
-                }
-            } else {
 
-                Card(
-                    modifier = cardModifier.weight(0.35f),
-                    shape = cardShape,
-                    colors = cardColors,
-                ) {
-                    Column(modifier = Modifier.padding(20.dp).fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.Center
+                    LabeledCard(
+                        label = "Category",
+                        modifier = Modifier.weight(1f).height(70.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
                         ) {
-                            Text(
-                                text = "No task assigned. Pick a task",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = onSurfaceColor.copy(alpha = 0.6f),
-                                fontSize = 25.sp
-                            )
+                            assignedTask?.category?.let { cat ->
+                                Text(
+                                    text = cat.name,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontSize = 16.sp,
+                                    color = TaskUIHelper.pickColor(cat),
+                                )
+                            } ?: Text("—", color = onSurfaceColor)
                         }
+                    }
+                }
+
+                // ── Description card (scrollable) ──────────────────────────
+                LabeledCard(
+                    label = "Description",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .weight(1f),          // takes remaining vertical space
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        Text(
+                            text = assignedTask?.description ?: "No description available.",
+                            color = onSurfaceColor,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 16.sp,
+                        )
+                    }
+                }
+
+            } else {
+                // ── No task assigned ──────────────────────────────────────
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "No task assigned. Pick a task",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = onSurfaceColor.copy(alpha = 0.6f),
+                            fontSize = 25.sp,
+                        )
                     }
                 }
             }
 
+            // ── Bottom buttons ─────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .weight(0.35f),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Button(
                     modifier = Modifier
@@ -301,6 +358,7 @@ fun MainPage() {
                 ) {
                     Text("Completed tasks", color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                 }
+
                 if (assignedTask != null) {
                     Button(
                         modifier = Modifier
@@ -308,7 +366,7 @@ fun MainPage() {
                             .weight(1f)
                             .padding(horizontal = 4.dp, vertical = 8.dp),
                         onClick = { scope.launch { complete() } },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary())
+                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary()),
                     ) {
                         Text("Complete task!", color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
@@ -319,7 +377,7 @@ fun MainPage() {
                             .weight(1f)
                             .padding(horizontal = 5.dp, vertical = 8.dp),
                         onClick = { scope.launch { pickTask(category) } },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary())
+                        colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary()),
                     ) {
                         Text("Pick a new task!", color = Color.White, fontSize = 17.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
