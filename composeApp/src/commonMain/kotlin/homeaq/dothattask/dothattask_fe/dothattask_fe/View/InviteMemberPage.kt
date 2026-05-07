@@ -40,6 +40,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.appButtonSizeSmall
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,7 +81,7 @@ fun InviteMemberPage() {
                     )
                     OutlinedButton(
                         onClick = { AppState.currentScreen = Screen.GroupHome },
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                        modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
                     ) { Text("Back") }
                 }
 

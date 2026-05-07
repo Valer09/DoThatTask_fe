@@ -294,21 +294,21 @@ fun MainPage() {
                     modifier = Modifier
                         .pointerHoverIcon(PointerIcon.Hand, true)
                         .weight(1f)
-                        .padding(horizontal = 5.dp, vertical = 8.dp),
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
                     onClick = { scope.launch { AppState.currentScreen = Screen.CompletedTask } },
                 ) {
-                    Text("Completed tasks", color = Color.White, fontSize = 17.sp, modifier = Modifier.padding(vertical = 8.dp))
+                    Text("Completed tasks", color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                 }
                 if (assignedTask != null) {
                     Button(
                         modifier = Modifier
                             .pointerHoverIcon(PointerIcon.Hand, true)
                             .weight(1f)
-                            .padding(horizontal = 5.dp, vertical = 8.dp),
+                            .padding(horizontal = 4.dp, vertical = 8.dp),
                         onClick = { scope.launch { complete() } },
                         colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary())
                     ) {
-                        Text("Complete task!", color = Color.Black, fontSize = 17.sp, modifier = Modifier.padding(vertical = 8.dp))
+                        Text("Complete task!", color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
                 } else {
                     Button(

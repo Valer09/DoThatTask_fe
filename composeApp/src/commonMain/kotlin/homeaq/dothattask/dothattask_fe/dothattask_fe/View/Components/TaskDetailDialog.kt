@@ -76,7 +76,7 @@ fun TaskDetailDialog(
                 )
                 {
                     OutlinedButton(
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                        modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
                         onClick = { onDismiss() },
                     )
                     {

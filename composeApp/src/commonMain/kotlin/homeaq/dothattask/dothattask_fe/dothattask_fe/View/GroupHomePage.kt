@@ -47,6 +47,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticat
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupCategoriesSection
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.appButtonSizeSmall
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -210,7 +211,7 @@ fun GroupHomePage() {
                                         }
                                     }
                                 },
-                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                                modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
                             ) { Text("Leave") }
                         }
                     }

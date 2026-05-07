@@ -41,6 +41,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.appButtonSizeSmall
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,7 +94,7 @@ fun IncomingInvitesPage() {
                     AppState.currentScreen =
                         if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
                 },
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
             ) { Text("Back") }
         }
 
