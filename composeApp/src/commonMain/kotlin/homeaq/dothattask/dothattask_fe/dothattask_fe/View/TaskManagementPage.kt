@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +13,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
@@ -199,127 +207,188 @@ fun TaskManagementPage() {
     }
 
     Box {
+        val groups = AuthState.groups
+        val anyCategory = TaskCategory(id = -1, name = ANY_CATEGORY)
+        val categoryOptions = buildList {
+            add(anyCategory)
+            addAll(availableCategories)
+        }
+        val color =MaterialTheme.colorScheme.onSurface
+        val anyUser= User("any", "")
+        val userOptions = buildList {
+            add(anyUser)
+            addAll(members)
+        }
+
+        val visible = tasks.filter { !it.ownership_username.equals(AuthState.username, ignoreCase = true) }
+        val listState = rememberLazyListState()
+
+        val showScrollToTop by remember {
+            derivedStateOf {
+                listState.firstVisibleItemIndex > 0 ||
+                        listState.firstVisibleItemScrollOffset > 200
+            }}
+
+
         toastMessage?.let {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Row(modifier = Modifier.fillMaxWidth().zIndex(10f), verticalAlignment = Alignment.Top) {
                 ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
-            Spacer(Modifier.height(8.dp))
-
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        )
+        {
+            item {
+                Spacer(Modifier.height(8.dp))
+            }
             if (groups.isEmpty()) {
-                Text(
-                    "You don't belong to any group yet. Create or join one to manage tasks.",
-                    color = Color.Gray,
+                item {
+                    Text(
+                        "You don't belong to any group yet. Create or join one to manage tasks.",
+                        color = Color.Gray,
+                    )
+                }
+                return@LazyColumn
+            }
+
+            item {
+                ColoredDropdown(
+                    items = groups,
+                    selected = selectedGroup ?: groups.first(),
+                    label = "Group",
+                    itemLabel = { it.name },
+                    onSelect = { selectedGroup = it },
+                    itemColor = { TaskUIHelper.parseHexColor(it.color) }
                 )
-                return@Column
             }
 
-            val groups = AuthState.groups
-
-            ColoredDropdown(
-                items = groups,
-                selected = selectedGroup ?: groups.first(),
-                label = "Group",
-                itemLabel = { it.name },
-                onSelect = { selectedGroup = it ; },
-                itemColor = { TaskUIHelper.parseHexColor(it.color) },
-            )
-
-            val anyCategory = TaskCategory(id = -1, name = ANY_CATEGORY)
-            val categoryOptions = buildList {
-                add(anyCategory)
-                addAll(availableCategories)
-            }
-            val color =MaterialTheme.colorScheme.onSurface
-
-            ColoredDropdown(
-                items = categoryOptions,
-                selected = category ?: anyCategory,
-                label = "Category",
-                itemLabel = { it.name },
-                itemColor = { if(it.name == ANY_CATEGORY) color else TaskUIHelper.pickColor(it) },
-                onSelect = { selected -> category = if (selected.id < 0) null else selected
-                },
-            )
-
-            val anyUser= User("any", "")
-            val userOptions = buildList {
-                add(anyUser)
-                addAll(members)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ColoredDropdown(
+                        modifier = Modifier.weight(1f),
+                        items = categoryOptions,
+                        selected = category ?: anyCategory,
+                        label = "Category",
+                        itemLabel = { it.name },
+                        itemColor = { if (it.name == ANY_CATEGORY) color else TaskUIHelper.pickColor(it) },
+                        onSelect = { selected -> category = if (selected.id < 0) null else selected }
+                    )
+                    ColoredDropdown(
+                        modifier = Modifier.weight(1f),
+                        items = userOptions,
+                        selected = assignee ?: anyUser,
+                        label = "Assignee",
+                        itemLabel = { it.name },
+                        itemColor = { color },
+                        onSelect = { assignee = if (it.username == "any") null else it }
+                    )
+                }
             }
 
-            ColoredDropdown(
-                items = userOptions,
-                selected = assignee ?: anyUser,
-                label = "Assignee",
-                itemLabel = { it.name },
-                itemColor = { color },
-                onSelect = { assignee = it },
-            )
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        8.dp,
+                        alignment = Alignment.CenterHorizontally
+                    )
+                ) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getSecondary(),
+                            contentColor = TaskUIHelper.getAlternativeText()
+                        ),
+                        onClick = { scope.launch { runSearch() } },
+                        modifier = Modifier
+                            .appButtonSizeSmall()
+                            .pointerHoverIcon(PointerIcon.Hand, true)
+                    ) {
+                        Text("Search")
+                    }
 
-
-            Spacer(Modifier.height(8.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(
-                    8.dp,
-                    alignment = Alignment.CenterHorizontally
-                )) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getSecondary(),
-                        contentColor = TaskUIHelper.getAlternativeText(),
-                    ),
-                    onClick = { scope.launch { runSearch() } },
-                    modifier = Modifier
-                        .appButtonSizeSmall()
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                ) { Text("Search") }
-                Spacer(Modifier. width(8.dp))
-                Button(
-                    onClick = { taskCreationOpen = true },
-                    modifier = Modifier.appButtonSizeSmall()
-                        .pointerHoverIcon(PointerIcon.Hand, true),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getComplementary(),
-                        contentColor = Color.Black,
-                    ),
-                ) { Text("Create Task") }
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            // Defensive client-side filter: never show tasks assigned to me.
-            val visible = tasks.filter { !it.ownership_username.equals(AuthState.username, ignoreCase = true) }
-            if (visible.isEmpty() && !loading) {
-                Text("No tasks match the current filters.", color = Color.Gray)
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(visible) { task ->
-                        TaskCard(
-                            task,
-                            onUpdate = { currentTaskToUpdate = task  },
-                            onDetails = { currentDetailTask = task },
-                            onUnassign = {
-                                scope.launch {
-                                    val result = taskApi.unassignTask(task)
-                                    if (result is ApiResult.Error && !result.routeIfNetwork()) {
-                                        toastIsError = true
-                                        toastMessage = result.message
-                                    } else if (result is ApiResult.Success) {
-                                        toastIsError = false
-                                        toastMessage = "Task unassigned"
-                                    }
-                                    runSearch()
-                                }
-                            },
-                        )
+                    Button(
+                        onClick = { taskCreationOpen = true },
+                        modifier = Modifier
+                            .appButtonSizeSmall()
+                            .pointerHoverIcon(PointerIcon.Hand, true),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getComplementary(),
+                            contentColor = Color.Black,
+                        ),
+                    ) {
+                        Text("Create Task")
                     }
                 }
             }
+
+            if (visible.isEmpty() && !loading) {
+                item {
+                    Text("No tasks match the current filters.", color = Color.Gray)
+                }
+            } else {
+                items(
+                    items = visible,
+                    key = { it.name }
+                ) { task ->
+                    TaskCard(
+                        task,
+                        onUpdate = { currentTaskToUpdate = task },
+                        onDetails = { currentDetailTask = task },
+                        onUnassign = {
+                            scope.launch {
+                                val result = taskApi.unassignTask(task)
+                                if (result is ApiResult.Error && !result.routeIfNetwork()) {
+                                    toastIsError = true
+                                    toastMessage = result.message
+                                } else if (result is ApiResult.Success) {
+                                    toastIsError = false
+                                    toastMessage = "Task unassigned"
+                                }
+                                runSearch()
+                            }
+                        },
+                    )
+                }
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
+            }
         }
+
+        AnimatedVisibility(
+            visible = showScrollToTop,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 24.dp)
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                containerColor = TaskUIHelper.getSecondary(),
+                contentColor = TaskUIHelper.getAlternativeText()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowUp,
+                    contentDescription = "Scroll to top"
+                )
+            }
+        }
+
+
         LoadingOverlay(isLoading = loading || membersLoading)
     }
 }

@@ -1,19 +1,18 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,12 +55,10 @@ import kotlinx.coroutines.launch
 fun GroupCategoriesSection(groupId: Int) {
     val api = remember { CategoryApi(client()) }
     val scope = rememberCoroutineScope()
-
-    var categories by remember(groupId) { mutableStateOf<List<TaskCategory>>(emptyList()) }
-    var newName by remember(groupId) { mutableStateOf("") }
-    var newColor by remember(groupId) { mutableStateOf("") }
-    var error by remember(groupId) { mutableStateOf<String?>(null) }
     var loading by remember(groupId) { mutableStateOf(false) }
+    var categories by remember(groupId) { mutableStateOf<List<TaskCategory>>(emptyList()) }
+    var error by remember(groupId) { mutableStateOf<String?>(null) }
+    var createCategoryOpen by remember { mutableStateOf<Boolean>(false) }
 
     suspend fun reload() {
         when (val res = api.list(groupId)) {
@@ -72,118 +69,100 @@ fun GroupCategoriesSection(groupId: Int) {
     }
     LaunchedEffect(groupId) { reload() }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-        Text(
-            "Categories (${categories.size})",
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(4.dp))
 
-        categories.forEach { cat ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = cat.name,
-                    color = TaskUIHelper.contrastingTextColor(TaskUIHelper.parseHexColor(cat.color)),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp,
+    if (createCategoryOpen) {
+        CategoryCreationDialog(
+            groupId,
+            onConfirm = { reload() },
+            onClose = { createCategoryOpen = false })
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 8.dp)
+        ) {
+            Text(
+                "Categories (${categories.size})",
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            categories.forEach { cat ->
+                Row(
                     modifier = Modifier
-                        .background(TaskUIHelper.parseHexColor(cat.color), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                )
-                Spacer(Modifier.weight(1f))
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            loading = true
-                            when (val res = api.unlink(groupId, cat.id)) {
-                                is ApiResult.Success -> reload()
-                                is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
-                                is ApiResult.NotFound -> error = res.message
-                                is ApiResult.Unauthorized -> {
-                                    error = "Unauthorized"
-                                    AppState.currentScreen = Screen.Login
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = cat.name,
+                        color = TaskUIHelper.contrastingTextColor(TaskUIHelper.parseHexColor(cat.color)),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        modifier = Modifier
+                            .background(TaskUIHelper.parseHexColor(cat.color).copy(alpha = 0.2f), RoundedCornerShape(9.dp))
+                            .padding(horizontal = 30.dp, vertical = 3.dp),
+                    )
+                    Spacer(Modifier.weight(1f))
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                loading = true
+                                when (val res = api.unlink(groupId, cat.id)) {
+                                    is ApiResult.Success -> reload()
+                                    is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
+                                    is ApiResult.NotFound -> error = res.message
+                                    is ApiResult.Unauthorized -> {
+                                        error = "Unauthorized"
+                                        AppState.currentScreen = Screen.Login
+                                    }
+                                    is ApiResult.Forbidden -> {
+                                        error = "Forbidden"
+                                    }
                                 }
-                                is ApiResult.Forbidden -> {
-                                    error = "Forbidden"
-                                }
+                                loading = false
                             }
-                            loading = false
-                        }
-                    },
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                ) { Text("✕", color = Color.Red, fontWeight = FontWeight.Bold) }
+                        },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
+                    ) {
+                        Text("✕", color = Color.Red, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            error?.let {
+                Spacer(Modifier.height(4.dp))
+                Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = newName,
-                onValueChange = { newName = it },
-                label = { Text("New category", fontSize = 11.sp) },
-                singleLine = true,
-                modifier = Modifier.weight(0.4f),
-                colors = TaskUIHelper.appTextFieldColors(),
-            )
-            Spacer(Modifier.width(6.dp))
-            OutlinedTextField(
-                value = newColor,
-                onValueChange = { newColor = it },
-                label = { Text("Color (#RRGGBB)", fontSize = 11.sp) },
-                singleLine = true,
-                modifier = Modifier.weight(0.35f),
-                colors = TaskUIHelper.appTextFieldColors(),
-            )
-            Spacer(Modifier.width(6.dp))
+        Column(
+            modifier = Modifier
+                .padding(top = 4.dp),
+            horizontalAlignment = Alignment.End
+        ) {
             Button(
-                onClick = {
-                    val name = newName.trim()
-                    if (name.isEmpty()) {
-                        error = "Category name cannot be empty"
-                        return@Button
-                    }
-                    val trimmedColor = newColor.trim()
-                    scope.launch {
-                        loading = true
-                        when (val res = api.create(groupId, name, trimmedColor.takeIf { it.isNotBlank() })) {
-                            is ApiResult.Success -> {
-                                newName = ""
-                                newColor = ""
-                                error = null
-                                reload()
-                            }
-                            is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
-                            is ApiResult.NotFound -> error = res.message
-                            is ApiResult.Unauthorized -> {
-                                error = "Unauthorized"
-                                AppState.currentScreen = Screen.Login
-                            }
-                            is ApiResult.Forbidden -> {
-                                error = "Forbidden"
-                            }
-                        }
-                        loading = false
-                    }
-                },
-                enabled = !loading,
+                onClick = { createCategoryOpen = true},
                 colors = ButtonDefaults.buttonColors(
                     containerColor = TaskUIHelper.getComplementary(),
                     contentColor = Color.Black,
                 ),
-                modifier = Modifier.appButtonSizeSmall().weight(0.25f).pointerHoverIcon(PointerIcon.Hand, true).height(48.dp),
-            ) { Text("Add") }
-        }
-
-        error?.let {
-            Spacer(Modifier.height(4.dp))
-            Text(it, color = Color.Red, fontSize = 12.sp)
+                modifier = Modifier
+                    .pointerHoverIcon(PointerIcon.Hand, true).appButtonSizeSmall(),
+            ) {
+                Text("+ Add category")
+            }
         }
     }
 }

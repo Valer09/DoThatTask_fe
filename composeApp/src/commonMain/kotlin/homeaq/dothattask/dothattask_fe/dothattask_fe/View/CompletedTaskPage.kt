@@ -34,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
@@ -101,6 +102,17 @@ fun CompletedTaskPage() {
     }
 
     Box {
+        toastMessage?.let {
+            Row(modifier = Modifier.fillMaxWidth().zIndex(10f).padding(horizontal = 20.dp), verticalAlignment = Alignment.Top)
+            {
+                ToastMessage(
+                    message = it,
+                    isError = toastIsError,
+                    onDismiss = { toastMessage = null },
+                )
+            }
+        }
+
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             // Group filter — defaults to "Any" so the page shows every
             // completed task at first open. Switching the dropdown filters
@@ -122,14 +134,6 @@ fun CompletedTaskPage() {
                         itemColor = { TaskUIHelper.parseHexColor(it.color) },
                     )
                 }
-            }
-
-            toastMessage?.let {
-                ToastMessage(
-                    message = it,
-                    isError = toastIsError,
-                    onDismiss = { toastMessage = null }
-                )
             }
 
             if (errorMessage != null) {

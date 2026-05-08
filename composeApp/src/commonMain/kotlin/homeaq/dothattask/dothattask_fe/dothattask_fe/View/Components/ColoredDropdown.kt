@@ -69,7 +69,7 @@ fun <T> ColoredDropdown(
 
     val cardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     val cardShape = RoundedCornerShape(12.dp)
-    val cardModifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+    val cardModifier = modifier.padding(vertical = 8.dp)
     val defaultColor = MaterialTheme.colorScheme.onSurface
     val resolvedItemColor: (T) -> Color = itemColor ?: { defaultColor }
 
@@ -77,7 +77,9 @@ fun <T> ColoredDropdown(
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
-            modifier = modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true),
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerHoverIcon(PointerIcon.Hand, true),
         ) {
             TextField(
                 value = itemLabel(selected),

@@ -135,7 +135,7 @@ fun GroupHomePage() {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            GroupBadge(group.name, group.color, fontSize = 14.sp)
+                            GroupBadge(group.name, group.color, fontSize = 17.sp)
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 "owned by @${group.ownerEmail}",

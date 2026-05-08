@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
@@ -190,7 +191,7 @@ fun MainPage() {
 
     Box {
         toastMessage?.let {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Row(modifier = Modifier.fillMaxWidth().zIndex(10f), verticalAlignment = Alignment.Top) {
                 ToastMessage(message = it, isError = toastIsError, onDismiss = { toastMessage = null })
             }
         }

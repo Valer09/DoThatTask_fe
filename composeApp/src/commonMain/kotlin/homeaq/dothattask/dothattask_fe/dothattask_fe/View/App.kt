@@ -104,14 +104,12 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                                 }
                             }
                             response is ApiResult.Unauthorized -> {
-                                if (AuthState.accessToken == null) {
-                                    AppState.currentScreen = Screen.Login
-                                    AppInitState.LoggedOut
-                                } else {
-                                    AppState.currentScreen = notificationTarget
-                                        ?: if (AuthState.groups.isNotEmpty()) Screen.Home else Screen.NoGroup
-                                    AppInitState.LoggedIn
-                                }
+                                client().clearAuthTokens()
+                                AuthState.clear()
+                                AppState.currentScreen =
+                                    if (!OnboardingPreferences.hasSeenOnboarding()) Screen.Onboarding
+                                    else Screen.Login
+                                AppInitState.LoggedOut
                             }
                             response is ApiResult.Error -> {
                                 AppState.routeToError("Connection error. Check your connection and try again.")
