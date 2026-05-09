@@ -109,6 +109,11 @@ val EnglishStrings = Strings(
     titleInviteMember = "Invite friends!",
     titleManageTasks = "Manage tasks",
     titleCompleted = "Completed tasks",
+    titleSettings = "Settings",
+
+    settingsSectionAccount = "Account",
+    settingsSectionPreferences = "Preferences",
+    settingsSectionSession = "Session",
 
     groupsTitle = "My groups",
     groupsCreateGroup = "+ Create group",
