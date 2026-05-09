@@ -39,10 +39,10 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.BackButton
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.appButtonSizeSmall
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -84,6 +84,11 @@ fun IncomingInvitesPage() {
 
     Column(modifier = Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            BackButton(onClick = {
+                AppState.currentScreen =
+                    if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
+            })
+            Spacer(Modifier.width(12.dp))
             Text(
                 s.incomingTitle,
                 style = MaterialTheme.typography.headlineMedium,
@@ -91,13 +96,6 @@ fun IncomingInvitesPage() {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
-            OutlinedButton(
-                onClick = {
-                    AppState.currentScreen =
-                        if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
-                },
-                modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
-            ) { Text(s.back) }
         }
 
         Spacer(Modifier.height(12.dp))

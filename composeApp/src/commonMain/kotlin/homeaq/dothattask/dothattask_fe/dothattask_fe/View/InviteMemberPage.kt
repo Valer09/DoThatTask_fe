@@ -4,6 +4,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,7 +13,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,9 +39,9 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.BackButton
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.GroupBadge
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
-import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.appButtonSizeSmall
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,6 +74,8 @@ fun InviteMemberPage() {
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    BackButton(onClick = { AppState.currentScreen = Screen.GroupHome })
+                    Spacer(Modifier.width(12.dp))
                     Text(
                         s.inviteTitle,
                         style = MaterialTheme.typography.headlineMedium,
@@ -81,10 +83,6 @@ fun InviteMemberPage() {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
                     )
-                    OutlinedButton(
-                        onClick = { AppState.currentScreen = Screen.GroupHome },
-                        modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
-                    ) { Text(s.back) }
                 }
 
                 Spacer(Modifier.height(12.dp))
