@@ -40,6 +40,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupInfo
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
@@ -56,6 +57,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun GroupHomePage() {
+    val s = LocalStrings.current
     var groups by remember { mutableStateOf<List<GroupInfo>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -79,11 +81,11 @@ fun GroupHomePage() {
             is ApiResult.Error -> if (!resp.routeIfNetwork()) error = resp.message
             is ApiResult.NotFound -> error = resp.message
             is ApiResult.Unauthorized -> {
-                error = "Unauthorized"
+                error = s.unauthorized
                 AppState.currentScreen = Screen.Login
             }
             is ApiResult.Forbidden -> {
-            error = "Forbidden"
+            error = s.forbidden
             }
         }
         loading = false
@@ -105,7 +107,7 @@ fun GroupHomePage() {
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
-                "My groups",
+                s.groupsTitle,
                 style = MaterialTheme.typography.headlineMedium,
                 color = onSurface,
                 fontWeight = FontWeight.Bold,
@@ -118,7 +120,7 @@ fun GroupHomePage() {
                     containerColor = TaskUIHelper.getComplementary(),
                     contentColor = Color.Black,
                 ),
-            ) { Text("+ Create group") }
+            ) { Text(s.groupsCreateGroup) }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -138,14 +140,14 @@ fun GroupHomePage() {
                             GroupBadge(group.name, group.color, fontSize = 17.sp)
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "owned by @${group.ownerEmail}",
+                                "${s.groupsOwnedBy} ${group.ownerEmail}",
                                 color = onSurface.copy(alpha = 0.7f),
                                 modifier = Modifier.weight(1f),
                             )
                         }
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "Members (${group.members.size})",
+                            "${s.groupsMembers} (${group.members.size})",
                             fontWeight = FontWeight.SemiBold,
                             color = onSurface,
                         )
@@ -164,8 +166,11 @@ fun GroupHomePage() {
                                     Text("@${m.username}", color = onSurface.copy(alpha = 0.7f))
                                 }
                                 Text(
-                                    if (m.username.equals(group.ownerEmail, ignoreCase = true)) "owner"
-                                    else m.role.name.lowercase(),
+                                    if (m.username.equals(group.ownerEmail, ignoreCase = true)) s.groupsRoleOwner
+                                    else when (m.role.name.lowercase()) {
+                                        "admin" -> s.groupsRoleAdmin
+                                        else -> s.groupsRoleMember
+                                    },
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold,
                                 )
@@ -188,7 +193,7 @@ fun GroupHomePage() {
                                         containerColor = TaskUIHelper.getSecondary(),
                                         contentColor = TaskUIHelper.getAlternativeText(),
                                     ),
-                                ) { Text("Invite member") }
+                                ) { Text(s.groupsInviteMember) }
                                 Spacer(Modifier.width(8.dp))
                             }
                             OutlinedButton(
@@ -202,17 +207,17 @@ fun GroupHomePage() {
                                             is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                             is ApiResult.NotFound -> message = resp.message
                                             is ApiResult.Unauthorized -> {
-                                                error = "Unauthorized"
+                                                error = s.unauthorized
                                                 AppState.currentScreen = Screen.Login
                                             }
                                             is ApiResult.Forbidden -> {
-                                                error = "Forbidden"
+                                                error = s.forbidden
                                             }
                                         }
                                     }
                                 },
                                 modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
-                            ) { Text("Leave") }
+                            ) { Text(s.groupsLeave) }
                         }
                     }
                 }

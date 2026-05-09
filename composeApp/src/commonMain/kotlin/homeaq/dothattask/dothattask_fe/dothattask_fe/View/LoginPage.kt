@@ -46,6 +46,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
@@ -62,6 +63,7 @@ private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}
 @Composable
 @Preview
 fun LoginPage(onLoginSuccess: () -> Unit) {
+    val s = LocalStrings.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -86,9 +88,9 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     fun validateEmail(): Boolean {
         emailError = when {
-            email.isBlank() -> "Email cannot be empty"
-            email.length > 320 -> "Email is too long"
-            !EmailRegex.matches(email.trim()) -> "Enter a valid email address"
+            email.isBlank() -> s.loginEmailEmpty
+            email.length > 320 -> s.loginEmailTooLong
+            !EmailRegex.matches(email.trim()) -> s.loginEmailInvalid
             else -> null
         }
         return emailError == null
@@ -96,7 +98,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
     fun validatePassword(): Boolean {
         passwordError = when {
-            password.isBlank() -> "Password cannot be empty"
+            password.isBlank() -> s.loginPasswordEmpty
             else -> null
         }
         return passwordError == null
@@ -122,7 +124,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Stop choosing.",
+                text = s.loginTaglineLine1,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
@@ -130,7 +132,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                 lineHeight = 36.sp,
             )
             Text(
-                text = "Start doing.",
+                text = s.loginTaglineLine2,
                 color = TaskUIHelper.getComplementary(),
                 fontSize = 34.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -148,7 +150,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    "Welcome in DO THAT TASK!",
+                    s.loginWelcome,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
@@ -162,7 +164,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         email = it.filter { ch -> !ch.isWhitespace() }
                         if (emailError != null) validateEmail()
                     },
-                    label = { Text("Email") },
+                    label = { Text(s.loginEmail) },
                     colors = TaskUIHelper.appTextFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                         .focusRequester(emailFocusRequester)
@@ -184,7 +186,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         password = it
                         if (passwordError != null) validatePassword()
                     },
-                    label = { Text("Password") },
+                    label = { Text(s.loginPassword) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = passwordError != null,
@@ -218,16 +220,16 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                                         }
                                         is ApiResult.Error -> {
                                             toastIsError = true
-                                            toastMessage = if(response.isNetwork) "Server connection error" else response.message
-                                            errorMessage = if(response.isNetwork) "Server connection error" else response.message
+                                            toastMessage = if(response.isNetwork) s.loginServerError else response.message
+                                            errorMessage = if(response.isNetwork) s.loginServerError else response.message
                                             AuthState.clear()
                                         }
                                         is ApiResult.NotFound -> {
-                                            errorMessage = "Login endpoint unavailable"
+                                            errorMessage = s.loginEndpointUnavailable
                                             AuthState.clear()
                                         }
                                         is ApiResult.Unauthorized -> {
-                                            errorMessage = "Unauthorized"
+                                            errorMessage = s.loginUnauthorized
                                             AppState.currentScreen = Screen.Login
                                         }
 
@@ -238,7 +240,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
                                     }
                                 } catch (e: Exception) {
-                                    errorMessage = "Login failed: ${e.message}"
+                                    errorMessage = "${s.loginFailed}: ${e.message}"
                                     AuthState.clear()
                                 }
                                 finally {loading = false}
@@ -257,7 +259,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
                         .focusable()
                         .focusProperties { next = emailFocusRequester },
                 ) {
-                    Text("Login")
+                    Text(s.loginButton)
                 }
 
                 errorMessage?.let {
@@ -267,7 +269,7 @@ fun LoginPage(onLoginSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    "Don't have an account? Register",
+                    s.loginNoAccount,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)

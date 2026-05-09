@@ -35,6 +35,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.Invite
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
@@ -50,6 +51,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun IncomingInvitesPage() {
+    val s = LocalStrings.current
     var invites by remember { mutableStateOf<List<Invite>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -66,11 +68,11 @@ fun IncomingInvitesPage() {
             is ApiResult.Error -> if (!resp.routeIfNetwork()) error = resp.message
             is ApiResult.NotFound -> error = resp.message
             is ApiResult.Unauthorized -> {
-                error = "Unauthorized"
+                error = s.unauthorized
                 AppState.currentScreen = Screen.Login
             }
             is ApiResult.Forbidden -> {
-                error = "Forbidden"
+                error = s.forbidden
             }
         }
         loading = false
@@ -83,7 +85,7 @@ fun IncomingInvitesPage() {
     Column(modifier = Modifier.fillMaxSize().padding(top = 16.dp).padding(horizontal = 20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
-                "Incoming invites",
+                s.incomingTitle,
                 style = MaterialTheme.typography.headlineMedium,
                 color = onSurface,
                 fontWeight = FontWeight.Bold,
@@ -95,7 +97,7 @@ fun IncomingInvitesPage() {
                         if (AuthState.groups.isNotEmpty()) Screen.GroupHome else Screen.NoGroup
                 },
                 modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
-            ) { Text("Back") }
+            ) { Text(s.back) }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -112,7 +114,7 @@ fun IncomingInvitesPage() {
             return
         }
         if (invites.isEmpty()) {
-            Text("No pending invites.", color = onSurface.copy(alpha = 0.7f))
+            Text(s.incomingEmpty, color = onSurface.copy(alpha = 0.7f))
             return
         }
 
@@ -127,7 +129,7 @@ fun IncomingInvitesPage() {
                         GroupBadge(invite.groupName, invite.groupColor)
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Invited by @${invite.inviterEmail}",
+                            "${s.incomingInvitedBy} ${invite.inviterEmail}",
                             color = onSurface.copy(alpha = 0.75f),
                         )
                         Spacer(Modifier.height(12.dp))
@@ -143,11 +145,11 @@ fun IncomingInvitesPage() {
                                             is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                             is ApiResult.NotFound -> message = resp.message
                                             is ApiResult.Unauthorized -> {
-                                                error = "Unauthorized"
+                                                error = s.unauthorized
                                                 AppState.currentScreen = Screen.Login
                                             }
                                             is ApiResult.Forbidden -> {
-                                                error = "Forbidden"
+                                                error = s.forbidden
                                             }
                                         }
                                     }
@@ -157,7 +159,7 @@ fun IncomingInvitesPage() {
                                     containerColor = TaskUIHelper.getComplementary(),
                                     contentColor = Color.Black,
                                 ),
-                            ) { Text("Accept") }
+                            ) { Text(s.incomingAccept) }
                             Spacer(Modifier.width(10.dp))
                             OutlinedButton(
                                 onClick = {
@@ -167,17 +169,17 @@ fun IncomingInvitesPage() {
                                             is ApiResult.Error -> if (!resp.routeIfNetwork()) message = resp.message
                                             is ApiResult.NotFound -> message = resp.message
                                             is ApiResult.Unauthorized -> {
-                                                error = "Unauthorized"
+                                                error = s.unauthorized
                                                 AppState.currentScreen = Screen.Login
                                             }
                                             is ApiResult.Forbidden -> {
-                                                error = "Forbidden"
+                                                error = s.forbidden
                                             }
                                         }
                                     }
                                 },
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                            ) { Text("Reject") }
+                            ) { Text(s.incomingReject) }
                         }
                     }
                 }

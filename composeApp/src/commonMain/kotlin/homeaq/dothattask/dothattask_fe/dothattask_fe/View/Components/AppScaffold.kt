@@ -36,6 +36,10 @@ import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.AppLocale
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocaleManager
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.localizedTitle
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.ChangePasswordPage
@@ -74,6 +78,8 @@ fun AppScaffold(onLogout: () -> Unit) {
     val headerColor = MaterialTheme.colorScheme.surfaceVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
     var settingsMenuExpanded by remember { mutableStateOf(false) }
+    var languageMenuExpanded by remember { mutableStateOf(false) }
+    val strings = LocalStrings.current
 
 
     Scaffold(
@@ -88,17 +94,21 @@ fun AppScaffold(onLogout: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                AppState.title?.let {
+                // Custom override (rare — set by a page that wants a dynamic
+                // title) wins; otherwise we render the localised default for
+                // the current screen.
+                val pageTitle = AppState.title ?: AppState.currentScreen.localizedTitle()
+                if (pageTitle.isNotEmpty()) {
                     Text(
-                        text = it,
+                        text = pageTitle,
                         color = onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         modifier = Modifier.weight(1f),
                     )
-                } ?: run {
-                    // Keeps the right-side controls aligned even when the
-                    // title is null (e.g. NoGroup / Error screens).
+                } else {
+                    // Keeps the right-side controls aligned even when there
+                    // is no title (NoGroup / Error screens).
                     Box(modifier = Modifier.weight(1f))
                 }
 
@@ -131,23 +141,60 @@ fun AppScaffold(onLogout: () -> Unit) {
                         modifier = Modifier.background(TaskUIHelper.getPrimary()),
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Change password") },
+                            text = {
+                                val flag = if (LocaleManager.current == AppLocale.Italian) "🇮🇹" else "🇬🇧"
+                                Text("$flag  ${strings.headerLanguage}")
+                            },
+                            onClick = {
+                                settingsMenuExpanded = false
+                                languageMenuExpanded = true
+                            },
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+                                .background(TaskUIHelper.getSurface()).height(60.dp).width(220.dp).padding(bottom = 1.dp),
+                        )
+                        DropdownMenuItem(
+                            text = { Text(strings.headerChangePassword) },
                             onClick = {
                                 settingsMenuExpanded = false
                                 AppState.changePage(Screen.ChangePassword)
                             },
                             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
-                                .background(TaskUIHelper.getSurface()).height(75.dp).width(200.dp).padding(bottom = 1.dp),
+                                .background(TaskUIHelper.getSurface()).height(60.dp).width(220.dp).padding(bottom = 1.dp),
                         )
                         DropdownMenuItem(
-                            text = { Text("Logout") },
+                            text = { Text(strings.headerLogout) },
                             onClick = {
                                 settingsMenuExpanded = false
                                 scope.launch {
                                     runCatching { authApi.logout(); onLogout()}
                                 }
                             },
-                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()).height(75.dp).width(200.dp),
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).background(TaskUIHelper.getSurface()).height(60.dp).width(220.dp),
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = languageMenuExpanded,
+                        onDismissRequest = { languageMenuExpanded = false },
+                        modifier = Modifier.background(TaskUIHelper.getPrimary()),
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("🇬🇧  ${strings.headerLanguageEnglish}") },
+                            onClick = {
+                                LocaleManager.set(AppLocale.English)
+                                languageMenuExpanded = false
+                            },
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+                                .background(TaskUIHelper.getSurface()).height(60.dp).width(220.dp).padding(bottom = 1.dp),
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🇮🇹  ${strings.headerLanguageItalian}") },
+                            onClick = {
+                                LocaleManager.set(AppLocale.Italian)
+                                languageMenuExpanded = false
+                            },
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true)
+                                .background(TaskUIHelper.getSurface()).height(60.dp).width(220.dp),
                         )
                     }
                 }

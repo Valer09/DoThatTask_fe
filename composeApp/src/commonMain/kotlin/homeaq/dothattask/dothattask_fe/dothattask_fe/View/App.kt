@@ -20,6 +20,9 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocaleManager
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.stringsFor
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.GroupApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.OnboardingPreferences
@@ -70,7 +73,11 @@ fun App(onLoginSuccess: () -> Unit = {}) {
     var featuresSeen by remember { mutableStateOf(OnboardingPreferences.hasSeenFeatures()) }
 
 
+    val activeLocale = LocaleManager.current
+    val activeStrings = stringsFor(activeLocale)
+
     AppTheme {
+        CompositionLocalProvider(LocalStrings provides activeStrings) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             LaunchedEffect(initKey) {
                 // Catch Throwable (not just Exception) because on Kotlin/Wasm-JS
@@ -91,7 +98,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                             response is ApiResult.Success -> {
                                 val groupsResult = GroupApi(client()).myGroups()
                                 if (groupsResult is ApiResult.Error) {
-                                    AppState.routeToError("Connection error. Check your connection and try again.")
+                                    AppState.routeToError(activeStrings.connectionError)
                                     AppInitState.Error
                                 } else {
                                     val groups = if (groupsResult is ApiResult.Success) groupsResult.data else emptyList()
@@ -112,7 +119,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                                 AppInitState.LoggedOut
                             }
                             response is ApiResult.Error -> {
-                                AppState.routeToError("Connection error. Check your connection and try again.")
+                                AppState.routeToError(activeStrings.connectionError)
                                 AppInitState.Error
                             }
                             else -> {
@@ -135,7 +142,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     // re-thrown by networkError; everything else means the server
                     // was unreachable — show the error page.
                     if (t is kotlinx.coroutines.CancellationException && !isNetworkError(t)) throw t
-                    AppState.routeToError("Connection error. Check your connection and try again.")
+                    AppState.routeToError(activeStrings.connectionError)
                     initState = AppInitState.Error
                 }
             }
@@ -194,6 +201,7 @@ fun App(onLoginSuccess: () -> Unit = {}) {
                     )
                 }
             }
+        }
         }
     }
 }

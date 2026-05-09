@@ -33,6 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.remember
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.Strings
 import kotlinx.coroutines.launch
 
 private data class FeatureStep(
@@ -42,44 +45,18 @@ private data class FeatureStep(
     val highlight: String,
 )
 
-private val featureSteps = listOf(
-    FeatureStep(
-        emoji = "🧭",
-        title = "Your task comes first!",
-        body = "Home: Pick a random task or remember what you were supposed to do. " +
-                "Completed: see what you’ve already finished.",
-        highlight = "Home",
-    ),
-    FeatureStep(
-        emoji = "👥",
-        title = "Group Management",
-        body = "Go to Groups and create your first group (for example: \"Home\", \"Couple\", \"Team\"). " +
-                "Or accept an invite from Invites. Tasks live inside a group.",
-        highlight = "No group, no tasks: remember, this is all about collaboration!",
-    ),
-    FeatureStep(
-        emoji = "🗂",
-        title = "Task categories",
-        body = "In Group Management, add categories with a color: Home, Work, Study...",
-        highlight = "Create the jar",
-    ),
-    FeatureStep(
-        emoji = "📝",
-        title = "Create some tasks!",
-        body = "Inside each category, add every task that comes to mind. " +
-                "Assign them to someone. When that task gets picked for them, they’ll know it was assigned by you!",
-        highlight = "Fill the jars",
-    ),
-    FeatureStep(
-        emoji = "🎲",
-        title = "Be creative",
-        body = "Remember: the more creative you are, the more fun and challenging it will be.",
-        highlight = "No decision fatigue, lots of creativity to inspire others!",
-    ),
+private fun featureStepsFor(s: Strings): List<FeatureStep> = listOf(
+    FeatureStep("🧭", s.featureTour1Title, s.featureTour1Body, s.featureTour1Highlight),
+    FeatureStep("👥", s.featureTour2Title, s.featureTour2Body, s.featureTour2Highlight),
+    FeatureStep("🗂", s.featureTour3Title, s.featureTour3Body, s.featureTour3Highlight),
+    FeatureStep("📝", s.featureTour4Title, s.featureTour4Body, s.featureTour4Highlight),
+    FeatureStep("🎲", s.featureTour5Title, s.featureTour5Body, s.featureTour5Highlight),
 )
 
 @Composable
 fun FeatureTourPage(onFinish: () -> Unit) {
+    val s = LocalStrings.current
+    val featureSteps = remember(s) { featureStepsFor(s) }
     val pagerState = rememberPagerState(pageCount = { featureSteps.size })
     val scope = rememberCoroutineScope()
 
@@ -95,14 +72,14 @@ fun FeatureTourPage(onFinish: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "How does it work",
+                text = s.featureTourHeader,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             TextButton(onClick = onFinish) {
                 Text(
-                    text = "Salta",
+                    text = s.skip,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 )
             }
@@ -150,7 +127,7 @@ fun FeatureTourPage(onFinish: () -> Unit) {
             ),
         ) {
             Text(
-                text = if (isLast) "Let's go!" else "Next",
+                text = if (isLast) s.featureTourGo else s.next,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
             )

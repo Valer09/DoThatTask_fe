@@ -170,7 +170,6 @@ fun MainPage() {
                         availableCategories = result.data
                         if (availableCategories.none { it.id == category.id })
                             category = availableCategories.first()
-                        AppState.title = "Current task"
                     }
                 }
                 else -> {

@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.Strings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.OnboardingPreferences
 import kotlinx.coroutines.launch
 
@@ -45,37 +47,17 @@ private data class OnboardingStep(
     val body: String,
 )
 
-private val steps = listOf(
-    OnboardingStep(
-        emoji = "✨",
-        title = "Stop choosing.\nStart doing.",
-        body = "Do That Task removes the decision of what to do next. " +
-                "You set up your tasks; Do That Task tells you which one comes next.",
-    ),
-    OnboardingStep(
-        emoji = "👥",
-        title = "Create your group.",
-        body = "Roommates, family, friends, team. " +
-                "Have fun together with challenges you assign each other! "
-    ),
-    OnboardingStep(
-        emoji = "🎲",
-        title = "Pick a task.",
-        body = "Choose a category: Home, Work, Study… " +
-                "and tap \"Pick\". Do That Task chooses one for you at random. " +
-                "No more procrastinating over what to do first.",
-    ),
-    OnboardingStep(
-        emoji = "🎯",
-        title = "One at a time.",
-        body = "You only have one active task a week. "+
-                "You get it, you complete it, then you pick another one. " +
-                "The simplest way to actually get things done!",
-    ),
+private fun stepsFor(s: Strings): List<OnboardingStep> = listOf(
+    OnboardingStep("✨", s.onboardingStep1Title, s.onboardingStep1Body),
+    OnboardingStep("👥", s.onboardingStep2Title, s.onboardingStep2Body),
+    OnboardingStep("🎲", s.onboardingStep3Title, s.onboardingStep3Body),
+    OnboardingStep("🎯", s.onboardingStep4Title, s.onboardingStep4Body),
 )
 
 @Composable
 fun OnboardingPage(onFinish: () -> Unit) {
+    val s = LocalStrings.current
+    val steps = remember(s) { stepsFor(s) }
     val pagerState = rememberPagerState(pageCount = { steps.size })
     val scope = rememberCoroutineScope()
 
@@ -96,7 +78,7 @@ fun OnboardingPage(onFinish: () -> Unit) {
         ) {
             TextButton(onClick = finish) {
                 Text(
-                    text = "Salta",
+                    text = s.skip,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 )
             }
@@ -146,7 +128,7 @@ fun OnboardingPage(onFinish: () -> Unit) {
             ),
         ) {
             Text(
-                text = if (isLast) "Let's start!" else "Next",
+                text = if (isLast) s.onboardingStart else s.next,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
             )
@@ -163,7 +145,7 @@ fun OnboardingPage(onFinish: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "I already have an account",
+                text = s.onboardingHaveAccount,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             )
         }
