@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
@@ -53,6 +54,7 @@ private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}
 @Composable
 @Preview
 fun RegisterPage(onRegisterSuccess: () -> Unit) {
+    val s = LocalStrings.current
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -73,11 +75,11 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
 
     fun validate(): Boolean {
         val trimmedName = name.trim()
-        nameError = if (trimmedName.isBlank()) "Name cannot be empty" else null
+        nameError = if (trimmedName.isBlank()) s.registerNameEmpty else null
         emailError = when {
-            email.isBlank() -> "Email cannot be empty"
-            email.length > 320 -> "Email is too long"
-            !EmailRegex.matches(email.trim()) -> "Enter a valid email address"
+            email.isBlank() -> s.registerEmailEmpty
+            email.length > 320 -> s.loginEmailTooLong
+            !EmailRegex.matches(email.trim()) -> s.registerEmailInvalid
             else -> null
         }
         // Username is optional; only validate the format when supplied so
@@ -90,11 +92,11 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
             else -> null
         }
         passwordError = when {
-            password.isBlank() -> "Password cannot be empty"
-            password.length < 6 -> "Password must be at least 6 characters"
+            password.isBlank() -> s.registerPasswordEmpty
+            password.length < 6 -> s.registerPasswordTooShort
             else -> null
         }
-        confirmError = if (confirmPassword != password) "Passwords do not match" else null
+        confirmError = if (confirmPassword != password) s.changePasswordMismatch else null
         return listOf(nameError, emailError, usernameError, passwordError, confirmError).all { it == null }
     }
 
@@ -108,7 +110,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    "Create your account",
+                    s.registerTitle,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
@@ -120,9 +122,9 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                     value = name,
                     onValueChange = {
                         name = it
-                        if (nameError != null) nameError = if (it.isBlank()) "Name cannot be empty" else null
+                        if (nameError != null) nameError = if (it.isBlank()) s.registerNameEmpty else null
                     },
-                    label = { Text("Name") },
+                    label = { Text(s.registerName) },
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = nameError != null,
                     supportingText = nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -138,7 +140,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                         email = it.filter { ch -> !ch.isWhitespace() }
                         emailError = null
                     },
-                    label = { Text("Email") },
+                    label = { Text(s.registerEmail) },
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = emailError != null,
                     supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -158,8 +160,8 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                         username = it.filter { ch -> !ch.isWhitespace() }
                         usernameError = null
                     },
-                    label = { Text("Username (optional)") },
-                    placeholder = { Text("Defaults to the part before @") },
+                    label = { Text(s.registerUsernameOptional) },
+                    placeholder = { Text(s.registerUsernameHint) },
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = usernameError != null,
                     supportingText = usernameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -172,7 +174,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; passwordError = null },
-                    label = { Text("Password") },
+                    label = { Text(s.registerPassword) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = passwordError != null,
@@ -188,7 +190,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it; confirmError = null },
-                    label = { Text("Confirm password") },
+                    label = { Text(s.changePasswordConfirm) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = confirmError != null,
@@ -215,22 +217,22 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                                 )) {
                                     is ApiResult.Success -> {
                                         errorMessage = null
-                                        infoMessage = "Check your inbox to confirm your email."
+                                        infoMessage = s.registerSuccess
                                         onRegisterSuccess()
                                     }
                                     is ApiResult.Error -> if (!resp.routeIfNetwork()) errorMessage = resp.message
-                                    is ApiResult.NotFound -> errorMessage = "Registration endpoint unavailable"
+                                    is ApiResult.NotFound -> errorMessage = s.loginEndpointUnavailable
                                     is ApiResult.Unauthorized -> {
-                                        errorMessage = "Unauthorized"
+                                        errorMessage = s.unauthorized
                                         AppState.currentScreen = Screen.Login
                                     }
                                     is ApiResult.Forbidden -> {
-                                        errorMessage = "Forbidden"
+                                        errorMessage = s.forbidden
                                     }
                                 }
 
                             } catch (e: Exception) {
-                                errorMessage = e.message ?: "Registration failed"
+                                errorMessage = e.message ?: s.loginFailed
                             } finally {
                                 loading = false
                             }
@@ -242,7 +244,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
                     ),
                     modifier = Modifier.fillMaxWidth().pointerHoverIcon(PointerIcon.Hand, true).focusable(),
                 ) {
-                    Text("Create account")
+                    Text(s.registerButton)
                 }
 
                 infoMessage?.let {
@@ -257,7 +259,7 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    "Already have an account? Log in",
+                    s.registerHaveAccount,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)

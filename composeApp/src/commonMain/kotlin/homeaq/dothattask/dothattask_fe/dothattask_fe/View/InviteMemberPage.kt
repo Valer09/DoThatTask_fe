@@ -35,6 +35,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.InviteApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
@@ -51,6 +52,7 @@ private val EmailRegex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}
 @Composable
 @Preview
 fun InviteMemberPage() {
+    val s = LocalStrings.current
     var userEmail by remember { mutableStateOf("") }
     var userEmailError by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -73,7 +75,7 @@ fun InviteMemberPage() {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        "Invite a member",
+                        s.inviteTitle,
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
@@ -82,14 +84,14 @@ fun InviteMemberPage() {
                     OutlinedButton(
                         onClick = { AppState.currentScreen = Screen.GroupHome },
                         modifier = Modifier.appButtonSizeSmall().pointerHoverIcon(PointerIcon.Hand, true),
-                    ) { Text("Back") }
+                    ) { Text(s.back) }
                 }
 
                 Spacer(Modifier.height(12.dp))
                 if (targetGroup != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Inviting into ",
+                            s.inviteIntoGroup,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                         )
                         GroupBadge(targetGroup.name, targetGroup.color)
@@ -97,8 +99,7 @@ fun InviteMemberPage() {
                     Spacer(Modifier.height(8.dp))
                 }
                 Text(
-                    "Enter the email of the person you want to invite. " +
-                            "They must already have an account.",
+                    s.inviteHint,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                 )
 
@@ -110,7 +111,7 @@ fun InviteMemberPage() {
                         userEmailError = null
                         message = null
                     },
-                    label = { Text("Email") },
+                    label = { Text(s.inviteEmail) },
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = userEmailError != null,
                     supportingText = userEmailError?.let {
@@ -127,16 +128,16 @@ fun InviteMemberPage() {
                     onClick = {
                         val trimmed = userEmail.trim()
                         userEmailError = when {
-                            trimmed.isEmpty() -> "Email cannot be empty"
-                            trimmed.length > 320 -> "Email is too long"
-                            !EmailRegex.matches(trimmed) -> "Enter a valid email address"
+                            trimmed.isEmpty() -> s.inviteEmpty
+                            trimmed.length > 320 -> s.inviteEmailTooLong
+                            !EmailRegex.matches(trimmed) -> s.inviteEmailInvalid
                             else -> null
                         }
                         if (userEmailError != null) return@Button
 
                         val gid = targetGroupId ?: run {
                             messageIsError = true
-                            message = "No group selected"
+                            message = s.inviteNoGroupSelected
                             return@Button
                         }
 
@@ -146,7 +147,7 @@ fun InviteMemberPage() {
                                 when (val resp = inviteApi.sendInvite(gid, trimmed)) {
                                     is ApiResult.Success -> {
                                         messageIsError = false
-                                        message = "Invite sent to ${resp.data.inviteeEmail}"
+                                        message = "${s.inviteSuccess} ${resp.data.inviteeEmail}"
                                         userEmail = ""
                                     }
                                     is ApiResult.NotFound -> {
@@ -158,16 +159,16 @@ fun InviteMemberPage() {
                                         message = resp.message
                                     }
                                     is ApiResult.Unauthorized -> {
-                                        message = "Unauthorized"
+                                        message = s.unauthorized
                                         AppState.currentScreen = Screen.Login
                                     }
                                     is ApiResult.Forbidden -> {
-                                        message = "Forbidden"
+                                        message = s.forbidden
                                     }
                                 }
                             } catch (e: Exception) {
                                 messageIsError = true
-                                message = e.message ?: "Invite failed"
+                                message = e.message ?: s.inviteFailed
                             } finally {
                                 loading = false
                             }
@@ -179,7 +180,7 @@ fun InviteMemberPage() {
                         contentColor = Color.Black,
                     ),
                 ) {
-                    Text("Send invite")
+                    Text(s.inviteSendButton)
                 }
 
                 message?.let {

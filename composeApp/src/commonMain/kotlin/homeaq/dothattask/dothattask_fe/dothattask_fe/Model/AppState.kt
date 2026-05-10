@@ -1,9 +1,11 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.Model
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen.*
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 
 enum class Screen {
     Onboarding,
@@ -21,6 +23,13 @@ enum class Screen {
 }
 
 object AppState {
+    /**
+     * Optional override for the page title. Most pages should leave this
+     * `null` and let [Screen.localizedTitle] derive the title from
+     * [LocalStrings] so it follows the active locale. Set this only for
+     * dynamic titles (e.g. a specific group name) — and prefer to clear it
+     * back to `null` on navigation away.
+     */
     var title by mutableStateOf<String?>(null)
     var currentScreen by mutableStateOf(Screen.Login)
     var inviteTargetGroupId by mutableStateOf<Int?>(null)
@@ -33,20 +42,31 @@ object AppState {
 
     fun changePage(screen: Screen) {
         currentScreen = screen
-        title = when(screen) {
-            Onboarding -> ""
-            Login -> "Welcome to Do That Task!"
-            Register -> "Register"
-            ChangePassword -> "Change password"
-            NoGroup -> ""
-            GroupHome -> "Current task"
-            IncomingInvites -> "Invitations"
-            InviteMember -> "Invite friends!"
-            Home -> "Current task"
-            TaskManagement -> "Manage tasks"
-            CompletedTask -> "Completed tasks"
-            Error -> ""
-        }
+        // Default titles are derived at render time from the active locale
+        // (see [Screen.localizedTitle]); we only clear any prior override.
+        title = null
+    }
+}
+
+/**
+ * Localised title for the page header. Reads [LocalStrings.current] so it
+ * recomposes when the user changes language at runtime.
+ */
+@Composable
+fun Screen.localizedTitle(): String {
+    val s = LocalStrings.current
+    return when (this) {
+        Onboarding, Error -> ""
+        Login -> s.titleLogin
+        Register -> s.titleRegister
+        ChangePassword -> s.titleChangePassword
+        NoGroup -> ""
+        GroupHome -> s.titleGroupHome
+        IncomingInvites -> s.titleInvitations
+        InviteMember -> s.titleInviteMember
+        Home -> s.titleHome
+        TaskManagement -> s.titleManageTasks
+        CompletedTask -> s.titleCompleted
     }
 }
 

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -56,6 +57,7 @@ fun ErrorPage(
         }
     }
 ) {
+    val s = LocalStrings.current
     val message = AppState.errorMessage
     val onSurface = MaterialTheme.colorScheme.onSurface
 
@@ -81,7 +83,7 @@ fun ErrorPage(
                 Spacer(Modifier.height(12.dp))
 
                 Text(
-                    "Something went wrong",
+                    s.errorTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = onSurface,
@@ -91,7 +93,7 @@ fun ErrorPage(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    message ?: "Unexpected Error",
+                    message ?: s.errorTitle,
                     color = onSurface.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,
                 )
@@ -106,7 +108,7 @@ fun ErrorPage(
                         contentColor = Color.Black,
                     ),
                 ) {
-                    Text("Home")
+                    Text(s.errorRetry)
                 }
             }
         }

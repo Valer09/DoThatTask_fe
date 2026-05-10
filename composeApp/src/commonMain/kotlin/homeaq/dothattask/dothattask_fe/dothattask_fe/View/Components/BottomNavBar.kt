@@ -31,6 +31,8 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.bottomNavDestinations
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.Strings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.topLevel
 
 /**
@@ -44,6 +46,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.topLevel
 @Composable
 fun BottomNavBar() {
     val selectedTopLevel = AppState.currentScreen.topLevel()
+    val s = LocalStrings.current
 
     Surface(
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
@@ -58,7 +61,7 @@ fun BottomNavBar() {
             modifier = Modifier.padding(horizontal = 15.dp)
         ) {
             bottomNavDestinations.forEach { screen ->
-                val (icon, label) = screen.tabPresentation()
+                val (icon, label) = screen.tabPresentation(s)
                 NavigationBarItem(
                     selected = selectedTopLevel == screen,
                     onClick = { AppState.changePage(screen.resolveTarget()) },
@@ -81,12 +84,12 @@ fun BottomNavBar() {
 
 }
 
-private fun Screen.tabPresentation(): Pair<ImageVector, String> = when (this) {
-    Screen.Home -> Icons.Filled.Home to "Home"
-    Screen.TaskManagement -> Icons.AutoMirrored.Filled.List to "Manage"
-    Screen.CompletedTask -> Icons.Filled.CheckCircle to "Completed"
-    Screen.GroupHome -> Icons.Filled.Group to "Groups"
-    Screen.IncomingInvites -> Icons.Filled.Email to "Invites"
+private fun Screen.tabPresentation(s: Strings): Pair<ImageVector, String> = when (this) {
+    Screen.Home -> Icons.Filled.Home to s.navHome
+    Screen.TaskManagement -> Icons.AutoMirrored.Filled.List to s.navManage
+    Screen.CompletedTask -> Icons.Filled.CheckCircle to s.navCompleted
+    Screen.GroupHome -> Icons.Filled.Group to s.navGroups
+    Screen.IncomingInvites -> Icons.Filled.Email to s.navInvites
     else -> Icons.Filled.Home to name
 }
 

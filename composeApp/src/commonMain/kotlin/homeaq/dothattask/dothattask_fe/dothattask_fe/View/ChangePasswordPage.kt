@@ -37,6 +37,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +48,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
+    val s = LocalStrings.current
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -61,14 +63,14 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
     val authApi = remember { AuthApi(createUnauthenticatedClient(), client()) }
 
     fun validate(): Boolean {
-        oldError = if (oldPassword.isBlank()) "Current password cannot be empty" else null
+        oldError = if (oldPassword.isBlank()) s.changePasswordOldEmpty else null
         newError = when {
-            newPassword.isBlank() -> "New password cannot be empty"
-            newPassword.length < 6 -> "New password must be at least 6 characters"
-            newPassword == oldPassword -> "New password must differ from the current one"
+            newPassword.isBlank() -> s.changePasswordNewEmpty
+            newPassword.length < 6 -> s.changePasswordTooShort
+            newPassword == oldPassword -> s.changePasswordNewEmpty
             else -> null
         }
-        confirmError = if (confirmPassword != newPassword) "Passwords do not match" else null
+        confirmError = if (confirmPassword != newPassword) s.changePasswordMismatch else null
         return listOf(oldError, newError, confirmError).all { it == null }
     }
 
@@ -82,7 +84,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    "Change password",
+                    s.changePasswordTitle,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
@@ -93,7 +95,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                 OutlinedTextField(
                     value = oldPassword,
                     onValueChange = { oldPassword = it; oldError = null; message = null },
-                    label = { Text("Current password") },
+                    label = { Text(s.changePasswordOld) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = oldError != null,
@@ -107,7 +109,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                     value = newPassword,
                     onValueChange = { newPassword = it; newError = null; message = null },
                     singleLine = true,
-                    label = { Text("New password") },
+                    label = { Text(s.changePasswordNew) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = newError != null,
@@ -121,7 +123,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it; confirmError = null; message = null },
                     singleLine = true,
-                    label = { Text("Confirm new password") },
+                    label = { Text(s.changePasswordConfirm) },
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TaskUIHelper.appTextFieldColors(),
                     isError = confirmError != null,
@@ -136,7 +138,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                         onClick = onBack,
                         modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
                     ) {
-                        Text("Cancel")
+                        Text(s.cancel)
                     }
                     Spacer(Modifier.width(12.dp))
                     Button(
@@ -148,7 +150,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                                     when (val resp = authApi.changePassword(oldPassword, newPassword)) {
                                         is ApiResult.Success -> {
                                             messageIsError = false
-                                            message = "Password changed. Other sessions have been signed out."
+                                            message = s.changePasswordSuccess
                                             oldPassword = ""
                                             newPassword = ""
                                             confirmPassword = ""
@@ -160,22 +162,22 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                                         }
                                         is ApiResult.NotFound -> {
                                             messageIsError = true
-                                            message = "Change-password endpoint unavailable"
+                                            message = s.loginEndpointUnavailable
                                         }
                                         is ApiResult.Unauthorized -> {
                                             messageIsError = true
-                                            message = "Unauthorized"
+                                            message = s.unauthorized
                                             AppState.currentScreen = Screen.Login
                                         }
                                         is ApiResult.Forbidden -> {
                                             messageIsError = true
-                                            message = "Forbidden"
+                                            message = s.changePasswordWrongOld
                                             AppState.currentScreen = Screen.Login
                                         }
                                     }
                                 } catch (e: Exception) {
                                     messageIsError = true
-                                    message = e.message ?: "Change password failed"
+                                    message = e.message ?: s.loginFailed
                                 } finally {
                                     loading = false
                                 }
@@ -187,7 +189,7 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
                         ),
                         modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
                     ) {
-                        Text("Change password")
+                        Text(s.changePasswordSubmit)
                     }
                 }
 
