@@ -20,6 +20,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -156,19 +158,17 @@ fun UpdateTaskDialog(
                                 Spacer(Modifier.size(0.dp))
                             }
 
-                            OutlinedButton(
-                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color.Black,
-                                    containerColor = TaskUIHelper.getRed(),
-                                ),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            // Bare red trash — no button chrome. The dialog
+                            // already frames the action; an OutlinedButton
+                            // around a single icon felt over-built.
+                            IconButton(
                                 onClick = { onDelete(task) },
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
                                     contentDescription = "Delete task",
-                                    tint = Color.Black,
+                                    tint = MaterialTheme.colorScheme.error,
                                 )
                             }
                         }

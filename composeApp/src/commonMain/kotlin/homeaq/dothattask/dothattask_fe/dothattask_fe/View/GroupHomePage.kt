@@ -163,10 +163,17 @@ fun GroupHomePage() {
                             ) {
                                 Column(Modifier.weight(1f)) {
                                     Text(m.name, fontWeight = FontWeight.Bold, color = onSurface)
-                                    Text("@${m.username}", color = onSurface.copy(alpha = 0.7f))
+                                    // Email is the canonical key now — show it
+                                    // as the secondary identifier; the legacy
+                                    // username only surfaces if the email is
+                                    // empty (un-migrated row).
+                                    val secondary = m.email.takeIf { it.isNotBlank() } ?: m.username.orEmpty()
+                                    if (secondary.isNotBlank()) {
+                                        Text(secondary, color = onSurface.copy(alpha = 0.7f))
+                                    }
                                 }
                                 Text(
-                                    if (m.username.equals(group.ownerEmail, ignoreCase = true)) s.groupsRoleOwner
+                                    if (m.email.equals(group.ownerEmail, ignoreCase = true)) s.groupsRoleOwner
                                     else when (m.role.name.lowercase()) {
                                         "admin" -> s.groupsRoleAdmin
                                         else -> s.groupsRoleMember
