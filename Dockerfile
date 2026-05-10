@@ -13,7 +13,11 @@ USER root
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libatomic1 \
     && rm -rf /var/lib/apt/lists/*
-USER gradle
+# Stay as root for the rest of the build — switching back to a non-root
+# user breaks gradle's ability to create /home/gradle/project/.gradle/
+# (the project workdir was created by the base image's default user
+# which differs across image variants). The original Dockerfile never
+# set USER, so we match that behaviour after the libatomic install.
 
 #fake data to declare args
 ARG ENV_MODE=dev
