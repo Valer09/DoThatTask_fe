@@ -1,6 +1,7 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,12 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,18 +19,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
@@ -41,7 +36,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
-import kotlinx.coroutines.launch
 
 /**
  * Categories panel rendered inside a group card. Lists the categories
@@ -58,11 +52,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun GroupCategoriesSection(groupId: Int) {
     val api = remember { CategoryApi(client()) }
-    val scope = rememberCoroutineScope()
-    var loading by remember(groupId) { mutableStateOf(false) }
     var categories by remember(groupId) { mutableStateOf<List<TaskCategory>>(emptyList()) }
     var error by remember(groupId) { mutableStateOf<String?>(null) }
-    var createCategoryOpen by remember { mutableStateOf<Boolean>(false) }
+    var createCategoryOpen by remember { mutableStateOf(false) }
+    // The chip-tap opens an Edit dialog. Holding the category locally so
+    // the dialog is composed only when we have one; setting back to null
+    // dismisses it.
+    var editingCategory by remember(groupId) { mutableStateOf<TaskCategory?>(null) }
     val s = LocalStrings.current
 
     suspend fun reload() {
@@ -80,6 +76,15 @@ fun GroupCategoriesSection(groupId: Int) {
             groupId,
             onConfirm = { reload() },
             onClose = { createCategoryOpen = false })
+    }
+
+    editingCategory?.let { target ->
+        CategoryEditDialog(
+            groupId = groupId,
+            category = target,
+            onConfirm = { reload() },
+            onClose = { editingCategory = null },
+        )
     }
 
     Row(
@@ -108,43 +113,20 @@ fun GroupCategoriesSection(groupId: Int) {
                         .padding(vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    // Whole chip is the tap target — opens the edit dialog
+                    // (which is also where the delete trash lives now).
                     Text(
                         text = cat.name,
                         color = TaskUIHelper.contrastingTextColor(TaskUIHelper.parseHexColor(cat.color)),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
                         modifier = Modifier
-                            .background(TaskUIHelper.parseHexColor(cat.color).copy(alpha = 0.2f), RoundedCornerShape(9.dp))
-                            .padding(horizontal = 30.dp, vertical = 3.dp),
+                            .clip(RoundedCornerShape(9.dp))
+                            .background(TaskUIHelper.parseHexColor(cat.color).copy(alpha = 0.2f))
+                            .clickable { editingCategory = cat }
+                            .pointerHoverIcon(PointerIcon.Hand, true)
+                            .padding(horizontal = 30.dp, vertical = 6.dp),
                     )
-                    Spacer(Modifier.weight(1f))
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                loading = true
-                                when (val res = api.unlink(groupId, cat.id)) {
-                                    is ApiResult.Success -> reload()
-                                    is ApiResult.Error -> if (!res.routeIfNetwork()) error = res.message
-                                    is ApiResult.NotFound -> error = res.message
-                                    is ApiResult.Unauthorized -> {
-                                        error = "Unauthorized"
-                                        AppState.currentScreen = Screen.Login
-                                    }
-                                    is ApiResult.Forbidden -> {
-                                        error = "Forbidden"
-                                    }
-                                }
-                                loading = false
-                            }
-                        },
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Remove category",
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
                 }
             }
 
