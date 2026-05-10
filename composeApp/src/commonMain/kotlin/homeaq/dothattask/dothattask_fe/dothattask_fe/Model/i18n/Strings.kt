@@ -116,6 +116,12 @@ data class Strings(
     val titleInviteMember: String,
     val titleManageTasks: String,
     val titleCompleted: String,
+    val titleSettings: String,
+
+    // Settings page section labels
+    val settingsSectionAccount: String,
+    val settingsSectionPreferences: String,
+    val settingsSectionSession: String,
 
     // GroupHome
     val groupsTitle: String,

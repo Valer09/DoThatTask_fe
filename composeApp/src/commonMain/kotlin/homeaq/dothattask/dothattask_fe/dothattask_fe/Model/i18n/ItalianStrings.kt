@@ -109,6 +109,11 @@ val ItalianStrings = Strings(
     titleInviteMember = "Invita amici!",
     titleManageTasks = "Gestione task",
     titleCompleted = "Task completate",
+    titleSettings = "Impostazioni",
+
+    settingsSectionAccount = "Account",
+    settingsSectionPreferences = "Preferenze",
+    settingsSectionSession = "Sessione",
 
     groupsTitle = "I miei gruppi",
     groupsCreateGroup = "+ Crea gruppo",

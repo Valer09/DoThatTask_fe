@@ -11,6 +11,7 @@ enum class Screen {
     Onboarding,
     Login,
     Register,
+    Settings,
     ChangePassword,
     NoGroup,
     GroupHome,
@@ -59,6 +60,7 @@ fun Screen.localizedTitle(): String {
         Onboarding, Error -> ""
         Login -> s.titleLogin
         Register -> s.titleRegister
+        Settings -> s.titleSettings
         ChangePassword -> s.titleChangePassword
         NoGroup -> ""
         GroupHome -> s.titleGroupHome
@@ -96,6 +98,7 @@ fun Screen.topLevel(): Screen? = when (this) {
     Screen.IncomingInvites -> this
     Screen.NoGroup,
     Screen.InviteMember -> Screen.GroupHome
+    Screen.Settings,
     Screen.ChangePassword,
     Screen.Error,
     Screen.Onboarding,
