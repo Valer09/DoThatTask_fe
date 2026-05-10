@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +38,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.AuthApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createUnauthenticatedClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
+import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.BackButton
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,13 +83,17 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
             colors = TaskUIHelper.appCardColors(),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Text(
-                    s.changePasswordTitle,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    BackButton(onClick = onBack)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        s.changePasswordTitle,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
 
                 Spacer(Modifier.height(20.dp))
                 OutlinedTextField(
@@ -134,13 +138,6 @@ fun ChangePasswordPage(onBack: () -> Unit, onPasswordChanged: () -> Unit) {
 
                 Spacer(Modifier.height(20.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = onBack,
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true).focusable(),
-                    ) {
-                        Text(s.cancel)
-                    }
-                    Spacer(Modifier.width(12.dp))
                     Button(
                         onClick = {
                             if (!validate()) return@Button
