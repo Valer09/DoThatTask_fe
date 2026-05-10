@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -157,11 +160,16 @@ fun UpdateTaskDialog(
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = Color.Black,
-                                    containerColor = TaskUIHelper.getRed()
+                                    containerColor = TaskUIHelper.getRed(),
                                 ),
-                                onClick = { onDelete(task) }
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                onClick = { onDelete(task) },
                             ) {
-                                Text("Delete")
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = "Delete task",
+                                    tint = Color.Black,
+                                )
                             }
                         }
 
