@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskStatus
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 
 
@@ -38,6 +39,8 @@ fun TaskCard(
     hideUpdate: Boolean = false,
     onUnassign: (Task) -> Unit,
 ) {
+
+    val s = LocalStrings.current
 
     Card(
         modifier = Modifier.fillMaxWidth().padding(4.dp),
@@ -81,7 +84,7 @@ fun TaskCard(
                     onClick = { onDetails(task) }
                 )
                 {
-                    Text("Details")
+                    Text(s.detailButton.replaceFirstChar { it.uppercase() })
                 }
 
                 Spacer(Modifier.width(10.dp))
@@ -97,7 +100,7 @@ fun TaskCard(
                         onClick = { onUpdate(task) }
                     )
                     {
-                        Text("Update")
+                        Text(s.updateButton.replaceFirstChar { it.uppercase() })
                     }
                 }
 
@@ -110,7 +113,7 @@ fun TaskCard(
                         onClick = { onUnassign(task) }
                     )
                     {
-                        Text("Unassing")
+                        Text(s.unassignButton.replaceFirstChar { it.uppercase() })
                     }
                 }
             }

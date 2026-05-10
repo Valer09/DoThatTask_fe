@@ -39,6 +39,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AuthState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
@@ -69,8 +70,8 @@ fun CompletedTaskPage() {
     var toastIsError by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf<GroupSummary?>(null) }
-
     val groups = AuthState.groups
+    val s = LocalStrings.current
 
     LaunchedEffect(Unit) {
         loading = true
@@ -120,15 +121,14 @@ fun CompletedTaskPage() {
             if (groups.isNotEmpty()) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .fillMaxWidth(),
                 ) {
                     val groups = AuthState.groups
 
                     ColoredDropdown(
                         items = groups,
                         selected = selectedFilter ?: groups.first(),
-                        label = "Group",
+                        label = s.group.replaceFirstChar { it.uppercase() },
                         itemLabel = { it.name },
                         onSelect = { selectedFilter = it ; },
                         itemColor = { TaskUIHelper.parseHexColor(it.color) },

@@ -31,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
@@ -104,15 +106,12 @@ fun GroupHomePage() {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val memberRowBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                s.groupsTitle,
-                style = MaterialTheme.typography.headlineMedium,
-                color = onSurface,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-            )
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 0.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Button(
                 onClick = { AppState.currentScreen = Screen.NoGroup },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),

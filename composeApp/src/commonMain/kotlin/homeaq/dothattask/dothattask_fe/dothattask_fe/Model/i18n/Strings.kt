@@ -180,4 +180,28 @@ data class Strings(
     // Error page
     val errorTitle: String,
     val errorRetry: String,
+    val completedTasksButton: String,
+    val completeTaskButton: String,
+    val pickTask: String,
+    val group: String,
+    val taskDescription: String,
+    val taskDescriptionEmpty: String,
+    val activeGroup: String,
+    val createTaskButton: String,
+    val searchButtonParameter: String,
+    val taskAssignee: String,
+    val taskCategory: String,
+    val groupPageEmptyState: String,
+    val anyUser: String,
+    val unauthorizedError: String?,
+    val forbiddenError: String?,
+    val updated: String,
+    val created: String,
+    val taskDisconnected: String?,
+    val taskSearchEmptyState: String,
+    val detailButton: String,
+    val updateButton: String,
+    val unassignButton: String,
+    val addCategoryButton: String
+
 )

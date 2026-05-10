@@ -84,7 +84,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                         color = onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).padding(start = 20.dp),
                     )
                 } else {
                     // Keeps the right-side controls aligned even when there

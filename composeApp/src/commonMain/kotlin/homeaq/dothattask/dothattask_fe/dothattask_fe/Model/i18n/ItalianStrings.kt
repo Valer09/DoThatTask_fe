@@ -89,7 +89,7 @@ val ItalianStrings = Strings(
 
     navHome = "Home",
     navManage = "Gestione",
-    navCompleted = "Completate",
+    navCompleted = "Completati",
     navGroups = "Gruppi",
     navInvites = "Inviti",
 
@@ -108,7 +108,7 @@ val ItalianStrings = Strings(
     titleInvitations = "Inviti",
     titleInviteMember = "Invita amici!",
     titleManageTasks = "Gestione task",
-    titleCompleted = "Task completate",
+    titleCompleted = "Task completati",
     titleSettings = "Impostazioni",
 
     settingsSectionAccount = "Account",
@@ -166,4 +166,28 @@ val ItalianStrings = Strings(
 
     errorTitle = "Qualcosa è andato storto",
     errorRetry = "Riprova",
+
+    completedTasksButton = "Completati",
+    completeTaskButton = "Fatto!",
+    pickTask = "Prendi!",
+    group = "gruppo",
+    taskDescription = "descrizione",
+    taskDescriptionEmpty = "Nessuna descrizione",
+    activeGroup = "Gruppo attuale",
+    createTaskButton = "+ Aggiungi task",
+    searchButtonParameter = "cerca",
+    taskAssignee = "assegnatario",
+    taskCategory = "categoria",
+    groupPageEmptyState = "Non appartieni ancora a nessun gruppo. \nCreane o unisciti ad uno per gestire dei task.\"",
+    anyUser = "qualsiasi",
+    unauthorizedError = "Non autorizzato",
+    forbiddenError = "Vietato",
+    updated = "aggiornato",
+    created = "creato",
+    taskDisconnected = "de-assegnato",
+    taskSearchEmptyState = "Nessun task corrisponde ai filtri selezionati",
+    detailButton = "Dettagli",
+    updateButton = "Modifica",
+    unassignButton = "Stacca",
+    addCategoryButton = "Nuova categoria",
 )

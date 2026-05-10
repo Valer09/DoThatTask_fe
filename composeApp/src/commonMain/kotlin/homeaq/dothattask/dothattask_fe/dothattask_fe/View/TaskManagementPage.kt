@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -46,6 +45,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.User
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -85,6 +85,7 @@ fun TaskManagementPage() {
     var currentTaskToUpdate by remember { mutableStateOf<Task?>(null) }
     var currentDetailTask by remember { mutableStateOf<Task?>(null) }
     var taskCreationOpen by remember { mutableStateOf(false) }
+    val s = LocalStrings.current
 
     suspend fun loadMembers(groupId: Int) {
         membersLoading = true
@@ -150,7 +151,7 @@ fun TaskManagementPage() {
                 // Toast lives on the parent: the dialog dismisses itself
                 // immediately, so a toast set inside it would never paint.
                 toastIsError = false
-                toastMessage = "Task '${created.name}' created"
+                toastMessage = "Task '${created.name}' ${s.created}"
                 scope.launch { runSearch() }
             },
             onDismiss = { taskCreationOpen = false },
@@ -163,7 +164,7 @@ fun TaskManagementPage() {
             onConfirm = { updated ->
                 currentTaskToUpdate = null
                 toastIsError = false
-                toastMessage = "Task '${updated.name}' updated"
+                toastMessage = "Task '${updated.name}' ${s.updated}"
                 scope.launch { runSearch() }
             },
             onDismiss = { currentTaskToUpdate = null },
@@ -186,11 +187,11 @@ fun TaskManagementPage() {
                         }
                         is ApiResult.Unauthorized -> {
                             toastIsError = true
-                            toastMessage = "Unauthorized"
+                            toastMessage = s.unauthorizedError
                             AppState.currentScreen = Screen.Login
                         }
                         is ApiResult.Forbidden -> {
-                            toastMessage = "Forbidden"
+                            toastMessage = s.forbiddenError
                         }
                     }
                 }
@@ -214,7 +215,7 @@ fun TaskManagementPage() {
             addAll(availableCategories)
         }
         val color =MaterialTheme.colorScheme.onSurface
-        val anyUser= User("any", "")
+        val anyUser= User(s.anyUser.replaceFirstChar { it.uppercase() }, "")
         val userOptions = buildList {
             add(anyUser)
             addAll(members)
@@ -244,24 +245,41 @@ fun TaskManagementPage() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         )
         {
-            item {
-                Spacer(Modifier.height(8.dp))
-            }
             if (groups.isEmpty()) {
                 item {
                     Text(
-                        "You don't belong to any group yet. Create or join one to manage tasks.",
+                        s.groupPageEmptyState.replaceFirstChar { it.uppercase() },
                         color = Color.Gray,
                     )
                 }
                 return@LazyColumn
             }
 
+            item{
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = { taskCreationOpen = true },
+                        modifier = Modifier
+                            .appButtonSizeSmall()
+                            .pointerHoverIcon(PointerIcon.Hand, true),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TaskUIHelper.getComplementary(),
+                            contentColor = Color.Black,
+                        ),
+                    ) {
+                        Text(s.createTaskButton.replaceFirstChar { it.uppercase() })
+                    }
+                }
+            }
             item {
                 ColoredDropdown(
                     items = groups,
                     selected = selectedGroup ?: groups.first(),
-                    label = "Group",
+                    label = s.group.replaceFirstChar { it.uppercase() },
                     itemLabel = { it.name },
                     onSelect = { selectedGroup = it },
                     itemColor = { TaskUIHelper.parseHexColor(it.color) }
@@ -278,7 +296,7 @@ fun TaskManagementPage() {
                         modifier = Modifier.weight(1f),
                         items = categoryOptions,
                         selected = category ?: anyCategory,
-                        label = "Category",
+                        label = s.taskCategory.replaceFirstChar { it.uppercase() },
                         itemLabel = { it.name },
                         itemColor = { if (it.name == ANY_CATEGORY) color else TaskUIHelper.pickColor(it) },
                         onSelect = { selected -> category = if (selected.id < 0) null else selected }
@@ -287,7 +305,7 @@ fun TaskManagementPage() {
                         modifier = Modifier.weight(1f),
                         items = userOptions,
                         selected = assignee ?: anyUser,
-                        label = "Assignee",
+                        label = s.taskAssignee.replaceFirstChar { it.uppercase() },
                         itemLabel = { it.name },
                         itemColor = { color },
                         onSelect = { assignee = if (it.username == "any") null else it }
@@ -313,27 +331,14 @@ fun TaskManagementPage() {
                             .appButtonSizeSmall()
                             .pointerHoverIcon(PointerIcon.Hand, true)
                     ) {
-                        Text("Search")
-                    }
-
-                    Button(
-                        onClick = { taskCreationOpen = true },
-                        modifier = Modifier
-                            .appButtonSizeSmall()
-                            .pointerHoverIcon(PointerIcon.Hand, true),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = TaskUIHelper.getComplementary(),
-                            contentColor = Color.Black,
-                        ),
-                    ) {
-                        Text("Create Task")
+                        Text(s.searchButtonParameter.replaceFirstChar { it.uppercase() })
                     }
                 }
             }
 
             if (visible.isEmpty() && !loading) {
                 item {
-                    Text("No tasks match the current filters.", color = Color.Gray)
+                    Text(s.taskSearchEmptyState.replaceFirstChar { it.uppercase() }, color = Color.Gray)
                 }
             } else {
                 items(
@@ -352,7 +357,7 @@ fun TaskManagementPage() {
                                     toastMessage = result.message
                                 } else if (result is ApiResult.Success) {
                                     toastIsError = false
-                                    toastMessage = "Task unassigned"
+                                    toastMessage = s.taskDisconnected
                                 }
                                 runSearch()
                             }

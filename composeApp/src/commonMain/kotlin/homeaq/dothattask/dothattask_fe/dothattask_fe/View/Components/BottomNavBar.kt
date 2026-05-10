@@ -16,8 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
+import androidx.compose.material.icons.automirrored.rounded.Assignment
 import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Mail
@@ -76,7 +80,7 @@ fun BottomNavBar() {
         modifier = Modifier
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(horizontal = 12.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedCornerShape(50.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
         tonalElevation = 6.dp,
         shadowElevation = 8.dp,
@@ -116,12 +120,12 @@ private fun NavItem(
 
     Box(
         modifier = modifier
-            .padding(horizontal = 2.dp)
-            .clip(RoundedCornerShape(18.dp))
+            .padding(horizontal = 0.dp)
+            .clip(RoundedCornerShape(50.dp))
             .clickable { AppState.changePage(screen.resolveTarget()) }
             .pointerHoverIcon(PointerIcon.Hand, true)
             .background(pillColor)
-            .padding(vertical = 6.dp),
+            .padding(vertical = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -161,11 +165,11 @@ private fun NavItem(
                     modifier = Modifier.size(22.dp),
                 )
             }
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(0.dp))
             Text(
                 text = label,
                 color = fg,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 maxLines = 1,
             )
@@ -175,7 +179,7 @@ private fun NavItem(
 
 private fun Screen.tabPresentation(s: Strings, selected: Boolean): Pair<ImageVector, String> = when (this) {
     Screen.Home -> (if (selected) Icons.Rounded.Home else Icons.Outlined.Home) to s.navHome
-    Screen.TaskManagement -> (if (selected) Icons.AutoMirrored.Rounded.List else Icons.AutoMirrored.Outlined.List) to s.navManage
+    Screen.TaskManagement -> (if (selected) Icons.AutoMirrored.Rounded.Assignment else Icons.AutoMirrored.Outlined.Assignment) to s.navManage
     Screen.CompletedTask -> (if (selected) Icons.Rounded.TaskAlt else Icons.Outlined.TaskAlt) to s.navCompleted
     Screen.GroupHome -> (if (selected) Icons.Rounded.Group else Icons.Outlined.Group) to s.navGroups
     Screen.IncomingInvites -> (if (selected) Icons.Rounded.Mail else Icons.Outlined.Mail) to s.navInvites

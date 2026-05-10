@@ -36,6 +36,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.AppState
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
@@ -62,6 +63,7 @@ fun GroupCategoriesSection(groupId: Int) {
     var categories by remember(groupId) { mutableStateOf<List<TaskCategory>>(emptyList()) }
     var error by remember(groupId) { mutableStateOf<String?>(null) }
     var createCategoryOpen by remember { mutableStateOf<Boolean>(false) }
+    val s = LocalStrings.current
 
     suspend fun reload() {
         when (val res = api.list(groupId)) {
@@ -91,7 +93,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 .padding(top = 8.dp)
         ) {
             Text(
-                "Categories (${categories.size})",
+                "${s.groupsCategories.replaceFirstChar { it.uppercase() }} (${categories.size})",
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp
@@ -168,7 +170,7 @@ fun GroupCategoriesSection(groupId: Int) {
                 modifier = Modifier
                     .pointerHoverIcon(PointerIcon.Hand, true).appButtonSizeSmall(),
             ) {
-                Text("+ Add category")
+                Text(s.addCategoryButton)
             }
         }
     }

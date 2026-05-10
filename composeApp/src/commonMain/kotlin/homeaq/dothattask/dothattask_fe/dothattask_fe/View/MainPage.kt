@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -46,6 +44,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Screen
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.Task
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.TaskCategory
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.client
+import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.CategoryApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
@@ -113,6 +112,7 @@ fun MainPage() {
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val s = LocalStrings.current
 
     suspend fun loadAssignedTask() {
         val gid = selectedGroupId ?: run { assignedTask = null; return }
@@ -207,7 +207,7 @@ fun MainPage() {
                 ColoredDropdown(
                     items = groups,
                     selected = selectedGroup ?: groups.first(),
-                    label = "Active Group",
+                    label = s.activeGroup.replaceFirstChar { it.uppercase() },
                     itemLabel = { it.name },
                     onSelect = { selectedGroupId = it.id },
                     itemColor = { TaskUIHelper.parseHexColor(it.color) },
@@ -219,7 +219,7 @@ fun MainPage() {
                 ColoredDropdown(
                     items = availableCategories,
                     selected = category,
-                    label = "Category",
+                    label = s.taskCategory.replaceFirstChar { it.uppercase() },
                     itemLabel = { it.name },
                     itemColor = { TaskUIHelper.pickColor(it) },
                     onSelect = { category = it },
@@ -240,7 +240,7 @@ fun MainPage() {
                     Text(
                         text = assignedTask?.name ?: "",
                         fontWeight = FontWeight.Bold,
-                        color = onSurfaceColor,
+                        color = TaskUIHelper.getComplementary(),
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 23.sp,
                     )
@@ -255,7 +255,7 @@ fun MainPage() {
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     LabeledCard(
-                        label = "Group",
+                        label = s.group.replaceFirstChar { it.uppercase() },
                         modifier = Modifier.weight(1f).height(70.dp),
                     ) {
                         Box(
@@ -273,7 +273,7 @@ fun MainPage() {
                     }
 
                     LabeledCard(
-                        label = "Category",
+                        label = s.taskCategory.replaceFirstChar { it.uppercase() },
                         modifier = Modifier.weight(1f).height(70.dp),
                     ) {
                         Box(
@@ -295,7 +295,7 @@ fun MainPage() {
 
                 // ── Description card (scrollable) ──────────────────────────
                 LabeledCard(
-                    label = "Description",
+                    label = s.taskDescription.replaceFirstChar { it.uppercase() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
@@ -307,7 +307,7 @@ fun MainPage() {
                             .verticalScroll(rememberScrollState()),
                     ) {
                         Text(
-                            text = assignedTask?.description ?: "No description available.",
+                            text = assignedTask?.description ?: s.taskDescriptionEmpty,
                             color = onSurfaceColor,
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 16.sp,
@@ -335,7 +335,7 @@ fun MainPage() {
                             text = "No task assigned. Pick a task",
                             style = MaterialTheme.typography.bodyLarge,
                             color = onSurfaceColor.copy(alpha = 0.6f),
-                            fontSize = 25.sp,
+                            fontSize = 21.sp,
                         )
                     }
                 }
@@ -356,7 +356,8 @@ fun MainPage() {
                         .padding(horizontal = 4.dp, vertical = 8.dp),
                     onClick = { scope.launch { AppState.currentScreen = Screen.CompletedTask } },
                 ) {
-                    Text("Completed tasks", color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
+
+                    Text(s.completedTasksButton.replaceFirstChar { it.uppercase() }, color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                 }
 
                 if (assignedTask != null) {
@@ -368,7 +369,7 @@ fun MainPage() {
                         onClick = { scope.launch { complete() } },
                         colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary()),
                     ) {
-                        Text("Complete task!", color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
+                        Text(s.completeTaskButton.replaceFirstChar { it.uppercase() }, color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
                 } else {
                     Button(
@@ -379,7 +380,7 @@ fun MainPage() {
                         onClick = { scope.launch { pickTask(category) } },
                         colors = ButtonDefaults.buttonColors(containerColor = TaskUIHelper.getComplementary()),
                     ) {
-                        Text("Pick a new task!", color = Color.White, fontSize = 17.sp, modifier = Modifier.padding(vertical = 8.dp))
+                        Text(s.pickTask.replaceFirstChar { it.uppercase() }, color = Color.White, fontSize = 17.sp, modifier = Modifier.padding(vertical = 8.dp))
                     }
                 }
             }
