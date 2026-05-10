@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -102,7 +104,14 @@ fun RegisterPage(onRegisterSuccess: () -> Unit) {
 
     LoadingOverlay(isLoading = loading)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 40.dp).padding(horizontal = 20.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .safeDrawingPadding()
+            .imePadding()
+            .padding(top = 16.dp)
+            .padding(horizontal = 20.dp),
+    ) {
         Card(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             shape = TaskUIHelper.appCardShape(),

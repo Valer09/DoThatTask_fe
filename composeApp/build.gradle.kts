@@ -82,6 +82,14 @@ val generateEnvironment = tasks.register("generateEnvironment") {
 }
 
 kotlin {
+    // We rely on `expect object` for OnboardingPreferences / LocalePreferences.
+    // The compiler flags expect/actual classes (objects, enums, …) as Beta
+    // since Kotlin 2.0 — we already accept the API and don't want the noise.
+    // See: https://youtrack.jetbrains.com/issue/KT-61573
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)

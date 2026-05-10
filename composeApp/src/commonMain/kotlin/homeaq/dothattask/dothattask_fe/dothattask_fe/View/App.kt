@@ -43,6 +43,10 @@ private val AppColorScheme = darkColorScheme(
     onPrimary = Color(0xffF0E6FF),
     onBackground = Color(0xffF0E6FF),
     onSurface = Color(0xffF0E6FF),
+    // Vivid red so the system reads "destructive / urgent" at a glance —
+    // used by trash icons, the invites badge and field-level errors.
+    error = Color(0xffE53935),
+    onError = Color(0xffFFFFFF),
 )
 
 @Composable

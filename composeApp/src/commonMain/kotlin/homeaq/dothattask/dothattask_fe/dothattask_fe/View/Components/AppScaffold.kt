@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -62,8 +65,12 @@ fun AppScaffold(onLogout: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(top = 35.dp, bottom = 0.dp)
-                    .padding(horizontal = 40.dp),
+                    // Lift the header above the status bar / notch on
+                    // edge-to-edge devices instead of the old hardcoded
+                    // 35dp top padding.
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -95,7 +102,7 @@ fun AppScaffold(onLogout: () -> Unit) {
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(45.dp)
+                            .size(38.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = CircleShape,
@@ -103,10 +110,11 @@ fun AppScaffold(onLogout: () -> Unit) {
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = AuthState.username?.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                            text = (AuthState.email ?: AuthState.username)
+                                ?.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                         )
                     }
                 }
