@@ -1,5 +1,6 @@
 package homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,7 +44,16 @@ fun TaskCard(
     val s = LocalStrings.current
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(4.dp),
+        // The whole card is the tap target for the detail dialog now.
+        // Removed the dedicated 'Details' OutlinedButton from the action
+        // row below — a separate button felt redundant when every other
+        // tabular card in the app (groups, invites, completed) opens its
+        // detail by tap on the row itself.
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .clickable { onDetails(task) }
+            .pointerHoverIcon(PointerIcon.Hand, true),
         shape = RoundedCornerShape(CornerSize(8.dp)),
         colors = CardDefaults.cardColors(containerColor = TaskUIHelper.pickColor(task.category))
     ) {
@@ -74,45 +84,29 @@ fun TaskCard(
             )
             Spacer(Modifier.height(10.dp))
             Row {
-
-                OutlinedButton(
-                    modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TaskUIHelper.getSecondary(),
-                        contentColor = TaskUIHelper.getAlternativeText(),
-                    ),
-                    onClick = { onDetails(task) }
-                )
-                {
-                    Text(s.detailButton.replaceFirstChar { it.uppercase() })
-                }
-
-                Spacer(Modifier.width(10.dp))
-
-                if(!hideUpdate)
-                {
+                if (!hideUpdate) {
                     OutlinedButton(
-                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = TaskUIHelper.getComplementary(),
                             contentColor = Color.Black,
                         ),
-                        onClick = { onUpdate(task) }
-                    )
-                    {
+                        onClick = { onUpdate(task) },
+                    ) {
                         Text(s.updateButton.replaceFirstChar { it.uppercase() })
                     }
                 }
 
-                if(task.status == TaskStatus.ACTIVE)
-                {
+                if (task.status == TaskStatus.ACTIVE) {
                     Spacer(Modifier.width(10.dp))
                     OutlinedButton(
-                        modifier =     Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black, containerColor = TaskUIHelper.getLightGray()),
-                        onClick = { onUnassign(task) }
-                    )
-                    {
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.Black,
+                            containerColor = TaskUIHelper.getLightGray(),
+                        ),
+                        onClick = { onUnassign(task) },
+                    ) {
                         Text(s.unassignButton.replaceFirstChar { it.uppercase() })
                     }
                 }
