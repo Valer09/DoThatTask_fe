@@ -3,7 +3,6 @@ package homeaq.dothattask.dothattask_fe.dothattask_fe.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -167,7 +166,7 @@ fun TaskManagementPage() {
                 toastMessage = "Task '${updated.name}' ${s.updated}"
                 scope.launch { runSearch() }
             },
-            onDismiss = { currentTaskToUpdate = null },
+            onDismiss = { t -> currentDetailTask = t; currentTaskToUpdate = null },
             onDelete = {
                 scope.launch {
                     when (val result = taskApi.removeTask(it)) {
@@ -203,7 +202,9 @@ fun TaskManagementPage() {
         TaskDetailDialog(
             currentDetailTask!!,
             onConfirm = {},
-            onDismiss = { currentDetailTask = null },
+            onDismiss = { currentDetailTask = null;},
+            hideUpdate = false,
+            onUpdate = { t -> currentDetailTask = null; currentTaskToUpdate = t},
         )
     }
 

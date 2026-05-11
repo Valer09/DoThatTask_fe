@@ -53,6 +53,7 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.TaskUIHelper
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Month
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -62,7 +63,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun UpdateTaskDialog(
     task: Task,
     onConfirm: (Task) -> Unit,
-    onDismiss: () -> Unit,
+    onDismiss: (Task) -> Unit,
     onDelete: (Task) -> Unit,
 ) {
     var name by remember { mutableStateOf(task.name) }
@@ -144,7 +145,7 @@ fun UpdateTaskDialog(
                         Text("Update ${task.name}", fontSize = 20.sp, color = Color.White)
                     }
 
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -158,21 +159,20 @@ fun UpdateTaskDialog(
                                 Spacer(Modifier.size(0.dp))
                             }
 
-                            // Bare red trash — no button chrome. The dialog
-                            // already frames the action; an OutlinedButton
-                            // around a single icon felt over-built.
                             IconButton(
                                 onClick = { onDelete(task) },
-                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).size(25.dp),
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
                                     contentDescription = "Delete task",
                                     tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(25.dp)
                                 )
                             }
                         }
 
+                        Spacer(Modifier.height(10.dp))
                         TextField(
                             value = name,
                             onValueChange = { name = it },
@@ -180,16 +180,6 @@ fun UpdateTaskDialog(
                             colors = colors,
                             modifier = Modifier
                                 .fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = { Text("Description") },
-                            colors = colors,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp),
                         )
 
                         if (availableCategories.isNotEmpty()) {
@@ -214,6 +204,17 @@ fun UpdateTaskDialog(
                             onLoad = { selectedUser = it },
                         )
 
+                        Spacer(Modifier.height(10.dp))
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            label = { Text("Description") },
+                            colors = colors,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp),
+                        )
+
                         Spacer(Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -222,7 +223,7 @@ fun UpdateTaskDialog(
                         {
                             OutlinedButton(
                                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, true),
-                                onClick = { onDismiss() },
+                                onClick = { onDismiss(task) },
                             )
                             {
                                 Text("Close")

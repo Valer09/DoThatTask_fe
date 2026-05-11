@@ -84,19 +84,6 @@ fun TaskCard(
             )
             Spacer(Modifier.height(10.dp))
             Row {
-                if (!hideUpdate) {
-                    OutlinedButton(
-                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand, hideDelete),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = TaskUIHelper.getComplementary(),
-                            contentColor = Color.Black,
-                        ),
-                        onClick = { onUpdate(task) },
-                    ) {
-                        Text(s.updateButton.replaceFirstChar { it.uppercase() })
-                    }
-                }
-
                 if (task.status == TaskStatus.ACTIVE) {
                     Spacer(Modifier.width(10.dp))
                     OutlinedButton(

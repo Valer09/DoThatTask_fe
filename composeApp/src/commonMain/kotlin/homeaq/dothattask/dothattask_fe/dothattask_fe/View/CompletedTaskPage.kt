@@ -10,15 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,10 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -42,7 +32,6 @@ import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.group.GroupSummary
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Model.i18n.LocalStrings
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.ApiResult
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.TaskApi
-import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.createHttpClient
 import homeaq.dothattask.dothattask_fe.dothattask_fe.Network.routeIfNetwork
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.ColoredDropdown
 import homeaq.dothattask.dothattask_fe.dothattask_fe.View.Components.LoadingOverlay
@@ -59,10 +48,6 @@ private const val ANY_GROUP_LABEL = "Any"
 fun CompletedTaskPage() {
 
     val taskApi = remember { TaskApi(client()) }
-    // Server-side, /api/tasks/completed already aggregates across every
-    // group the user belongs to. We fetch once and filter client-side on
-    // task.groupId — fanning out per group would have returned the same
-    // list N times (the endpoint ignores X-Group-Id).
     var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var currentDetailTask by remember { mutableStateOf<Task?>(null) }
@@ -98,7 +83,9 @@ fun CompletedTaskPage() {
         TaskDetailDialog(
             currentDetailTask!!,
             onConfirm = {},
-            onDismiss = { currentDetailTask = null }
+            onDismiss = { currentDetailTask = null },
+            hideUpdate = true,
+            onUpdate = {},
         )
     }
 
@@ -168,7 +155,6 @@ fun CompletedTaskPage() {
                             onUpdate = { },
                             onDetails = { currentDetailTask = task },
                             hideDelete = true,
-                            hideUpdate = true,
                             onUnassign = {}
                         )
                     }
